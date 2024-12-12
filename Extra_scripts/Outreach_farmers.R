@@ -1,0 +1,199 @@
+## PhD birds in silvopastoral landscapes##
+# Outreach farmers -- Create relative abundance plots & tables of the species observed in each farm
+## This script creates the necessary farm-specific outputs for compilation in PDFs using LaTeX & Python
+
+# NOTE:: The outputs created in this R script are then accessed in 'create_pdfs.py' script to create farm-specific PDFs, & then merged with the 'Fun_facts_general' PDF using the 'Merge_pdfs.py' script
+# Relevant files: /Users/aaronskinner/Desktop/Outreach_PDFs
+
+# Contents
+# 1) Load & format personal eBird data (just for Eje Cafetero for now)
+# 2) Join with birds observed during formal surveys (e.g. point counts)
+# 3) Sum number of individuals to create species counts for each farm
+# 4) Print relative abundance bar graphs and save
+# 5) Create .tex tables with species observed on farm using stargazer package
+# 6) Create Excel to bring into Python (called 'data_list') that ultimately runs through for loop in Python
+# 7) Extra plotting
+
+# Load libraries & data ---------------------------------------------------------------
+load("Rdata/the_basics_11.21.24.Rdata")
+
+library(tidyverse)
+library(cowplot)
+library(raster)
+library(sf)
+library(gtools)
+library(readxl)
+library(xlsx)
+library(ebirdst)
+library(gridExtra)
+library(conflicted)
+library(stargazer)
+ggplot2::theme_set(theme_cowplot())
+conflicts_prefer(dplyr::select)
+conflicts_prefer(dplyr::filter)
+
+# Define spread.df function
+spread.df <- function(df) {
+  df.spr <- data.frame(df[1:nrows, ], df[(nrows + 1):(nrows * 2), ], df[(nrows * 2 + 1):(nrows * 3), ], df[(nrows * 3 + 1):(nrows * 4), ]) %>%
+    select(where(~ !all(is.na(.))))
+  colnames(df.spr) <- NULL
+  return(df.spr)
+}
+
+# eBird checklist --------------------------------------------------
+# Bring in eBird checklists for relevant farms in the Eje Cafetero
+farms_eB <- read.csv("/Users/aaronskinner/Desktop/Outreach_PDFs/EBird_Eje_2024.csv") %>%
+  select(Location, Count, Scientific.Name) %>%
+  filter(str_detect(Location, "Finca|CAIRO|glamping")) %>%
+  rename_all(~ c("Nombre_finca", "Count", "Nombre_ayerbe")) %>%
+  mutate(Nombre_finca = case_when(
+    str_detect(Nombre_finca, "San Jose") ~ "Juan b",
+    str_detect(Nombre_finca, "CAIRO") ~ "El cairo",
+    str_detect(Nombre_finca, "glamping") ~ "Los arboles",
+    str_detect(Nombre_finca, "Carelia") ~ "La carelia",
+    str_detect(Nombre_finca, "Portugal") ~ "Portugal",
+    .default = Nombre_finca
+  )) %>%
+  left_join(distinct(Birds_all4[, c("Nombre_finca", "Id_gcs", "Ecoregion")]))
+
+
+# Merge and format --------------------------------------------------------
+# Species to remove
+rm <- "Na | sp$|1|/|Desconocido|Ceratopipra o manacus|indeterminado|Sin identificar"
+
+# Merge eBird with the SCR databases
+Birds_comb <- Birds_all4 %>%
+  rename(Count = Numero_individuos) %>%
+  # filter(!Nombre_finca %in% c("Valle de Cocora", "El Escobal")) %>%
+  distinct(Nombre_ayerbe, Ecoregion, Nombre_finca, Id_gcs, Count) %>%
+  as.data.frame() %>%
+  smartbind(farms_eB) %>%
+  # Formatting
+  mutate(Id_gcs = ifelse(Nombre_finca == "El porvenir 1", 259, Id_gcs)) %>%
+  filter(!str_detect(Nombre_ayerbe, rm))
+rownames(Birds_comb) <- NULL
+
+# Create farms list -------------------------------------------------------
+# Sum counts by species & farm & split so each farm is its own list
+Birds_by_farm <- Birds_comb %>%
+  group_by(Nombre_finca, Id_gcs, Nombre_ayerbe) %>%
+  summarize(Count = sum(as.numeric(Count))) %>%
+  arrange(desc(Count)) %>%
+  group_split(.keep = TRUE)
+names(Birds_by_farm) <- sapply(Birds_by_farm, function(df) {
+  paste0(unique(df$Nombre_finca), "_", "Id_gcs_", unique(df$Id_gcs))
+})
+
+# Bar graphs: Relative abundance ------------------------------------------
+imap(.x = Birds_by_farm, \(df, names){
+  bar.p <- df %>%
+    arrange(desc(Count)) %>%
+    slice_head(n = 10) %>%
+    ggplot(aes(x = reorder(Nombre_ayerbe, Count), y = Count)) +
+    geom_col(color = "black", width = .8) +
+    labs(y = "Frequencia relativa") +
+    theme(axis.text.x = element_text(size = 10, vjust = .58, angle = 60), axis.title.x = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank()) +
+    scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, " ", "\n")))
+  ggsave(plot = bar.p, filename = paste0("/Users/aaronskinner/Desktop/Outreach_PDFs/Farm_specific_inputs/Relative_Frequency_plots/", names, ".png"), bg = "white")
+})
+
+# Species lists per farm --------------------------------------------------
+# Save .tex tables of species lists per farm
+nrows <- 49 # Determine number of rows based on
+
+# Print tables using stargazer for compilation in Latex
+imap(.x = Birds_by_farm, \(df, names){
+  df50 <- df %>%
+    select(Nombre_ayerbe) %>% # 50 rows per column
+    spread.df() %>%
+    as.matrix() # Matrix prevents rownumbers when printed in stargazer
+  stargazer(df50,
+    type = "latex",
+    out =
+      paste0("/Users/aaronskinner/Desktop/Outreach_PDFs/Farm_specific_inputs/Species_lists/", names, ".tex"),
+    title = "Especies encontradas en la finca (de mas a menos abundantes)",
+    colnames = FALSE,
+    rownames = FALSE,
+    column.sep.width = "2pt",
+    summary = FALSE
+  )
+})
+
+# Export Excel ------------------------------------------------------------
+# Create Excel to bring into Python (called 'data_list') & run through for loop in Python
+Birds_comb %>%
+  distinct(Id_gcs, Nombre_finca, Ecoregion) %>%
+  mutate(Identifier = paste0(Nombre_finca, "_", "Id_gcs_", Id_gcs)) %>%
+  write.xlsx("/Users/aaronskinner/Desktop/Outreach_PDFs/Farm_names_IDs.xlsx", row.names = FALSE)
+
+
+# Export KML --------------------------------------------------------------
+## KML file for extensionists to deliver the printed outreach documents
+
+# This function allows us to change the output kml depending on the level of detail we hope to provide.. If we set var1 to Id_group it produces a single point per farm
+create.extension.file <- function(df, var1, tbl = TRUE, output_name = NULL, output_type = NULL) {
+  var1 <- ensym(var1)
+  if(rlang::as_string(var1) == "Id_group"){
+    df <- df %>% group_by(!!var1) %>% 
+      mutate(Latitud_decimal = round(mean(Latitud_decimal, na.rm = TRUE), 3),
+             Longitud_decimal = round(mean(Longitud_decimal, na.rm = TRUE), 3))
+  }
+  df <- df %>% st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), crs = 4326) %>%
+    filter(Departamento == "Meta") %>%
+    distinct(Nombre_finca, Id_gcs, Ano, !!var1, geometry) %>%
+    group_by(Nombre_finca, Id_gcs, !!var1, geometry) %>%
+    arrange(Ano) %>%
+    mutate(Ano_num = paste0("Ano_", row_number())) %>%
+    pivot_wider(names_from = Ano_num, values_from = Ano) %>% 
+    ungroup() %>% 
+    arrange(Nombre_finca)
+  if(tbl == FALSE){
+    if(output_type == "KML"){
+      if(rlang::as_string(var1) == "Id_group"){ 
+        df <- df %>% dplyr::rename(name = Nombre_finca)
+      } else{
+        df <- df %>% dplyr::rename(name = rlang::as_string(var1))
+      }
+    }
+    if(output_type == "Excel"){
+      df %>% as.data.frame() %>%
+        select(-geometry) %>% 
+        xlsx::write.xlsx(file = paste0('/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Colombia-SCR-Rd3/Intermediate_products/Excels/', output_name, ".xlsx"), row.names = F, showNA = FALSE)
+    } else{
+      st_write(df, driver='kml', dsn= paste0("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Colombia-SCR-Rd3/Intermediate_products_geospatial/", output_name, ".kml"))
+    }
+  } else{
+    df
+  }
+}
+
+# Print tbl
+create.extension.file(df = Birds_all4, var1 = Id_group, tbl = TRUE)
+
+# Call function to create KML varying the grouping variable 
+create.extension.file(df = Birds_all4, var1 = Id_group, tbl = FALSE,
+                      output_name = "Farms_Meta_Outreach_Id_group", output_type = "KML")
+create.extension.file(df = Birds_all4, var1 = Id_muestreo, tbl = FALSE,
+                      output_name = "Farms_Meta_Outreach_Id_muestreo", output_type = "KML")
+
+# Call function to create Excel 
+create.extension.file(df = Birds_all4, var1 = Id_group, tbl = FALSE,
+                      output_name = "Farms_Meta_Outreach_Id_group", output_type = "Excel")
+
+# Extra plotting ----------------------------------------------------------
+# General relative abundance plot for all farms combined#
+map(Birds_by_farm, \(x)
+as.data.frame(x)) %>%
+  dplyr::bind_rows() %>%
+  group_by(Nombre_ayerbe) %>%
+  summarize(Count = sum(as.numeric(Count))) %>%
+  arrange(desc(Count)) %>%
+  slice_head(n = 30) %>%
+  ggplot(aes(x = reorder(Nombre_ayerbe, Count), y = Count)) +
+  geom_col(color = "black", width = .8) +
+  labs(y = "Frequencia relativa") +
+  theme(
+    axis.text.x = element_text(size = 10, vjust = .58, angle = 60), axis.title.x = element_blank(),
+    axis.text.y = element_blank(), axis.ticks.y = element_blank()
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(str_replace_all(x, " ", "\n")))
