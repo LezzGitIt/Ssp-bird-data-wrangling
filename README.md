@@ -15,11 +15,11 @@ The goal is to provide actionable insights for biodiversity conservation in the 
 ## Methodology
 
 - **Data**: 485 point count sites collected over a decade.
-- **Analysis**: Bayesian multi-species occupancy / abundance models, alpha and beta diversity, community composition, functional diversity metrics, 
+- **Analysis**: Bayesian multi-species occupancy / abundance models, alpha and beta diversity, community composition, functional diversity metrics
 
 ## Usage
 
-If you are interested in collaborating on this project please send me an email at skinnerayayron93@gmail.com. The data is not available publicly at present. For the time being the code can only be observed visually, although similar analyses could be performed using publicly available biodiversity data (e.g., vegan package). 
+If you are interested in collaborating on this project please send me an email at skinnerayayron93 [at] gmail [dot] com. The data is not available publicly at present. For the time being the code can only be observed visually, although similar analyses could be performed using publicly available biodiversity data (e.g., from the vegan package). 
 
 ## License
 
@@ -31,4 +31,4 @@ Thank you to the Sustainable Cattle Ranching project and to my advisors for prov
 
 ## Contact
 
-For more information or questions, please contact skinnerayayron93@gmail.com
+For more information or questions, please contact skinnerayayron93 [at] gmail [dot] com
