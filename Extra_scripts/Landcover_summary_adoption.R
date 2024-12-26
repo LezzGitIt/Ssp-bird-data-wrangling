@@ -186,7 +186,7 @@ deltaDFsf <- st_as_sf(
 # st_write(obj = deltaDFsf, dsn="/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Field_Work/Spatial_Files/deltaDFsf.shp", layer = "deltaDFsf")
 
 # Subset 62 biodiversity farms
-Id_gcs <- BirdPCs %>%
+Id_gcs <- Bird_pcs %>%
   pull(Id_gcs) %>%
   unique()
 deltaBiod62 <- deltaDFsf %>%

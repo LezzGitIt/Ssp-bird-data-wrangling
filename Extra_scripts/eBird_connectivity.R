@@ -39,7 +39,7 @@ lbhe <- ebirdst_download(species = "Long-billed hermit", pattern = "centroid", t
 abu_lbhe <-  load_raster(lbhe, product = "abundance", resolution = "lr")
 
 #Long-billed hermit
-runsCol <- ebirdst_runs %>% filter(scientific_name %in% AyerbeAllspp) #ebirdst_runs Colombia
+runsCol <- ebirdst_runs %>% filter(scientific_name %in% Ayerbe_all_spp) #ebirdst_runs Colombia
 View(runsCol)
 runsCol$common_name
 length(runsCol$scientific_name)

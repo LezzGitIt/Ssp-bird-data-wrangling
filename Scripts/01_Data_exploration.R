@@ -20,7 +20,7 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-load("Rdata/the_basics_11.14.24.Rdata")
+load("Rdata/the_basics_12.24.24.Rdata")
 load("Rdata/Taxonomy_11.14.24.Rdata")
 load("Rdata/Traits_elev_11.14.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
@@ -36,7 +36,7 @@ Method_Inst %>%
   count(Departamento, Nombre_finca, sort = T)
 
 #Number of point counts per ecoregion
-(PC_eco <- BirdPCs %>% distinct(Uniq_db, Id_muestreo, Ecoregion) %>% 
+(PC_eco <- Bird_pcs %>% distinct(Uniq_db, Id_muestreo, Ecoregion) %>% 
    count(Uniq_db, Ecoregion))
 
 #Number of point counts per Uniq_db
@@ -45,24 +45,24 @@ PC_eco %>%
   summarize(Total = sum(n))
 
 #Number of point counts per habitat type
-BirdPCs %>% distinct(Uniq_db, Id_muestreo, Habitat_homologado_ut) %>% 
+Bird_pcs %>% distinct(Uniq_db, Id_muestreo, Habitat_homologado_ut) %>% 
   count(Uniq_db, Habitat_homologado_ut)
 
 # Show counts of finalized habitat types
-ggplot(data = PC_hab, aes(x = Habitat_homologado_ut)) +
+ggplot(data = Pc_hab, aes(x = Habitat_homologado_ut)) +
   geom_bar(aes(y = (..count..), color = Habitat_homologado_ut)) +
   theme(axis.text.x = element_blank()) +
   ylab("Count")
 
 # Histogram of repeat surveys.
-PC_date2 %>%
+Pc_date4 %>%
   distinct(Id_muestreo, N_reps) %>% 
   ggplot(aes(x = N_reps)) +
   geom_histogram(color = "black", binwidth = 1) +
   xlab("# of repeat surveys per point count location")
 
 # Boxplot of repeat surveys per department
-PC_date2 %>%
+Pc_date4 %>%
   reframe(N = n(), Departamento = Departamento, .by = Id_muestreo) %>%
   distinct(N, Departamento) %>%
   ggplot(aes(x = Departamento, y = N)) +
@@ -83,14 +83,14 @@ ggplot(data = Birds_all4, aes(x= Uniq_db, y = Hora)) +
 # Analysis to understand the extent of point counts in / out of SCR farms. & also the temporal coverage for each farm. 
 
 # Reduce the number of columns and join w/ # of repeat surveys
-Dist_farms <- BirdPCs %>%
+Dist_farms <- Bird_pcs %>%
   distinct(
     Id_muestreo, Nombre_finca_mixed, Id_gcs, Finca_referencia, Uniq_db, Distancia_m
   ) %>%
   group_by(Id_muestreo) %>%
   slice_head() %>%
   ungroup() %>%
-  left_join(distinct(PC_date2[,c("Id_muestreo", "N_reps")]), by = "Id_muestreo")
+  left_join(distinct(Pc_date4[,c("Id_muestreo", "N_reps")]), by = "Id_muestreo")
 
 # Calculate the # of point counts associated with each farm at two different spatial scales, 50 & 500m #
 
@@ -121,7 +121,7 @@ Num_PCs_farm <- Num_PCs_farm50 %>%
   summarize(across(), Dif_Num_PCs = Num_PCs500 - Num_PCs50)
 
 #NOTE::There are 67 farms (by Id_gcs), but there is one farm (Id_gcs = 671) with all points above 500m, and 3 farms with all points above 50m 
-all_IDs <- BirdPCs %>% pull(Id_gcs) %>% unique()
+all_IDs <- Bird_pcs %>% pull(Id_gcs) %>% unique()
 TF <- all_IDs %in% (Num_PCs_farm500 %>% pull(Id_gcs))
 all_IDs[!TF]
 Dist_farms %>% filter(Id_gcs == "671")
@@ -144,7 +144,7 @@ Surveyor_farms <- Dist_farms %>%
 # Calculate dates each farm was sampled. 
 # By Fecha (each fecha is a column)
 Farms_fecha <- Dist_farms %>%
-  left_join(distinct(PC_date2, Id_muestreo, Fecha), # add Fecha
+  left_join(distinct(Pc_date4, Id_muestreo, Fecha), # add Fecha
             by = "Id_muestreo"
   ) %>%
   group_by(Id_muestreo) %>%
@@ -159,7 +159,7 @@ Farms_fecha <- Dist_farms %>%
 
 # By Year_month (each year_month is a column)
 Farms_ym <- Dist_farms %>% # Farms year month
-  left_join(distinct(PC_date2, Id_muestreo, Mes, Ano), # add Fecha
+  left_join(distinct(Pc_date4, Id_muestreo, Mes, Ano), # add Fecha
             by = "Id_muestreo"
   ) %>%
   mutate(Year_month = paste0(Ano, "_", Mes)) %>%
@@ -218,13 +218,13 @@ Dist_farms %>%
 
 # NOTES
 # Some farms have multiple GCS IDs, and ID 3580 has two farm names
-BirdPCs %>% distinct(Id_gcs, Nombre_finca, Nombre_finca_mixed) %>% 
+Bird_pcs %>% distinct(Id_gcs, Nombre_finca, Nombre_finca_mixed) %>% 
   head()
-BirdPCs %>%
+Bird_pcs %>%
   distinct(Id_gcs, Nombre_finca_mixed) %>%
   count(Nombre_finca_mixed, sort = T) %>% 
   filter(n > 1)
-PC_date2 %>%
+Pc_date4 %>%
   filter(Nombre_finca == "El Porvenir") %>%
   distinct(Id_gcs, Nombre_finca) %>%
   rename(Name_GCS = Nombre_finca)
@@ -246,8 +246,8 @@ Cubarral <- st_as_sf(data.frame(lat = 3.794, long = -73.839),
 # Extract coordinates for Cubarral label 
 Cubarral_coords <- st_coordinates(Cubarral)
 
-PC_locsSf %>%
-  left_join(distinct(BirdPCs, Id_muestreo, Id_gcs)) %>%
+Pc_locs_sf %>%
+  left_join(distinct(Bird_pcs, Id_muestreo, Id_gcs)) %>%
   filter(Uniq_db == "UNILLANOS MBD") %>%
   ggplot() +
   geom_sf(aes(color = Id_gcs)) + 
@@ -259,10 +259,10 @@ PC_locsSf %>%
   theme_min #+
   #guides(color = "none")
 
-#In new iteration PC_locsSf is just from point counts, so would have to change this out to a different data frame
-PC_locs_jit <- st_jitter(PC_locsSf, factor = .06)
-# PC_locs_jit <- PC_locs_jit %>% filter(Uniq_db != "CIPAV MBD")
-bbox_all <- st_bbox(PC_locs_jit)
+#In new iteration Pc_locs_sf is just from point counts, so would have to change this out to a different data frame
+Pc_locs_jit <- st_jitter(Pc_locs_sf, factor = .06)
+# Pc_locs_jit <- Pc_locs_jit %>% filter(Uniq_db != "CIPAV MBD")
+bbox_all <- st_bbox(Pc_locs_jit)
 
 ## Plot inset map for biodiversity data. The first plot shows unique point count and telemetry locations
 bbox <- st_bbox(c(xmin = -73.887678, xmax = -73.463852, ymax = 3.92, ymin = 3.2), crs = st_crs(4326)) # The jitter applied is making things not line up perfectly
@@ -271,15 +271,15 @@ neCol %>% ggplot() +
   geom_sf(data = neColDepts) +
   layer_spatial(bbox, color = "red") +
   geom_sf(
-    data = PC_locs_jit, size = 4, alpha = .3,
+    data = Pc_locs_jit, size = 4, alpha = .3,
     aes(color = Nombre_institucion, shape = Protocolo_muestreo)
   ) +
   geom_sf(
-    data = filter(PC_locs_jit, Protocolo_muestreo != "Punto conteo"), size = 4, alpha = .7,
+    data = filter(Pc_locs_jit, Protocolo_muestreo != "Punto conteo"), size = 4, alpha = .7,
     aes(color = Nombre_institucion, shape = Protocolo_muestreo)
   ) +
   geom_sf(
-    data = filter(PC_locs_jit, Protocolo_muestreo == "Telemetria"), size = 4, alpha = .1,
+    data = filter(Pc_locs_jit, Protocolo_muestreo == "Telemetria"), size = 4, alpha = .1,
     aes(color = Nombre_institucion, shape = Protocolo_muestreo)
   ) +
   coord_sf(
@@ -291,9 +291,9 @@ neCol %>% ggplot() +
 ggplot(data = neCol) +
   geom_sf() +
   geom_sf(data = neColDepts) +
-  geom_sf(data = PC_locs_jit, size = 4, alpha = .3, aes(color = Protocolo_muestreo)) +
-  geom_sf(data = filter(PC_locs_jit, Protocolo_muestreo != "Punto conteo"), size = 4, alpha = .7, aes(color = Protocolo_muestreo)) +
-  geom_sf(data = filter(PC_locs_jit, Protocolo_muestreo == "Telemetria"), size = 4, alpha = .1, aes(color = Protocolo_muestreo)) +
+  geom_sf(data = Pc_locs_jit, size = 4, alpha = .3, aes(color = Protocolo_muestreo)) +
+  geom_sf(data = filter(Pc_locs_jit, Protocolo_muestreo != "Punto conteo"), size = 4, alpha = .7, aes(color = Protocolo_muestreo)) +
+  geom_sf(data = filter(Pc_locs_jit, Protocolo_muestreo == "Telemetria"), size = 4, alpha = .1, aes(color = Protocolo_muestreo)) +
   coord_sf(xlim = c(bbox_all[1], bbox_all[3]), ylim = c(bbox_all[2], bbox_all[4]), label_axes = "____", expand = TRUE) +
   annotation_scale(location = "bl") +
   scale_color_discrete(name = "Methodology", labels = c("Mist net", "Point count", "Telemetry"))
@@ -302,22 +302,22 @@ ggplot(data = neCol) +
 ggplot(data = neCol) +
   geom_sf() +
   geom_sf(data = neColDepts) +
-  geom_sf(data = filter(PC_locs_jit, Protocolo_muestreo == "Punto conteo"), size = 3, alpha = .2, shape = 2) +
-  geom_sf(data = filter(PC_locs_jit, Protocolo_muestreo == "Captura con redes de niebla"), size = 4, alpha = .6, shape = 1) +
-  geom_sf(data = filter(PC_locs_jit, Protocolo_muestreo == "Radiotelemetria"), size = 4, alpha = 1, shape = 0) +
+  geom_sf(data = filter(Pc_locs_jit, Protocolo_muestreo == "Punto conteo"), size = 3, alpha = .2, shape = 2) +
+  geom_sf(data = filter(Pc_locs_jit, Protocolo_muestreo == "Captura con redes de niebla"), size = 4, alpha = .6, shape = 1) +
+  geom_sf(data = filter(Pc_locs_jit, Protocolo_muestreo == "Radiotelemetria"), size = 4, alpha = 1, shape = 0) +
   coord_sf(xlim = c(bbox_all[1], bbox_all[3]), ylim = c(bbox_all[2], bbox_all[4]), label_axes = "____", expand = TRUE) +
   annotation_scale(location = "bl") +
   scale_shape_discrete(name = "Methodology", labels = c("Mist net", "Point count", "Telemetry"))
 
 ## Black and white with legend
-PC_locs_jit <- PC_locs_jit %>%
+Pc_locs_jit <- Pc_locs_jit %>%
   mutate(Protocolo_muestreo = factor(Protocolo_muestreo, labels = c("Mist net", "Point count", "Telemetry"))) %>%
   rename(Methodology = Protocolo_muestreo)
 
 ggplot(data = neCol) +
   geom_sf() +
   geom_sf(data = neColDepts) +
-  geom_sf(data = PC_locs_jit, size = 3, alpha = .2, aes(shape = Methodology)) +
+  geom_sf(data = Pc_locs_jit, size = 3, alpha = .2, aes(shape = Methodology)) +
   scale_shape_manual(values = c(1, 2, 0)) +
   coord_sf(xlim = c(bbox_all[1], bbox_all[3]), ylim = c(bbox_all[2], bbox_all[4]), label_axes = "____", expand = TRUE) +
   annotation_scale(location = "bl")
@@ -326,7 +326,7 @@ ggplot(data = neCol) +
 ggplot(data = SA) +
   geom_sf() +
   geom_sf(data = SA[SA$adm0_a3 == "COL", ], color = "green") +
-  layer_spatial(st_bbox(PC_locs_jit), color = "red")
+  layer_spatial(st_bbox(Pc_locs_jit), color = "red")
 
 #ggsave("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Figures/Map_TNC_field_work/Bio_Field_Work_All_methodology_bw.png", bg = "white", units = "mm", device = "png", dpi = 300)
 
@@ -406,7 +406,7 @@ ggplot(data = Prec_ecor) +
 #ggsave("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Figures/Prec_all_months.png", bg = "white")
 
 # PCs_prec are the points that go on the rainfall seasonality plot
-PCs_prec <- Mes_Mod %>%
+PCs_prec <- Mes_mod %>%
   filter(Uniq_db != "GAICA Distancia" & Uniq_db != "CIPAV MBD") %>%
   distinct(Ecoregion, Ano, Mes) %>%
   left_join(Prec_ecor, by = c("Ecoregion", "Mes")) %>%
@@ -426,14 +426,14 @@ PCs_prec <- Mes_Mod %>%
                           "TRUE10", GrpTemp
   )) %>%
   group_by(Ecoregion, Ano, GrpTemp) %>%
-  summarize(Prec = mean(Prec), Mes_Mod = mean(Mes))
+  summarize(Prec = mean(Prec), Mes_mod = mean(Mes))
 
 # Plot precip for relevant departments for considering dynamic occupancy models
 Prec_ecor %>%
   filter(Ecoregion %in% c("Bajo Magdalena", "Cafetera", "Piedemonte")) %>%
   ggplot(aes(color = Ecoregion)) +
   geom_line(aes(x = Mes, y = Prec)) +
-  geom_jitter(data = PCs_prec, size = 4, alpha = .5, aes(x = Mes_Mod, y = Prec, shape = factor(Ano))) +
+  geom_jitter(data = PCs_prec, size = 4, alpha = .5, aes(x = Mes_mod, y = Prec, shape = factor(Ano))) +
   scale_x_continuous(breaks = c(0, 2, 4, 6, 8, 10, 12)) +
   labs(
     x = "Month", y = "Precipitation (mm)",
@@ -447,7 +447,7 @@ Prec_ecor %>%
 # Sampling through time ---------------------------------------------------
 # >Repeat surveys per point count -----------------------------------------
 # Boxplot showing the number of times each survey location was sampled by region and Ano
-PC_date2 %>%
+Pc_date4 %>%
   group_by(Id_muestreo, Ano_grp, Period_Num) %>%
   summarize(N = n(), Ecoregion = Ecoregion, Ano_grp = Ano_grp, Period_Num = Period_Num) %>%
   distinct(N, Ecoregion, Ano_grp, Period_Num) %>%
@@ -458,7 +458,7 @@ PC_date2 %>%
   ylab("# of repeat surveys \nper point count location") #+ geom_jitter(width=0.1,alpha=0.2) #+ geom_point(position=position_jitterdodge(),alpha=0.3)
 
 # Boxplot showing the # of repeat surveys within each closed survey period by department
-PC_date2 %>%
+Pc_date4 %>%
   group_by(Id_muestreo, Nombre_institucion, Ano, Period_Num) %>%
   summarize(N = n(), Ecoregion = Ecoregion, Nombre_institucion = Nombre_institucion, Ano = Ano, Period_Num = Period_Num) %>%
   distinct(N, Ecoregion, Nombre_institucion, Ano, Period_Num) %>%
@@ -472,7 +472,7 @@ PC_date2 %>%
 # Boxplots showing the temporal distribution of sampling in each ecoregion 
 
 # Create the 'Grp_spat' variable that shows which point counts are surveyed at the same spatial location, which is especially important for Meta
-Meta_PCs_related <- PC_date2 %>%
+Meta_PCs_related <- Pc_date4 %>%
   filter(Departamento == "Meta" & Uniq_db == "GAICA MBD") %>%
   distinct(Id_muestreo, Ano) %>% # head()
   group_by(Id_muestreo) %>%
@@ -482,7 +482,7 @@ Meta_PCs_related <- PC_date2 %>%
     Year1 == 2016 & Year2 == 2017 ~ "G1617" # GAICA 2016-2017 is one group
   ))
 
-PC_date3 <- PC_date2 %>%
+PC_date3 <- Pc_date4 %>%
   left_join(Meta_PCs_related[, c("Id_muestreo", "Grp_spat")],
             by = "Id_muestreo"
   ) %>%
@@ -532,16 +532,16 @@ ggplot(data = PC_date_p, aes(x = factor(Ano), y = Mes)) +
 ggsave(paste0("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Figures/Proposal/PC_month_year_day_ecoregion_", format(Sys.Date(), "%m.%d.%y"), ".png"),
        bg = "white", width = 12)
 
-#NOTE:: Using distinct(Id_muestreo, Mes_Mod) is not a perfect solution as there are some point counts in different sampling periods that coincidentally happened to average out to the same Mes_mod value (within a single point count ID). For example...
-PC_date2 %>% 
-  distinct(Mes_Mod, Ano, Id_muestreo) %>% 
-  count(Id_muestreo, Mes_Mod, sort = T) %>%
-  # When Mes_Mod == 6.5 this isn't an issue as these are the Meta points sampled in 2016 and 2017, thus they really should be grouped together 
-  filter(Mes_Mod != 6.5) %>% 
+#NOTE:: Using distinct(Id_muestreo, Mes_mod) is not a perfect solution as there are some point counts in different sampling periods that coincidentally happened to average out to the same Mes_mod value (within a single point count ID). For example...
+Pc_date4 %>% 
+  distinct(Mes_mod, Ano, Id_muestreo) %>% 
+  count(Id_muestreo, Mes_mod, sort = T) %>%
+  # When Mes_mod == 6.5 this isn't an issue as these are the Meta points sampled in 2016 and 2017, thus they really should be grouped together 
+  filter(Mes_mod != 6.5) %>% 
   filter(n>1)
-# Problematic point -- I already manually updated this in PC_date2 so you can see Samp_Periods_n == 2 as it should be 
-PC_date2 %>% filter(Id_group == "G-MB-Q-ECOR") %>% 
-  distinct(Mes_Mod, Mes, Ano, Samp_Periods_n) %>% 
+# Problematic point -- I already manually updated this in Pc_date4 so you can see Samp_Periods_n == 2 as it should be 
+Pc_date4 %>% filter(Id_group == "G-MB-Q-ECOR") %>% 
+  distinct(Mes_mod, Mes, Ano, Samp_Periods_n) %>% 
   arrange(Ano)
 
 
@@ -554,7 +554,7 @@ Birds_all4 %>% filter(Uniq_db != "UBC_GAICA DOM") %>%
   filter(n>1)
 
 #Identify sampling points that have multiple habitat types. This is expected in Distance sampling, but not in others..
-mult_habs <- BirdPCs %>% filter(Pregunta_investigacion_gsc != "Distancia") %>% 
+mult_habs <- Bird_pcs %>% filter(Pregunta_investigacion_gsc != "Distancia") %>% 
   group_by(Uniq_db, Id_muestreo) %>% 
   count(Habitat_homologado_ut) %>% 
   ungroup() %>% 
@@ -562,30 +562,30 @@ mult_habs <- BirdPCs %>% filter(Pregunta_investigacion_gsc != "Distancia") %>%
   filter(n>1) %>% 
   pull(Id_muestreo)
 
-BirdPCs %>% filter(Id_muestreo %in% mult_habs) %>% 
+Bird_pcs %>% filter(Id_muestreo %in% mult_habs) %>% 
   distinct(Id_muestreo, Ano, Habitat_og, Habitat_homologado_ut) %>% 
   arrange(Id_muestreo, Ano) %>% 
   group_split(Id_muestreo)
 
 # >Distance within & between point count IDs  ------------------------------
 #Recognize that some points have multiple coordinates associated with each point. NAs are from telemetry
-BirdPCs %>% distinct(Id_muestreo, Latitud_decimal, Longitud_decimal) %>% 
+Bird_pcs %>% distinct(Id_muestreo, Latitud_decimal, Longitud_decimal) %>% 
   count(Id_muestreo, sort = T) %>% 
   filter(n > 1)
 
 # >>Same IDs too far --------------------------------------------------------
 #Distance in meters WITHIN point counts / redes de niebla of the same ID_punto_muestreo #
 
-PC_locs_mult_sf <- PC_locs_mult %>% st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), 
+Pc_locs_mult_sf <- Pc_locs_mult %>% st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), 
                                              crs = 4326, remove = F)
 
 #Can run this analysis for either Id_group or Id_muestreo (see comments to right of the loop to see where to switch these)
-uniqIDparc <- unique(PC_locsSf$Id_muestreo) #Id_group
+uniqIDparc <- unique(Pc_locs_sf$Id_muestreo) #Id_group
 parcIDs <- dist.all <- vector("list",length = length(uniqIDparc))
 mn.dist <- max.dist <- rep(NA, length = length(uniqIDparc))
 for(i in 1:length(uniqIDparc)){
   print(i)
-  parcIDs[[i]] <- subset(PC_locs_mult_sf, Id_muestreo == uniqIDparc[i]) #Id_group
+  parcIDs[[i]] <- subset(Pc_locs_mult_sf, Id_muestreo == uniqIDparc[i]) #Id_group
   dist.all[[i]] <- st_distance(parcIDs[[i]])
   diag(dist.all[[i]]) <- NA
   mn.dist[i] <- round(colMeans(dist.all[[i]], na.rm = TRUE),2) #In meters
@@ -597,7 +597,7 @@ dists <- data.frame(uniqIDparc, mn.dist, max.dist, NumPts)
 names(dists)[1] <- "Id_muestreo"
 dists %>% filter(max.dist > 0) %>% arrange(max.dist)
 
-Method_locs_dist <- merge(x = PC_locsSf, y = dists, by = "Id_muestreo", all = F)
+Method_locs_dist <- merge(x = Pc_locs_sf, y = dists, by = "Id_muestreo", all = F)
 
 Method_locs_dist %>% 
   group_by(Id_muestreo) %>% 
@@ -611,7 +611,7 @@ sort.int(Method_locs_dist$mn.dist, decreasing = T) #All repeat surveys at a uniq
 Method_locs_dist %>% filter(max.dist > 84) %>% 
   st_drop_geometry() %>% 
   arrange(max.dist) %>% 
-  #left_join(PC_hab[,c("Id_muestreo", "Habitat_og")], 
+  #left_join(Pc_hab[,c("Id_muestreo", "Habitat_og")], 
   #          by = "Id_muestreo") %>%
   distinct() #%>% #View()
 #filter(Uniq_db == "CIPAV MBD") #%>% #Select only CIPAV?
@@ -676,7 +676,7 @@ dists2close_sameUniq_db %>% filter(dist_nearest_m < 100)
 
 #Merge with habitat & export as Excel for CIPAV
 dists2close_sameUniq_db %>% 
-  #left_join(PC_hab[,c("Id_muestreo", "Habitat_og")], 
+  #left_join(Pc_hab[,c("Id_muestreo", "Habitat_og")], 
   #         join_by("ID_problem_dist" == "Id_muestreo")) %>% 
   #rename(Original_Habitat_ID_problem_dist = Habitat_og) %>%
   distinct() #%>%
@@ -691,7 +691,7 @@ IDs_too_far <- Method_locs_dist %>% filter(max.dist > 40 & Uniq_db == "CIPAV MBD
 
 Prob_IDs <- c(IDs_too_close) # , IDs_too_far
 
-PC_hab %>% st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"),
+Pc_hab %>% st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"),
                     crs = 4326) %>% 
   filter(Id_muestreo %in% Prob_IDs) %>% 
   select(-Habitat_homologado_ut) %>% 
@@ -708,7 +708,7 @@ view_mismatch <- function(df){
 
 # Create a nested list with points that don't have a match on ID, date, & time
 # NOTE:: All UBC_Gaica points have times at start of point count & 5 minutes into point count, thus I remove these points from 
-birds_metadata_l <- map2(df_Birds_red[-c(1, 4:6)], df_metadata[-c(1, 4:6)], \(bird, meta) {
+birds_metadata_l <- map2(df_birds_red[-c(1, 4:6)], df_metadata[-c(1, 4:6)], \(bird, meta) {
   meta <- meta %>% filter(!is.na(Hora) & Observacion_especies_por_punto_conteo == 1)
   only_in_bird <- anti_join(bird, meta, by = c("Id_muestreo", "Fecha", "Hora")) %>% view_mismatch()
   only_in_meta <- anti_join(meta, bird, by = c("Id_muestreo", "Fecha", "Hora")) %>% view_mismatch()
@@ -725,12 +725,12 @@ map(1:nrow(birds_metadata_l$Gaica_mbd$only_in_meta), \(row){
   indexes <- birds_metadata_l$Gaica_mbd$only_in_meta %>% slice(row) %>% 
     distinct(Id_muestreo, Fecha)
   #Join with the bird database to understand where the problem lies
-  df_Birds_red$Gaica_mbd %>% right_join(indexes, by = c("Id_muestreo", "Fecha")) %>% 
+  df_birds_red$Gaica_mbd %>% right_join(indexes, by = c("Id_muestreo", "Fecha")) %>% 
     distinct(Id_muestreo, Fecha, Hora)
 })
 
 # Examine if there are point counts with Observacion_especies_por_punto_conteo == 0 that have rows in the bird database
-map2(df_Birds_red, df_metadata, \(bird, meta) {
+map2(df_birds_red, df_metadata, \(bird, meta) {
   no_registros <- meta %>% filter(Observacion_especies_por_punto_conteo == 0) %>%
     distinct(Id_muestreo, Fecha, Hora)
   bird %>% semi_join(no_registros, by = c("Id_muestreo", "Fecha", "Hora")) %>%
@@ -739,7 +739,7 @@ map2(df_Birds_red, df_metadata, \(bird, meta) {
 
 # Examine if there are point counts with Observacion_especies_por_punto_conteo == 1 that don't have any rows in the bird database
 # NOTE:: The Ubc_gaica_Caf points on 5/27 & 5/28 are the 'ensayo' dates, & the LCA07-09 are PCs that we surveyed one time, which were both eliminated in 00a DW 
-map2(df_Birds_red, df_metadata, \(bird, meta) {
+map2(df_birds_red, df_metadata, \(bird, meta) {
   registros <- meta %>% filter(Observacion_especies_por_punto_conteo == 1) %>%
     distinct(Id_muestreo, Fecha, Hora)
   registros %>% anti_join(bird, by = c("Id_muestreo", "Fecha", "Hora")) %>% 
@@ -751,14 +751,14 @@ map2(df_Birds_red, df_metadata, \(bird, meta) {
 df_metadata$Gaica_dist %>% filter(Id_muestreo == "G-AD-M-LC_03") %>% 
   select(Id_muestreo, Fecha, Hora, Observacion_especies_por_punto_conteo) %>% 
   distinct()
-df_Birds_red$Gaica_dist %>% filter(Id_muestreo == "G-AD-M-LC_03") %>% 
+df_birds_red$Gaica_dist %>% filter(Id_muestreo == "G-AD-M-LC_03") %>% 
   select(Id_muestreo, Fecha, Hora) %>% 
   distinct()
 
 
 # >Times ------------------------------------------------------------------
 ## For CIPAV & GAICA distancia, the metadata files include the start and end time for each point.. Examine to see if the the start and end time from metadata matches with the bird database
-df_se <- map(df_Birds_red[c(1,2)], \(df){ #se = start end
+df_se <- map(df_birds_red[c(1,2)], \(df){ #se = start end
   df %>% mutate(AM_PM = ifelse(Hora > chron::times("14:00:00"), "Afternoon", "Morning")) %>% 
     group_by(Id_muestreo, Fecha, AM_PM) %>% 
     mutate(start = min(Hora), 
@@ -792,7 +792,7 @@ map2(df_se, df_metadata[c(1,2)], \(se, meta){
 
 ## Examine the difference in times for a given point count on the same day
 # Code is old, but still useful as this is for ALL databases (not just CIPAV & GAICA)
-Hora_dif_df <- BirdPCs %>% 
+Hora_dif_df <- Bird_pcs %>% 
   # NOTE:: Some points are surveyed 2x on the same day
   # GAICA distancia surveyed some points in the AM & PM, whereas UBC & UniLlanos sampled same points between 1.5 & 3 hours apart in some cases
   mutate(AM_PM = ifelse(Hora > chron::times("14:00:00"), "Afternoon", "Morning")) %>% 
@@ -807,12 +807,12 @@ Hora_dif_df %>% filter(Hora_dif > chron::times("00:45:00")) #%>% View()
 # Testing UBC_GAICA DB ----------------------------------------------------
 # >Bird observation data --------------------------------------------------
 #Create dataframe with just UBC_GAICA
-UBC_gaica_df <- BirdPCs %>% filter(Nombre_institucion == "UBC_GAICA")
+UBC_gaica_df <- Bird_pcs %>% filter(Nombre_institucion == "UBC_GAICA")
 ubc_g_ids <- unique(UBC_gaica_df$Id_muestreo)
 
 ##Create dataframe of names to compare column names
 # Extract names from each data frame in UBC_gaica
-UBC_gaica_l <- df_Birds[4:6]
+UBC_gaica_l <- df_birds[4:6]
 name_list <- lapply(UBC_gaica_l, names)
 
 # Adjust the lengths of each list of names, filling with NA where needed
@@ -833,7 +833,7 @@ lapply(UBC_gaica_df, unique)
 
 ## Ensure all point count IDs are specified correctly
 # Extract PC IDs not including those by UBC_GAICA to compare against
-PCids <- BirdPCs %>% filter(Nombre_institucion != "UBC_GAICA") %>% 
+PCids <- Bird_pcs %>% filter(Nombre_institucion != "UBC_GAICA") %>% 
   pull(Id_muestreo) %>% 
   unique()
 # Point counts from Otun Quimbaya have no match
@@ -853,7 +853,7 @@ UBC_gaica_df %>%
 #Examine species present 
 ubc_g_spp <- UBC_gaica_df %>% pull(Nombre_ayerbe) %>% 
   unique()
-TF <- ubc_g_spp %in% AyerbeAllspp
+TF <- ubc_g_spp %in% Ayerbe_all_spp
 prob_spp <- ubc_g_spp[!TF]
 
 #Split species name & compare to genus & species 
@@ -878,8 +878,8 @@ UBC_gaica_df %>% distinct(Id_muestreo, Habitat_og) %>%
   filter(n > 1)
 
 #Identify problematic orders & families
-TF_order <- UBC_gaica_df$Orden %in% TaxDf3$order_gbif
-TF_family <- UBC_gaica_df$Familia %in% TaxDf3$family_gbif 
+TF_order <- UBC_gaica_df$Orden %in% Tax_df3$order_gbif
+TF_family <- UBC_gaica_df$Familia %in% Tax_df3$family_gbif 
 
 UBC_gaica_df[!TF_family,] %>% pull(Familia) %>% unique() #all exist, just not in gbif
 
@@ -943,15 +943,15 @@ map(UBC_gaica_metadata_l[1:2], \(df) {
 
 # Ensure that the water features are not changing day to day 
 map(UBC_gaica_metadata_l, \(df) {
-  df %>% distinct(ID_punto_muestreo_FINAL, Cuerpo_de_agua) %>% 
-    count(ID_punto_muestreo_FINAL) %>% 
+  df %>% distinct(Id_muestreo, Cuerpo_de_agua) %>% 
+    count(Id_muestreo) %>% 
     filter(n > 1)
 })
 
 ## Ensure all point count IDs are specified correctly in metadata 
 map(UBC_gaica_metadata_l, \(metadata){
-  prob_ids <- metadata$ID_punto_muestreo_FINAL %in% PCids
-  unique(metadata$ID_punto_muestreo_FINAL[!prob_ids])
+  prob_ids <- metadata$Id_muestreo %in% PCids
+  unique(metadata$Id_muestreo[!prob_ids])
 })
 
 ## Bring in habitat change files to match up with the metadata files & ensure that the habitat types are the same in both cases
@@ -1018,30 +1018,30 @@ Ubc_Monroy <- read_xlsx(path = "Data/Aves/Data_Monroy_Skinner_Otun_Quimbaya2024.
   mutate(Equipo = "David_Aaron", 
          Nombre_ayerbe = paste(Genero, Epiteto_especifico))
 
-# Create new TaxDf3 data frame & rerun 
-Ubc_Monroy <- Ubc_Monroy %>% left_join(distinct(TaxDf3[,c("Species_ayerbe", "family_gbif")]), 
+# Create new Tax_df3 data frame & rerun 
+Ubc_Monroy <- Ubc_Monroy %>% left_join(distinct(Tax_df3[,c("Species_ayerbe", "family_gbif")]), 
                          by = join_by("Nombre_ayerbe" == "Species_ayerbe")) %>% 
   rename(Familia = family_gbif)
 
 #Join data frames
-OQ <- df_Birds$Ubc_gaica_OQ %>% mutate(Equipo = "GAICA") %>%
+OQ <- df_birds$Ubc_gaica_OQ %>% mutate(Equipo = "GAICA") %>%
   rename(Nombre_ayerbe = Nombre_cientifico_FINAL_Ayerbe_2018) %>% 
   select(names(Ubc_Monroy)[-11], contains("Grabacion")) %>%
   bind_rows(Ubc_Monroy) %>% 
   mutate(Fecha = lubridate::mdy(paste(Mes, Dia, Ano, sep = "/")),
          Grabacion = str_to_sentence(Grabacion, locale = "en")) %>% 
-  filter(ID_punto_muestreo_FINAL != "OQ_Practica")
+  filter(Id_muestreo != "OQ_Practica")
 
 #Each team surveyed each point 3x
-OQ %>% distinct(Equipo, ID_punto_muestreo_FINAL, Fecha) %>% 
-  count(Equipo, ID_punto_muestreo_FINAL, sort = T)
+OQ %>% distinct(Equipo, Id_muestreo, Fecha) %>% 
+  count(Equipo, Id_muestreo, sort = T)
 
 # GAICA registered 1.46x more than David & I 
 nrow(Ubc_Monroy)
-nrow(df_Birds$Ubc_gaica_OQ) 
+nrow(df_birds$Ubc_gaica_OQ) 
 
 #Still registered significantly more even without recordings 
-df_Birds$Ubc_gaica_OQ %>% filter(Grabacion != "Y" | is.na(Grabacion)) %>% nrow()
+df_birds$Ubc_gaica_OQ %>% filter(Grabacion != "Y" | is.na(Grabacion)) %>% nrow()
 
 #NOTE:: GAICA often had medium confidence on recording ID
 OQ %>% tabyl(Confiabilidad_de_grabacion)
@@ -1082,14 +1082,14 @@ imap(OQ_l, \(df, names){
     geom_bar(stat="identity", width=1) 
 })
 
-data.frame(AyerbeAllspp) %>% write.xlsx(file = "Ayerbe_spp_names2018.xlsx", row.names = FALSE)
-OQ_l$Grabando$ID_punto_muestreo_FINAL
+data.frame(Ayerbe_all_spp) %>% write.xlsx(file = "Ayerbe_spp_names2018.xlsx", row.names = FALSE)
+OQ_l$Grabando$Id_muestreo
 #Plot number of species observed per point count (over 3 days) per team
 OQ_comp <- imap(OQ_l, \(df, names){ #OQ comparison 
-  df %>% distinct(Equipo, ID_punto_muestreo_FINAL, Fecha, Nombre_ayerbe) %>% 
-    count(Equipo, ID_punto_muestreo_FINAL, Fecha) %>% 
+  df %>% distinct(Equipo, Id_muestreo, Fecha, Nombre_ayerbe) %>% 
+    count(Equipo, Id_muestreo, Fecha) %>% 
     ggplot(aes(x = Equipo, y = n)) + geom_boxplot() + 
-    geom_jitter(alpha = .3, width = .03, aes(color = ID_punto_muestreo_FINAL)) + 
+    geom_jitter(alpha = .3, width = .03, aes(color = Id_muestreo)) + 
     labs(y = "Nro de especies por punto y dia", title = names) + 
     guides(color = "none")
 })
@@ -1119,7 +1119,7 @@ Cipav.veg %>% rename(Lat = Latitud_decimal, Long = Longitud_decimal) %>%
 #st_write(driver='kml', dsn="/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/SCR_data/Vegetacion/Cipav_veg.kml", layer = "Cipav_veg")
 
 ##Create a list of the column names of each data frame. The 7th data frame is the alphabetized names after combining all data frames using smartbind #
-df_names <- lapply(df_Birds, function(x){names(x)})
+df_names <- lapply(df_birds, function(x){names(x)})
 df_names[[7]] <- sort(names(Birds_all))
 #Must set the length of each vector to the longest column length in order for data frame to turn out correct. 
 vec_length <- sapply(df_names, length)
@@ -1131,7 +1131,7 @@ df_names_final <- data.frame(do.call(cbind, df_names))
 write.xlsx(df_names_final, file = "Data_base_names.xlsx", row.names = F)
 
 #Update Edge v Interior for UBC points -- Note would have to go back to old point count names #
-PC_hab %>% filter(Uniq_db == "UBC MBD") %>% 
+Pc_hab %>% filter(Uniq_db == "UBC MBD") %>% 
   distinct(Id_muestreo, Habitat) %>% 
   filter(Habitat == "BR" | Habitat == "B") %>% 
   mutate(Edge_vs_Int = case_when(Id_muestreo == "AN4-BR" ~ "Edge", 

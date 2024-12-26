@@ -3,7 +3,7 @@
 ## This script generates the outputs related to functional traits (Avo_traits_final), & elevational ranges (Elev_ranges) that will be used in future scripts 
 
 # Contents
-# 1) Functional traits database -- Use TaxDf & the Avonet files to create FT database using a for loop & the Match.type (e.g., "1BL to 1BT") column to ensure that species are matched appropriately with their FT. Each species has a single row. 
+# 1) Functional traits database -- Use Tax_df & the Avonet files to create FT database using a for loop & the Match.type (e.g., "1BL to 1BT") column to ensure that species are matched appropriately with their FT. Each species has a single row. 
 # 2) Elevational ranges -- Use 3 databases to pull elevational ranges for each species 
 # 3) Join dfs -- Join the dfs to create a single df (Elev_ranges) where each species has a single row with relevant elevational information, including the elevational range (a functional trait) for each species
 # 4) Understand Elevational ranges -- Additional information regarding the elevational range information 
@@ -23,16 +23,16 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 #Load data
-load("Rdata/the_basics_11.14.24.Rdata")
+load("Rdata/the_basics_12.24.24.Rdata")
 load("Rdata/Taxonomy_11.14.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 # Functional traits database ----------------------------------------------
 # Used a loop to ensure that we are taking trait data from a single species instead of a subspecies. For example, we want to ensure we're grabbing from BirdTree for Momotus momota and not the BirdLife subspecies
-TaxDf3 %>% filter(Species_ayerbe == "Momotus momota")
+Tax_df3 %>% filter(Species_ayerbe == "Momotus momota")
 
 # For loop create functional traits data base
-SpMT <- distinct(TaxDf3, Species_ayerbe, Match.type) # Species match type
+SpMT <- distinct(Tax_df3, Species_ayerbe, Match.type) # Species match type
 Avo_traits_loop <- vector("list", length = nrow(SpMT))
 
 for (i in 1:length(SpMT$Species_ayerbe)) {
@@ -44,7 +44,7 @@ for (i in 1:length(SpMT$Species_ayerbe)) {
     Avo_traits_loop[[i]]$Source <- "BT"
   }
   # There are some cases where Species_ayerbe is not found in SpeciesBL.. This resulted in rows of NAs
-  if (!is.na(SpMT$Match.type[i]) & SpMT$Species_ayerbe[i] %in% TaxDf3$Species_bl & SpMT$Match.type[i] %in% c("1BL to 1BT", "1BL to many BT")) {
+  if (!is.na(SpMT$Match.type[i]) & SpMT$Species_ayerbe[i] %in% Tax_df3$Species_bl & SpMT$Match.type[i] %in% c("1BL to 1BT", "1BL to many BT")) {
     Avo_traits_loop[[i]] <- SpMT[i, ] %>% left_join(Avo_traits_l$BirdLife,
                                                     by = join_by("Species_ayerbe" == "Species")
     )
@@ -132,7 +132,7 @@ nrow(Col_elev_QJ) # 1531 species for Colombia specifically
 # >Join data frames -----------------------------------------------------
 # Data wrangling, & calculating Elevation range size
 # Ignore warning messages
-Elev_ranges <- TaxDf3[, c("Species_ayerbe", "Species_bt", "Species_eb", "Species_bl", "Match.type")] %>%
+Elev_ranges <- Tax_df3[, c("Species_ayerbe", "Species_bt", "Species_eb", "Species_bl", "Match.type")] %>%
   left_join(Col_elev_QJ, join_by("Species_bt" == "Species")) %>%
   left_join(bird20t, join_by("Species_bl" == "Scientific.name")) %>%
   left_join(
@@ -212,7 +212,7 @@ ggplot(data = Elev_ranges, aes(x = elev_range_QJ, y = elev_range_eB)) +
 summary(lm(elev_range_eB ~ elev_range_QJ, data = Elev_ranges))
 
 # NOTE::These are the species that don't match up between the Avonet BirdLife taxonomy & the Bird 2020.. I did try with BirdTree & eBird but they had even fewer matches compared to BirdLife
-TaxDf3 %>%
+Tax_df3 %>%
   select(Species_bl) %>%
   anti_join(bird20t, join_by("Species_bl" == "Scientific.name"))
 
@@ -222,13 +222,13 @@ Elev_ranges %>% filter(elev_range_comb < 500 | elev_range_comb > 4000)
 # NOTE:: This still does not provide elevational ranges for all species, likely due to name changes in BirdLife & some missing elevational ranges. Could check the species missing from Freeman (see above)
 Miss_elev <- Elev_ranges %>% filter(is.na(elev_range_comb)) %>% # View()
   pull(Species_ayerbe)
-TaxDf3 %>%
+Tax_df3 %>%
   filter(Species_ayerbe %in% Miss_elev) %>%
   select(Species_ayerbe, Common.name, Species_bl, Species_bt, Species_eb) %>%
   distinct()
 
 # CHECK:: There are some species Ayerbe that have multiple Bird Tree species equivalents, and thus can have multiple Min & max elevations. It makes sense to combine these elevations since it is a single species according to Ayerbe.. Thus in the case of Chlorostilbon mellisugus the min & max should be 0 to 2000. The only other species this is relevant for is Ramphastos ambiguus
-TaxDf3[, c("Species_ayerbe", "Species_bt", "Match.type")] %>%
+Tax_df3[, c("Species_ayerbe", "Species_bt", "Match.type")] %>%
   left_join(Col_elev_QJ, join_by("Species_bt" == "Species")) %>%
   filter(Species_ayerbe == "Chlorostilbon mellisugus")
 Elev_ranges %>%

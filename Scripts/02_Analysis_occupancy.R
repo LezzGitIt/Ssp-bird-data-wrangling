@@ -11,79 +11,22 @@
 
 # Load libraries & data ---------------------------------------------------
 library(tidyverse)
-library(unmarked)
 library(readxl)
+library(unmarked)
 library(spOccupancy)
 library(ubms) # function get_stancode() could be used to get code from model that could then be adapted
 library(flocker)
 library(brms)
 library(ggpubr)
+library(cowplot)
 ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-load("Rdata/the_basics_11.21.24.Rdata")
-load("Rdata/Taxonomy_09.26.24.Rdata")
+load("Rdata/the_basics_12.24.24.Rdata")
+load("Rdata/Taxonomy_11.14.24.Rdata")
 
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
-
-# Format data -------------------------------------------------------------
-BirdPCs2 <- BirdPCs %>% filter(Nombre_ayerbe %in% TaxDf3$Species_ayerbe) %>%
-  # There are 6 rows in UBC data where # individuals wasn't recorded. We know there was at least 1 individual
-  mutate(Numero_individuos = ifelse(is.na(Numero_individuos), 1, Numero_individuos))
-
-unit_covs <- envi_df2 %>%
-  filter(Uniq_db == "UBC MBD" & Id_group != "UBC-MB-M-LBR") %>%
-  select(elev_dem, avg_temp, avg_rainfall)
-
-# Pull the 30 species that have been observed more than 30 times
-spp30 <- BirdPCs2 %>%
-  filter(Uniq_db == "UBC MBD") %>%
-  group_by(Nombre_ayerbe) %>%
-  summarize(Numero_individuos = sum(Numero_individuos)) %>%
-  filter(Numero_individuos > 30) %>%
-  pull(Nombre_ayerbe)
-
-# This was in La Brisa (UBC-M-LBR) that will be excluded regardless
-df_metadata$Ubc %>% filter(Comentario == "En esta jornada no hubo registros")
-
-# Abundances -- STILL TO DO: NEED TO ADD REP TO DATA FRAME AND GROUP_BY REP INSTEAD OF FECHA. THEN TEST IN MAKE_FLOCKER_DATA AND SEE IF IT WORKS
-UBC_abu <- BirdPCs2 %>%
-  filter(Uniq_db == "UBC MBD" & Nombre_ayerbe %in% spp30 & Id_group != "UBC-MB-M-LBR") %>%
-  left_join(df_metadata$Ubc[, c("Id_muestreo", "Fecha", "Hora", "Rep")]) %>%
-  summarize(
-    Numero_individuos = sum(Numero_individuos),
-    .by = c(Id_muestreo, Rep, Nombre_ayerbe)
-  ) %>%
-  pivot_wider(
-    names_from = Nombre_ayerbe,
-    values_from = Numero_individuos,
-    values_fill = 0
-  )
-
-# NOTE:: Several point counts are mis-specified in the metadata sheet relative to the data bases sheet
-UBC_abu %>%
-  count(Id_muestreo, sort = T) %>%
-  filter(n != 3)
-
-# Iteratively removing Hora or Fecha to see where the discrepancies are
-BirdPCs2 %>%
-  filter(Uniq_db == "UBC MBD" & Id_group != "UBC-MB-M-LBR") %>%
-  distinct(Id_muestreo, Hora) %>% # Fecha
-  full_join(df_metadata$Ubc[, c("Id_muestreo", "Hora", "Rep")]) %>% # Fecha
-  filter(is.na(Rep)) %>%
-  count(Id_muestreo)
-
-# Occupancy
-UBC_occ <- UBC_abu %>% mutate(across(.cols = everything(), .fns = ~ ifelse(. > 0, 1, 0)))
-
-fd_rep_varying <- make_flocker_data(
-  obs = UBC_abu,
-  unit_covs = unit_covs,
-  event_covs = d$event_covs
-)
-
-
 
 # Data simulation ---------------------------------------------------------
 # >Flocker -----------------------------------------------------------------
@@ -150,20 +93,20 @@ rep_constant <- flock(
 # Modeling Manacus --------------------------------------------------------
 # DELETE?
 # At least one problem with unmarked is that it cannot account for spatial auto correlation
-PC_date <- BirdPCs %>%
+PC_date <- Bird_pcs %>%
   distinct(Id_muestreo, Nombre_institucion, Uniq_db, Departamento, Ano, Mes, Dia, Fecha) %>%
   mutate(surveyNum = 1:n()) # Add in time of day once standardized
 PC_date %>% count(Uniq_db)
 
 # Removed Habitat_homologado_ut b/c this was creating multiple rows for Distanciamiento points
-uniqPCs <- BirdPCs %>%
+uniqPCs <- Bird_pcs %>%
   distinct(Id_muestreo, Fecha, Ano, Mes, Departamento, elev_fnExtract, Latitud_decimal, Longitud_decimal) %>%
   group_by(Id_muestreo) %>%
   mutate(surveyNum = 1:n()) %>%
   arrange(Id_muestreo)
 nrow(uniqPCs)
 
-manacus <- BirdPCs %>%
+manacus <- Bird_pcs %>%
   filter(Especie == "Manacus manacus") %>%
   group_by(Id_muestreo) %>%
   mutate(count = sum(Numero_individuos)) %>%
@@ -451,7 +394,7 @@ HBW <- data.frame(read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-
 HBWsp <- HBW %>% filter(`Subsp..Seq.` == 0) # Reduce file down just to recognized species
 head(HBWsp)
 # subset just relevant species of Colombia
-HBWco <- distinct(TaxDf[c("Species_bl")]) %>%
+HBWco <- distinct(Tax_df[c("Species_bl")]) %>%
   inner_join(HBWsp[c("Scientific name", "SISRecID")], join_by("Species_bl" == "Scientific name"))
 
 HBW_hab_pref <- list()

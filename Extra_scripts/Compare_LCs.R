@@ -108,7 +108,7 @@ test %>%
 ggplot() +
   geom_spatvector(data = trees_lf_buff$livefences2020, alpha = .4) +
   # geom_spatvector(data = union_ms$b100, alpha = .3) +
-  # geom_sf(data = PC_locsSf, size = .5) +
+  # geom_sf(data = Pc_locs_sf, size = .5) +
   coord_sf(xlim = c(-73.683, -73.666), ylim = c(3.323, 3.343))
 
 ## END PROBLEM SOLVE
@@ -130,7 +130,7 @@ LCs_comb <- rbind(
 ggplot() +
   geom_spatvector(data = LCs_comb, aes(fill = lc), alpha = .4) +
   geom_spatvector(data = union_ms$b100, alpha = .3) + # Add buffers
-  geom_sf(data = PC_locsSf, size = .5) + # Add centroids
+  geom_sf(data = Pc_locs_sf, size = .5) + # Add centroids
   coord_sf(xlim = c(-73.683, -73.666), ylim = c(3.323, 3.343))
 
 # Id_group ----------------------------------------------------------------

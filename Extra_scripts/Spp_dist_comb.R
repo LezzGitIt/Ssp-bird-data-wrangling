@@ -11,7 +11,7 @@
 # NOTES:: I have made two versions of this script: 01a_Spp_dist_comb & 01b_Spp_dist_sep. This script (01a_Spp_dist_comb) produces combined outputs from all data collectors (e.g., for me to work on, to review with Nick), whereas 01b_Spp_dist_sep produces outputs specific to each unique database (e.g., if giving products to data collector for their review). Previously there were a few places where code had to be changed (found by searching): "IF data collector" (followed by 'merged' or 'separate').
 
 # Libraries & data --------------------------------------------------------
-load("Rdata/the_basics_11.14.24.Rdata")
+load("Rdata/the_basics_12.24.24.Rdata")
 load("Rdata/Taxonomy_11.14.24.Rdata")
 load("Rdata/Traits_elev_11.14.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
@@ -45,7 +45,7 @@ Ayerbe_sf2 %>%
   pull(geometry)
 
 # Compare reported elevations (in field) to those from the Colombia DEM
-ElevErrors <- BirdPCs %>%
+ElevErrors <- Bird_pcs %>%
   left_join(envi_df2[, c("Id_muestreo", "Elev")]) %>%
   select(Id_muestreo, Latitud_decimal, Longitud_decimal, Elevacion, Elev) %>%
   rename(Elevacion_reported = Elevacion) %>%
@@ -123,11 +123,11 @@ table(spp_obs_sf3$Protocolo_muestreo)
 
 # Create data frame to cycle through each species
 # IF data collectors merged.. Run this
-SppDb <- data.frame(Nombre_ayerbe = unique(TaxDf3$Species_ayerbe))
+SppDb <- data.frame(Nombre_ayerbe = unique(Tax_df3$Species_ayerbe))
 
 # Remove the 3 species with no corresponding file in Ayerbe as this causes error in loop
-sciNames <- unique(TaxDf3$Species_ayerbe)
-TF_vec <- sciNames %in% AyerbeAllspp
+sciNames <- unique(Tax_df3$Species_ayerbe)
+TF_vec <- sciNames %in% Ayerbe_all_spp
 missing_spp <- sciNames[!TF_vec]
 SppDb <- SppDb %>% filter(!Nombre_ayerbe %in% c(missing_spp, "Accipiter bicolor"))
 
@@ -388,7 +388,7 @@ Fuera.rango.RYrecs <- FR_Rev_RY2 %>%
   right_join(FueraRango, by = c("Nombre_ayerbe", "Nombre_institucion"))
 
 # Take a single common name per Species Ayerbe.. This doesn't need to be perfect as this is just to help find these species in the book
-Com.names <- TaxDf3 %>%
+Com.names <- Tax_df3 %>%
   group_by(Species_ayerbe) %>%
   arrange(Common.name, .by_group = TRUE) %>% # Believe this is putting NAs at bottom of each group
   select(Species_ayerbe, Common.name) %>%
@@ -421,8 +421,8 @@ nrow(Fuera.rango.RYrecs3) # 267
 # SKIP - Once visualized no need to continue to visualize
 # Check guide books & other sources to understand these 2 species..
 # From Avibase: For Sirystes sibilator -- 'This taxon is considered a subspecies of Sirystes [sibilator, albocinereus or subcanescens] (sensu lato) by some authors'
-TF <- str_detect(AyerbeAllspp, "Sirystes")
-AyerbeAllspp[TF]
+TF <- str_detect(Ayerbe_all_spp, "Sirystes")
+Ayerbe_all_spp[TF]
 Birds_all %>% filter(Nombre_cientifico_FINAL == "Sirystes sibilator")
 
 # Need valid API key

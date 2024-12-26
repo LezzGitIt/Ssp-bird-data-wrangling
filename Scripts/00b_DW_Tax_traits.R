@@ -1,6 +1,6 @@
 ## PhD birds in silvopastoral landscapes##
 # Data wrangling 00b -- Taxonomy
-## This script generates the data frame of taxonomic equivalents (TaxDf)
+## This script generates the data frame of taxonomic equivalents (Tax_df)
 
 # Contents
 # 1) Og_name & Ayerbe -- Create dataframe with unique combinations of Og_name & Ayerbe and format
@@ -8,7 +8,7 @@
 # Taxonomy
 # 3) GBIF -- Use taxize to pull in alternative GBIF names, including order & family
 # 4) Avonet -- Bring in & format the 3 Avonet files ("BirdLife", "eBird", "BirdTree")
-# 5) TaxDf -- Use Avonet's crosswalk file to link the BirdLife & BirdTree taxonomies to create a data frame of taxonomic equivalents
+# 5) Tax_df -- Use Avonet's crosswalk file to link the BirdLife & BirdTree taxonomies to create a data frame of taxonomic equivalents
 # 6) Save & export
 
 # NOTES:: Remember that Ecotropico & I already went through the process of updating the species names to Ayerbe 2018.
@@ -16,7 +16,7 @@
 # "Accipiter bicolor" (didn't have all files), "Crypturellus soui_1", "Parkesia noveboracensis_M" Picumnus olivaceus_M",  "Scytalopus latrans_M", "Nyctibius_grandis"
 
 # Libraries ---------------------------------------------------------------
-load("Rdata/the_basics_11.14.24.Rdata")
+load("Rdata/the_basics_12.26.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 library(tidyverse)
@@ -55,15 +55,15 @@ length(sciNames) # 592 vs 617
 # Ayerbe 2019 shapefiles ---------------------------------------
 # Ayerbe 2019 shapefiles, using the American Ornithologists’ Society–South American Classiﬁcation Committee (AOS–SACC) taxonomy
 # Get list of all 1890 spp. contained within Ayerbe shapefiles
-AyerbeAllspp <- list.files(path = "../Geospatial_data/Ayerbe_shapefiles_1890spp", pattern = "\\.dbf$")
-AyerbeAllspp <- substr(AyerbeAllspp, 1, nchar(AyerbeAllspp) - 4) # Remove the .dbf extension
+Ayerbe_all_spp <- list.files(path = "../Geospatial_data/Ayerbe_shapefiles_1890spp", pattern = "\\.dbf$")
+Ayerbe_all_spp <- substr(Ayerbe_all_spp, 1, nchar(Ayerbe_all_spp) - 4) # Remove the .dbf extension
 
 # CHECK:: any individual species that we're having difficulty with 
-TF <- str_detect(AyerbeAllspp, "Thripadectes") #"tyrannina"
-AyerbeAllspp[TF]
+TF <- str_detect(Ayerbe_all_spp, "Thripadectes") #"tyrannina"
+Ayerbe_all_spp[TF]
 
 # CHECK:: Species that are listed in SCR databases and are not in Ayerbe's files.
-TF <- !sciNames %in% AyerbeAllspp
+TF <- !sciNames %in% Ayerbe_all_spp
 sciNames[TF]
 
 # Read in shapefiles & store in list
@@ -105,7 +105,7 @@ gbif_names$autoria <- str_remove(gbif_names$scientificname, pattern = gbif_names
 
 # >Avonet list -----------------------------------
 # See metadata tab in Excel for information on what each column contains
-# Bring in here as this is used to create TaxDf
+# Bring in here as this is used to create Tax_df
 filesAvo <- list.files(path = "../../Datasets_external/Avonet_Data/TraitData", pattern = ".xlsx")
 sheetsAvo <- str_split_i(filesAvo, ".x", 1)
 dfsAvo <- list() # dfs Ecotropico
@@ -129,7 +129,7 @@ Avo_traits_l <- lapply(dfsAvo, function(x) {
   select(x, -c(Family, Order, Female, Male, Unknown, Mass.Source, Mass.Refs.Other, Inference, Traits.inferred, Reference.species))
 }) # Avonet morphology list
 
-# >TaxDf -------------------------------------------------------------------
+# >Tax_df -------------------------------------------------------------------
 ## Use the crosswalk file to create a data frame of true taxonomic equivalents (at least for BL & BT)
 Crosswalk <- read.csv("../../Datasets_external/Avonet_Data/PhylogeneticData/BirdLife-BirdTree crosswalk.csv") %>%
   rename(Species_bl = Species1, Species_bt = Species3) %>%
@@ -140,7 +140,7 @@ head(HBW)
 
 Tax_OG_Ay2 %>% filter(str_detect(Nombre_ayerbe, "Ortalis"))
 
-TaxDf <- Tax_OG_Ay2 %>%
+Tax_df <- Tax_OG_Ay2 %>%
   left_join(gbif_names[, c("input_name", "order", "family", "species", "autoria")],
     by = join_by("Nombre_ayerbe" == "input_name")
   ) %>%
@@ -161,17 +161,17 @@ TaxDf <- Tax_OG_Ay2 %>%
   rename_with(.fn = ~ paste0(., "_gbif"), .cols = 3:6) %>%
   rename(Species_original = Og_name, Species_ayerbe = Nombre_ayerbe, Species_eb = Species) %>%
   select(3, 4, 2, 1, 5, 7:11, 6)
-nrow(TaxDf)
-head(TaxDf)
+nrow(Tax_df)
+head(Tax_df)
 
 # Note there are still some species that have NAs in either BL or BT b/c it was always joining "Nombre_ayerbe" with something. Let's fill in these missing species names by matching back up with the Crosswalk df and creating the 'Missing_' data frames.
-Missing_BL <- TaxDf %>%
+Missing_BL <- Tax_df %>%
   select(-c(Match.type, Match.notes)) %>%
   filter(is.na(Species_bl) & !is.na(Species_bt)) %>%
   select(-Species_bl) %>%
   left_join(Crosswalk, join_by("Species_bt" == "Species_bt"))
 
-Missing_BT <- TaxDf %>%
+Missing_BT <- Tax_df %>%
   select(-c(Match.type, Match.notes)) %>%
   filter(!is.na(Species_bl) & is.na(Species_bt)) %>%
   select(-Species_bt) %>%
@@ -181,10 +181,10 @@ Missing <- rbind(Missing_BT, Missing_BL)
 head(Missing)
 
 # Create a data frame containing the rows with NAs that will be replaced
-anti_j <- TaxDf %>% filter(!is.na(Species_bl) & is.na(Species_bt) | is.na(Species_bl) & !is.na(Species_bt))
+anti_j <- Tax_df %>% filter(!is.na(Species_bl) & is.na(Species_bt) | is.na(Species_bl) & !is.na(Species_bt))
 
-# Update the TaxDf dataframe by removing rows present in anti_j and appending Missing data
-TaxDf2 <- TaxDf %>%
+# Update the Tax_df dataframe by removing rows present in anti_j and appending Missing data
+Tax_df2 <- Tax_df %>%
   anti_join(anti_j) %>%
   smartbind(Missing) %>%
   # Add in common names from the HBW
@@ -193,26 +193,26 @@ TaxDf2 <- TaxDf %>%
     join_by("Species_bl" == "Scientific.name")
   )
 
-rownames(TaxDf2) <- NULL
-nrow(TaxDf2)
+rownames(Tax_df2) <- NULL
+nrow(Tax_df2)
 
 # NOTE:there are no NAs in any of the gbif columns, so it makes sense to use these for order & family for repeatability and so all are from a single source
-TaxDf2 %>%
+Tax_df2 %>%
   select(ends_with("gbif")) %>%
   drop_na() %>%
   nrow()
 # NOTE: Same with BT & BL
-TaxDf2 %>% filter(is.na(Species_bt) | is.na(Species_bl))
+Tax_df2 %>% filter(is.na(Species_bt) | is.na(Species_bl))
 
 # Save & export -----------------------------------------------------------
 ## Export relevant files to Excel
-#TaxDf2 %>% write.xlsx("../Taxonomy/Taxonomy.xlsx", sheetName = "Taxonomic_equivalents", row.names = F, showNA = FALSE)
+#Tax_df2 %>% write.xlsx("../Taxonomy/Taxonomy.xlsx", sheetName = "Taxonomic_equivalents", row.names = F, showNA = FALSE)
 
 # NOTE:: B/c 'GAICA UBC' didn't have a Species_original it was adding hundreds of rows to the dataframe for every combo of Species_ayerbe , & Species_original == NA
-TaxDf3 <- TaxDf2 %>% select(-Species_original) %>% 
+Tax_df3 <- Tax_df2 %>% select(-Species_original) %>% 
   distinct() 
 
-rm(list = ls()[!(ls() %in% c("AyerbeAllspp", "Ayerbe_sf2", "TaxDf3", "Avo_traits_l", "gbif_list"))])
+rm(list = ls()[!(ls() %in% c("Ayerbe_all_spp", "Ayerbe_sf2", "Tax_df3", "Avo_traits_l", "gbif_list"))])
 save.image(paste0("Rdata/Taxonomy_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 
 # EXTRAS -----------------------------------------------------------
@@ -297,8 +297,8 @@ names(synon1) <- c("Og_name", "synonym")
 synon2 <- rbind(synon1, gbif_changes) %>% distinct()
 
 ## Lets look at the missing spp. and see if they are hiding somewhere in the Ayerbe files.. Make these 4 changes
-TFfn <- str_detect(AyerbeAllspp, regex(str_c(Ayerb_miss, collapse = "|"), ignore_case = TRUE)) # fn = full name
-changeNames <- AyerbeAllspp[TFfn] # Originally was 5 additional spp. are there
+TFfn <- str_detect(Ayerbe_all_spp, regex(str_c(Ayerb_miss, collapse = "|"), ignore_case = TRUE)) # fn = full name
+changeNames <- Ayerbe_all_spp[TFfn] # Originally was 5 additional spp. are there
 setwd("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Ayerbe_shapefiles_1890spp")
 st_read(dsn = getwd(), layer = "Accipiter bicolor") # Missing .sbn and .sbx files
 corrNames <- sapply(str_split(changeNames, "_"), function(x) {
@@ -330,8 +330,8 @@ Ayerb_miss2 <- sciNames[!TF2]
 # Create a list of all spp. that have either same genus or species as the missing species. These could be good species to look into as they may be close relatives
 missGenSp <- data.frame(str_split_fixed(Ayerb_miss3, " ", n = 2))
 missGenSp <- c(missGenSp$X1, missGenSp$X2)
-TFgs <- str_detect(AyerbeAllspp, str_c(missGenSp, collapse = "|")) # gs = genus species
-AyerbeAllspp[TFgs]
+TFgs <- str_detect(Ayerbe_all_spp, str_c(missGenSp, collapse = "|")) # gs = genus species
+Ayerbe_all_spp[TFgs]
 
 ## Add updated taxonomy columns and merge w/ data frame for Ecotropico & export#
 sppChanged <- data.frame(Ayerbe_sf2[!TFa2, ])[, 1:2] # List of spp. that were changed
@@ -376,7 +376,7 @@ AAS <- read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_Sc
 
 AAS$Especie <- paste(AAS$Genero, AAS$Epiteto_especifico)
 
-AAS_exp <- AAS %>% left_join(distinct(TaxDf2[, c("Species_ayerbe", "order_gbif", "family_gbif", "autoria_gbif")]), by = join_by("Especie" == "Species_ayerbe"))
+AAS_exp <- AAS %>% left_join(distinct(Tax_df2[, c("Species_ayerbe", "order_gbif", "family_gbif", "autoria_gbif")]), by = join_by("Especie" == "Species_ayerbe"))
 write.xlsx(data.frame(AAS_exp), "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Taxonomy/Taxonomia_Ecotropico/AAS_match_OF.xlsx", sheetName = "Base_de_datos", row.names = F)
 
 AAS %>% filter(Especie == "Chaetura brachSiura")
@@ -398,7 +398,7 @@ i <- 1
 for (i in 1:length(Uniq_dbs)) {
   df <- Birds_all %>% filter(Uniq_db == Uniq_dbs[i])
   df <- df %>% distinct(Departamento, Municipio, Og_name, Nombre_ayerbe)
-  df <- df %>% left_join(TaxDf2[, c("Species_original", "order_gbif", "family_gbif", "autoria_gbif", "Changed_Spp", "Changed_OF")], by = join_by("Og_name" == "Species_original"))
+  df <- df %>% left_join(Tax_df2[, c("Species_original", "order_gbif", "family_gbif", "autoria_gbif", "Changed_Spp", "Changed_OF")], by = join_by("Og_name" == "Species_original"))
   df <- df %>% rename(Species_original = Og_name, Species_ayerbe = Nombre_ayerbe)
   if (i == 1) {
     write.xlsx(df, file = "Taxonomy_Updates_Uniq_db2.xlsx", sheetName = Uniq_dbs[i], row.names = F)
@@ -429,7 +429,7 @@ ProbOrdFamNames <- distinctOF %>%
   count(Nombre_ayerbe, sort = T) %>%
   filter(n > 1) %>%
   pull(Nombre_ayerbe)
-TaxDf2 <- TaxDf2 %>% mutate(
+Tax_df2 <- Tax_df2 %>% mutate(
   Changed_Spp = ifelse(Species_original == Species_ayerbe, "N", "Y"),
   Changed_OF = ifelse(Species_ayerbe %in% ProbOrdFamNames, "Y", "N")
 )

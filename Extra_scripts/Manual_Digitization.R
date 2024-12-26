@@ -22,7 +22,7 @@ load("Rdata/the_basics_11.21.24.Rdata")
 # Create spatial file of point counts -- note that there are multiple coordinates for a single point count in a few cases
 
 # Add habitat to point counts and pivot_wider to have single row per PC (there are still multiple rows for some PCs b/c there are multiple coordinates in some cases)
-BirdPCs_hab_sf <- BirdPCs %>%
+Bird_pcs_hab_sf <- Bird_pcs %>%
   distinct(
     Id_muestreo, Id_group, Departamento, Uniq_db,
     Id_gcs, Nombre_finca_mixed, Nombre_finca, Habitat_og,
@@ -42,7 +42,7 @@ endings <- 1:7
 endings_ <- c(paste0("_", 1:7))
 for (i in 1:length(endings)) {
   print(i)
-  PC_locsSf <- BirdPCs_hab_sf %>%
+  Pc_locs_sf <- Bird_pcs_hab_sf %>%
     unite(
       col = "Hab_UT_OG",
       ends_with(endings_[i]), sep = "_"
@@ -50,7 +50,7 @@ for (i in 1:length(endings)) {
     rename_with(~ paste0("Hab_UT_OG", endings[i]), Hab_UT_OG)
 }
 
-BirdPCs_hab_sf %>%
+Bird_pcs_hab_sf %>%
   distinct(Id_muestreo, Uniq_db) %>%
   nrow() - 54 # %>% count(Uniq_db)
 
@@ -66,7 +66,7 @@ sf_use_s2(TRUE) # Otherwise buffer_dists gives weird error about arc degrees
 
 # Function geobuffer_pts to make a geodesic buffer doesn't seem to work anymore in 2024. See github for previous versions of code as I've deleted several small things (including what is needed to make the st_union().
 
-cents_sv <- PC_locsSf %>% vect() %>% # sv = spatvector
+cents_sv <- Pc_locs_sf %>% vect() %>% # sv = spatvector
   project("epsg:4686")
 for (i in 1:length(buffer_dists)) {
   print(i)
@@ -140,12 +140,12 @@ map2(
 }
 
 # >Example farm figure ----------------------------------------------------
-BirdPCs %>%
+Bird_pcs %>%
   filter(Nombre_finca == "La herradura" | Id_gcs == 4121) %>%
   distinct(Id_gcs, Id_group, Nombre_finca, Nombre_finca_mixed, Latitud_decimal, Longitud_decimal)
 
 Ex <- buffers[[4]] %>% filter(Uniq_db == "GAICA MBD" & Id_group == "G-MB-M-LH")
-Ex_cents <- PC_locsSf %>% filter(Id_group == "G-MB-M-LH")
+Ex_cents <- Pc_locs_sf %>% filter(Id_group == "G-MB-M-LH")
 Ex500 <- Ex %>% st_union()
 Ex500 %>% ggplot() +
   geom_sf() +
@@ -155,7 +155,7 @@ Ex500 %>% ggplot() +
 
 # >Metadata files --------------------------------------------------------
 ## Create file w/ appropriate dates for extraction of Planet imagery for Seth
-PC_date2 %>%
+Pc_date4 %>%
   distinct(
     Id_muestreo, Nombre_institucion,
     Uniq_db, Departamento, Nombre_finca, Ano, Mes
@@ -171,7 +171,7 @@ PC_date2 %>%
 # write.xlsx("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Mentorship/Digitization_Mathilde/Digitization_Dep_month_year2.xlsx", row.names = F)
 
 ## Metadata file for Mathilde to fill out
-PC_date2 %>%
+Pc_date4 %>%
   mutate(Id_muestreo = str_split_i(Id_muestreo, "_", i = 1)) %>%
   group_by(Id_muestreo, Ano) %>%
   summarize(across(), Month.min = min(Mes), Month.max = max(Mes)) %>%
