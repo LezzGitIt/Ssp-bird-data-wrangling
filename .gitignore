@@ -16,9 +16,14 @@
 *.shp
 *.tif
 *.xlsx
+*.DS_Store
 
 # Ignore specific folders
 Data/
+Rdata/
+Intermediate_products/
+Figures/
+
 
 # Output files from R CMD check
 /*.Rcheck/
