@@ -1,5 +1,5 @@
 ## PhD birds in silvopastoral landscapes##
-# Data wrangling 00a -- Create base data frame (BirdPCs)
+# Data wrangling 00a -- Create base data frame (Bird_pcs)
 ## This script loads raw data from data providers, combines data into single df, & tidies and filters data to produce the environment necessary for future scripts & downstream analyses
 
 # Contents
@@ -36,7 +36,7 @@ conflicts_prefer(dplyr::filter)
 conflicts_prefer(utils::head)
 
 #Load Rdata & useful themes / functions script
-#load("Rdata/the_basics_11.14.24.Rdata")
+#load("Rdata/the_basics_12.24.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 # Load bird obs & meta data -----------------------------------------------------------
@@ -44,7 +44,7 @@ source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookb
 files <- list.files(path = "Data/Aves", pattern = "^A.*xlsx$") #Add |D after A if you want Monroy/Skinner data too
 
 # At present these are just the files with point counts
-df_Birds <- map(files, \(file){
+df_birds <- map(files, \(file){
   read_xlsx(path = file.path("Data/Aves", file),
             sheet = "Base_de_datos",
             na = c("Sin informacion", "N/A"))
@@ -60,20 +60,21 @@ df_metadata <- map(files, \(file){
 
 # Ensure data frames are in the same order
 files
-names(df_Birds) <- c("Cipav", "Gaica_dist", "Gaica_mbd", "Ubc_gaica_Caf", "Ubc_gaica_Meta", "Ubc_gaica_OQ",  "Ubc", "UniLlanos") # "Ubc_Monroy"
+names(df_birds) <- c("Cipav", "Gaica_dist", "Gaica_mbd", "Ubc_gaica_Caf", "Ubc_gaica_Meta", "Ubc_gaica_OQ",  "Ubc", "UniLlanos") # "Ubc_Monroy"
 names(df_metadata) <- c("Cipav", "Gaica_dist", "Gaica_mbd", "Ubc_gaica_Caf", "Ubc_gaica_Meta", "Ubc_gaica_OQ", "Ubc", "UniLlanos")
 
 # Format bird observation data -------------------------------------------
 # Standardize column names
-df_Birds <- map(df_Birds, \(df) {
+df_birds <- map(df_birds, \(df) {
   df <- df %>% clean_names(case = "snake") %>% 
     rename(Id_muestreo = id_punto_muestreo_final) 
   names(df) <- str_to_sentence(names(df))
   df
 })
 
+
 # Preprocessing date & time ##DELETE? 
-df_Birds <- lapply(df_Birds, function(x) {
+df_birds <- lapply(df_birds, function(x) {
   cbind(x, Fecha = lubridate::mdy(paste(x$Mes, x$Dia, x$Ano, sep = "/"))) %>% 
     mutate(Fecha = as.Date(Fecha),
            Hora = sapply(str_split(Hora, " "), function(x) {x[2]}),
@@ -88,20 +89,20 @@ df_Birds <- lapply(df_Birds, function(x) {
 }) ### GAICA did not record date for 74 Recorridos libres
 
 # Remove irrelevant columns from dataframes
-df_Birds_red <- lapply(df_Birds, function(x) {
+df_birds_red <- lapply(df_birds, function(x) {
   dplyr::select(
     x, 1:21, -c(Numero_registro_gsc, Id_registro_biologico_gcs),
     contains(c("Id_muestreo", "Protocolo_muestreo", "Ano", "Mes", "Hora", "repeticion", "Orden", "Familia", "Especie", "cientifico", "Numero_individuos", "Habitat", "Sistema", "Registrado", "Distancia_observacion", "climatica", "Elevacion", "finca", "grabacion", "Cigarras", "Ruido", "Estrato_")), "Fecha", "Dia")
 })
 
 # Display data collector's name 
-lapply(df_Birds_red, function(x) {
+lapply(df_birds_red, function(x) {
   TF <- str_detect(names(x), "revisada|estandarizado|_sin formul|_sin formula|_cipav|_gaica|_ubc|_unillanos|corregido")
   names(x)[TF]
 })
 
 # Replace with corrected names
-df_Birds_red <- lapply(df_Birds_red, function(df) {
+df_birds_red <- lapply(df_birds_red, function(df) {
   names <- str_remove(names(df), "revisada|estandarizado|_sin formul|_sin formula|_cipav|_gaica|_ubc|_unillanos|corregido")
   names(df) <- names
   df
@@ -111,7 +112,7 @@ df_Birds_red <- lapply(df_Birds_red, function(df) {
 # Some data collectors surveyed certain point counts multiple times on the same day, & some data collectors reported the time that each bird was observed instead of a single time at the start of the point count
 
 # Create 'Same_pc' column to indicate the rows where the time is less than 91 minutes from the start time of the point count... These observations will be grouped as a point count.  
-df_Birds_red <- map(df_Birds_red, \(df){
+df_birds_red <- map(df_birds_red, \(df){
   df %>% group_by(Id_muestreo, Fecha) %>% 
     arrange(Hora) %>% 
     mutate(Pc_length_day = as.numeric((Hora - first(Hora)) * 1440), #For entire day, not within a PC
@@ -120,7 +121,7 @@ df_Birds_red <- map(df_Birds_red, \(df){
 }) 
 
 # Group_by the 'Same_pc' column to generate point count start times & the length of each point count
-df_Birds_red <- map(df_Birds_red, \(df){ 
+df_birds_red <- map(df_birds_red, \(df){ 
   df %>% group_by(Id_muestreo, Ano_grp, Fecha, Same_pc) %>% 
     mutate(Pc_start = min(Hora),
            Pc_length = (max(Hora) - min(Hora))) %>% 
@@ -130,12 +131,12 @@ df_Birds_red <- map(df_Birds_red, \(df){
 # >Dataset specific operations -------------------------------------------
 # CIPAV data frame has a single individual for each row whereas all other databases have the total number of individuals of a given species per row (Numero_individuos column).
 
-df_Birds_red$Cipav <- df_Birds_red$Cipav %>% #38 columns
+df_birds_red$Cipav <- df_birds_red$Cipav %>% #38 columns
   group_by(Id_muestreo, Fecha, Hora, Nombre_cientifico_final) %>%
   reframe(across(), Numero_individuos = sum(Numero_individuos))
 
 # NOTE:: #GAICA Distancia sort of has this issue.. They recorded the specific habitat where the bird was observed & the distance away, so some species have multiple rows in a single point count, but the Numero_individuos reported is the total for that distance & habitat type
-df_Birds_red$Gaica_dist %>%
+df_birds_red$Gaica_dist %>%
   distinct(
     Id_muestreo, Ocasion_muestreo_repeticion,
     Hora, Nombre_cientifico_final
@@ -144,25 +145,25 @@ df_Birds_red$Gaica_dist %>%
   head()
 
 # Remove UBC microhabitat columns
-df_Birds_red$Ubc <- df_Birds_red$Ubc %>% select(-c(Habitat1 | Habitat2))
+df_birds_red$Ubc <- df_birds_red$Ubc %>% select(-c(Habitat1 | Habitat2))
 
 #Change species name column so all data frames match ('Nombre_cientifico_final')
-df_Birds_red[4:6] <- map(df_Birds_red[4:6], \(df){
+df_birds_red[4:6] <- map(df_birds_red[4:6], \(df){
   df %>% rename(Nombre_cientifico_final = Nombre_cientifico_final_ayerbe_2018)
 })
 # Remove practice day data 
-df_Birds_red$Ubc_gaica_Caf <- df_Birds_red$Ubc_gaica_Caf %>% 
+df_birds_red$Ubc_gaica_Caf <- df_birds_red$Ubc_gaica_Caf %>% 
   filter(!Fecha %in% as.Date(c("2024-05-27", "2024-05-28"))) %>% # Ensayo dates 
   filter(!Id_muestreo %in% c(paste0("G-MB-Q-LCA_0", 7:9), "OQ_Practica")) # PCs surveyed one time
 
 # Combine dfs -------------------------------------------------------------
 ## Combine all dfs & remove more irrelevant columns##
 # smartbind seems to work well on data frames, not tibbles
-df_Birds_red <- map(df_Birds_red, \(df) {
+df_birds_red <- map(df_birds_red, \(df) {
   df %>% as.data.frame()
 })
 
-Birds_all <- smartbind(list = df_Birds_red) %>%
+Birds_all <- smartbind(list = df_birds_red) %>%
   dplyr::select(-c(
     Coordenadas_geograficas, Incertidumbre_coordenadas, Precision_coordenadas,
     Autoria_nombre_cientifico, Numero_especie, Municipio
@@ -249,41 +250,8 @@ Birds_all4 <- Birds_all3 %>%
   select(-c(Nombre_predio_gcs_poligono_full, Id_predio_gcs_poligono_full, Id_predio_mas_cercano_gcs_poligono_full, Nombre_predio_gcs_poligono_buffer, Id_predio_gcs_poligono_buffer, Id_predio_mas_cercano_gcs_poligono_buffer, Distancia_predio_mas_cercano_gcs_poligono_full, Distancia_predio_mas_cercano_gcs_poligono_buffer, Row_sum, Same))
 
 # Create data base with just point counts
-BirdPCs <- Birds_all4 %>% filter(Protocolo_muestreo == "Punto conteo") 
-nrow(BirdPCs)
-
-#Remove vuelos
-#STILL TO DO: INVESTIGATE UNILLANOS, CIPAV, GAICA MBD
-BirdsA <- BirdPCs %>% filter(Estrato_vertical != "Vuelo" | is.na(Estrato_vertical) & !(tolower(Distancia_observacion) %in% c("sobrevuelo", "vuelo")))
-nrow(BirdsA)
-
-# Make distances numeric, 
-BirdsA2 <- BirdsA %>%
-  mutate(Distancia_observacion = case_when( # BirdsA = Birds analysis file
-    Distancia_observacion == "0-15" ~ "15",
-    Distancia_observacion == "15-30" ~ "30",
-    Distancia_observacion == "30-50" ~ "50",
-    Distancia_observacion == "< 25" ~ "25",
-    Distancia_observacion == "<50" ~ "50",
-    Distancia_observacion == ">50" ~ "51",
-    Distancia_observacion == "> 50" ~ "51",
-    .default = Distancia_observacion
-  )) %>%
-  mutate(Distancia_observacion = as.numeric(Distancia_observacion))
-# Create Birds analysis file by removing records with distance > 50m
-BirdsA3 <- BirdsA2 %>% filter(Distancia_observacion < 51 | is.na(Distancia_observacion))
-tabyl(BirdsA3$Distancia_observacion)
-nrow(BirdsA2)
-## Still to do:: REMOVE VUELOS
-
-# Note there are some rows that still have NAs for distance
-BirdsA3 %>%
-  filter(is.na(Distancia_observacion)) %>%
-  select(Uniq_db, Fecha, Departamento, Id_muestreo, Nombre_finca, Nombre_ayerbe) %>%
-  count(Id_muestreo, sort = T)
-
-# Export
-# write.csv(BirdsA3, "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/SCR_data/AVES_Updated5.11.23/Birds_Analysis6.13.23.csv", row.names = F)
+Bird_pcs <- Birds_all4 %>% filter(Protocolo_muestreo == "Punto conteo") 
+nrow(Bird_pcs)
 
 # Format metadata ---------------------------------------------------------
 # Standardize metadata column names
@@ -327,11 +295,11 @@ rownames(df_meta) <- NULL
 # >Event covariates --------------------------------------------------------
 # Format the information that varies per visit (event) , e.g. weather 
 # distinct(Ano_grp, Rep) would be unique combos of samp_period and repetition
-# NOTE:: df_Birds
+# NOTE:: df_birds
 
 ## Standardize weather covariates 
 # For UniLlanos 
-df_Birds_red$UniLlanos <- df_Birds_red$UniLlanos %>% mutate(Observacion_climatica = case_when(
+df_birds_red$UniLlanos <- df_birds_red$UniLlanos %>% mutate(Observacion_climatica = case_when(
   str_detect(Observacion_climatica, regex("despejado|sol", ignore_case = TRUE)) ~ "Despejado", 
   str_detect(Observacion_climatica, regex("lloviz|lluv", ignore_case = TRUE)) ~ "Llovizna",
   str_detect(Observacion_climatica, regex("brisa", ignore_case = TRUE)) ~ "Brisa",
@@ -342,12 +310,12 @@ df_Birds_red$UniLlanos <- df_Birds_red$UniLlanos %>% mutate(Observacion_climatic
 
 # Write UniLlanos .xlsx for Ecotropico
 # NOTE:: Used df_birds to send Ecotropico full data set, not df_birds_red
-df_Birds$UniLlanos %>% as.data.frame() #%>% 
+df_birds$UniLlanos %>% as.data.frame() #%>% 
 # write.xlsx(file = "Intermediate_products/UniLlanos_climate_standardized.xlsx", 
 #           showNA = FALSE, row.names = FALSE)
 
 # For Gaica_dist
-df_Birds_red$Gaica_dist <- df_Birds_red$Gaica_dist %>%  mutate(Observacion_climatica = case_when(
+df_birds_red$Gaica_dist <- df_birds_red$Gaica_dist %>%  mutate(Observacion_climatica = case_when(
   Observacion_climatica == "Nublado con llovizna" ~ "Llovizna",
   .default = Observacion_climatica
 )) 
@@ -355,7 +323,7 @@ df_Birds_red$Gaica_dist <- df_Birds_red$Gaica_dist %>%  mutate(Observacion_clima
 ## Generate Rep_dfs list, which has a row for each unique point count, including those where no species were observed. Multiple point counts in the same day is accounted for by generation of 'Same_pc' column 
 
 # Create ano_grp df to join with the No_obs list 
-Birds_ano_grp <- map(df_Birds_red, \(df){
+Birds_ano_grp <- map(df_birds_red, \(df){
   df %>% distinct(Id_muestreo, Ano, Ano_grp)
 })
 
@@ -370,7 +338,7 @@ No_obs_l <- map2(df_metadata, Birds_ano_grp, \(meta, birds){
 No_obs_l$UniLlanos <- No_obs_l$UniLlanos %>% mutate(Fecha = NA)
 
 # Create a 'Rep' column that contains the repetition number for a given survey, add Spp_obs column
-Rep_dfs <- map2(df_Birds_red, No_obs_l, \(df, No_obs){
+Rep_dfs <- map2(df_birds_red, No_obs_l, \(df, No_obs){
   df %>% filter(Protocolo_muestreo == "Observacion en puntos fijos de conteo") %>%
     mutate(Spp_obs = 1) %>% 
     group_by(Id_muestreo, Ano_grp, Fecha, Same_pc) %>% 
@@ -384,7 +352,7 @@ Rep_dfs <- map2(df_Birds_red, No_obs_l, \(df, No_obs){
 })
 
 ## CHECK:: Ensure that the Rep column was created correctly
-diff_df <- df_Birds_red$Gaica_dist %>% 
+diff_df <- df_birds_red$Gaica_dist %>% 
   distinct(Id_muestreo, Pc_start, Fecha, Ocasion_muestreo_repeticion) %>% 
   full_join(Rep_dfs$Gaica_dist) %>% 
   filter(Ocasion_muestreo_repeticion != Rep) %>% 
@@ -400,21 +368,21 @@ diff_df %>% filter(!Id_muestreo %in% ids)
 # Point count (PC) files -----------------------------------------------
 ## Create different files based on inclusion of location, date, and habitat #
 # Create a file where each row is a unique point count x data collector #
-PC_uniq <- BirdPCs %>% distinct(Uniq_db, Nombre_institucion, Id_group, Ecoregion, Departamento, Id_muestreo, Id_gcs)
+Pc_uniq <- Bird_pcs %>% distinct(Uniq_db, Nombre_institucion, Id_group, Ecoregion, Departamento, Id_muestreo, Id_gcs)
 
 #NOTE: There are 540 unique point count x data collector combinations, but 16 points have multiple coordinates. 556 rows here 
-PC_locs_mult <- BirdPCs %>% distinct(Uniq_db, Nombre_institucion, Id_group, Ecoregion, Departamento, Id_gcs, Id_muestreo, Latitud_decimal, Longitud_decimal)
-nrow(PC_locs_mult)
+Pc_locs_mult <- Bird_pcs %>% distinct(Uniq_db, Nombre_institucion, Id_group, Ecoregion, Departamento, Id_gcs, Id_muestreo, Latitud_decimal, Longitud_decimal)
+nrow(Pc_locs_mult)
 
 # For now, take the average lats & longs of these 16 points.
-PC_locs <- PC_locs_mult %>% 
+Pc_locs <- Pc_locs_mult %>% 
   group_by(Id_muestreo) %>% 
   summarize(Latitud_decimal = round(mean(Latitud_decimal), 4), 
             Longitud_decimal = round(mean(Longitud_decimal), 4)) %>% 
-  full_join(PC_uniq, by = "Id_muestreo")
+  full_join(Pc_uniq, by = "Id_muestreo")
 
 # Inclusion of date, time, and Ano_grp
-Pc_date <- BirdPCs %>% distinct(Nombre_institucion, Uniq_db, Ecoregion, Departamento, Nombre_finca, Id_gcs, Id_group, Id_muestreo, Ano, Mes, Dia, Fecha, Pc_start, Ano_grp)
+Pc_date <- Bird_pcs %>% distinct(Nombre_institucion, Uniq_db, Ecoregion, Departamento, Nombre_finca, Id_gcs, Id_group, Id_muestreo, Ano, Mes, Dia, Fecha, Pc_start, Ano_grp)
 nrow(Pc_date)
 
 # Combine Rep_dfs with additional information
@@ -438,17 +406,17 @@ Pc_date4 <- Pc_date3 %>%
   left_join(Pc_samp_periods[, c("N_samp_periods", "Uniq_db", "Id_muestreo")])
 
 # Inclusion of habitatOG and Habitat Homologado
-PC_hab <- distinct(BirdPCs, Id_muestreo, Uniq_db, Ecoregion, Departamento, Nombre_finca_mixed, Latitud_decimal, Longitud_decimal, Habitat_og, Habitat_homologado_ut)
+Pc_hab <- distinct(Bird_pcs, Id_muestreo, Uniq_db, Ecoregion, Departamento, Nombre_finca_mixed, Latitud_decimal, Longitud_decimal, Habitat_og, Habitat_homologado_ut)
 
 ## Create relevant KMZ files
-PC_locsSf <- st_as_sf(PC_locs,
-                      coords = c("Longitud_decimal", "Latitud_decimal"),
-                      crs = 4326,
-                      remove = F
+Pc_locs_sf <- st_as_sf(Pc_locs,
+                       coords = c("Longitud_decimal", "Latitud_decimal"),
+                       crs = 4326,
+                       remove = F
 )
 
 # Export reduced set of columns to kml
-PC_locsSf %>%
+Pc_locs_sf %>%
   select(Id_muestreo, Uniq_db, Departamento) %>%
   rename(
     name = Id_muestreo,
@@ -470,7 +438,7 @@ avg.temp <- mean(Wc_col[[1]])
 tot.prec <- sum(Wc_col[[2]])
 
 ## Elevation
-coords <- data.frame(st_coordinates(PC_locsSf))
+coords <- data.frame(st_coordinates(Pc_locs_sf))
 # Ensure every point count has an associated elevation raster. Creates a list with nrow() coords
 Elev_90m <- pmap(coords, function(X, Y) {
   elevation_3s(lon = X, lat = Y, path = "../Geospatial_data/Environmental/elevation_90m")
@@ -494,8 +462,8 @@ imap(envi.vars, \(var, names){
 
 # Extract environmental vars & create df with envi variables at each PC location
 envi_df <- cbind(
-  PC_locsSf[, c("Id_muestreo","Ecoregion", "Departamento", "Uniq_db", "Id_group")],
-  sapply(envi.vars, terra::extract, PC_locsSf, ID = FALSE)) %>% 
+  Pc_locs_sf[, c("Id_muestreo","Ecoregion", "Departamento", "Uniq_db", "Id_group")],
+  sapply(envi.vars, terra::extract, Pc_locs_sf, ID = FALSE)) %>% 
   rename(Elev = elev.dem.srtm_21_10, Avg_temp = avg.temp.mean, Tot.prec = tot.prec.sum)
 envi_df2 <- envi_df %>%
   st_drop_geometry() %>%
@@ -504,8 +472,8 @@ envi_df2 <- envi_df %>%
   ungroup()
 
 #Extract data & create df where each row is a point count and there are 12 'prec' columns, one for each month
-PrecPCs <- terra::extract(Wc_col[[2]], PC_locsSf, ID = FALSE)
-Prec_df <- cbind(PC_locsSf[,c("Id_muestreo","Ecoregion", "Departamento", "Uniq_db")], PrecPCs) %>%
+PrecPCs <- terra::extract(Wc_col[[2]], Pc_locs_sf, ID = FALSE)
+Prec_df <- cbind(Pc_locs_sf[,c("Id_muestreo","Ecoregion", "Departamento", "Uniq_db")], PrecPCs) %>%
   group_by(Id_muestreo) %>%
   slice_head() %>%
   ungroup() %>%
@@ -541,5 +509,5 @@ Prec_daily <- bind_rows(Prec_daily19, Prec_daily22) %>%
 #ggplot() + geom_sf(data = mpio_sf)
 
 # Save & export -----------------------------------------------------------
-#rm(list= ls()[!(ls() %in% c("Birds_all", "Birds_all4", "BirdPCs", "PC_date2", 'PC_hab', "PC_locs", "BirdsA2", "df_Birds", "df_metadata", "df_Birds_red", "Mes_Mod", "PC_locs_mult", "PC_locsSf", "envi_df2", "Prec_df", "Prec_daily"))])
-#save.image(paste0("Rdata/the_basics_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
+rm(list= ls()[!(ls() %in% c("Birds_all", "Birds_all4", "Bird_pcs", "Pc_date4", 'Pc_hab', "Pc_locs", "df_birds", "df_metadata", "df_birds_red", "Mes_mod", "Pc_locs_mult", "Pc_locs_sf", "envi_df2", "Prec_df", "Prec_daily"))])
+save.image(paste0("Rdata/the_basics_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
