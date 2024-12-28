@@ -63,7 +63,7 @@ rm <- "Na | sp$|1|/|Desconocido|Ceratopipra o manacus|indeterminado|Sin identifi
 
 # Merge eBird with the SCR databases
 Birds_comb <- Birds_all4 %>%
-  rename(Count = Numero_individuos) %>%
+  rename(Count = Count) %>%
   # filter(!Nombre_finca %in% c("Valle de Cocora", "El Escobal")) %>%
   distinct(Nombre_ayerbe, Ecoregion, Nombre_finca, Id_gcs, Count) %>%
   as.data.frame() %>%

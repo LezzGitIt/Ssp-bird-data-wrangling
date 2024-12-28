@@ -16,7 +16,7 @@
 # "Accipiter bicolor" (didn't have all files), "Crypturellus soui_1", "Parkesia noveboracensis_M" Picumnus olivaceus_M",  "Scytalopus latrans_M", "Nyctibius_grandis"
 
 # Libraries ---------------------------------------------------------------
-load("Rdata/the_basics_12.26.24.Rdata")
+load("Rdata/the_basics_12.27.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 library(tidyverse)
@@ -213,7 +213,7 @@ Tax_df3 <- Tax_df2 %>% select(-Species_original) %>%
   distinct() 
 
 rm(list = ls()[!(ls() %in% c("Ayerbe_all_spp", "Ayerbe_sf2", "Tax_df3", "Avo_traits_l", "gbif_list"))])
-save.image(paste0("Rdata/Taxonomy_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
+#save.image(paste0("Rdata/Taxonomy_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 
 # EXTRAS -----------------------------------------------------------
 # These 'EXTRAS' are no longer critical given that the 40 species' names that had no match according to Ayerbe's taxonomy were updated manually and incorporated into the primary workflow. I left this code as these were previously important steps in the workflow. The three components are

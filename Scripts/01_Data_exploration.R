@@ -45,12 +45,12 @@ PC_eco %>%
   summarize(Total = sum(n))
 
 #Number of point counts per habitat type
-Bird_pcs %>% distinct(Uniq_db, Id_muestreo, Habitat_homologado_ut) %>% 
-  count(Uniq_db, Habitat_homologado_ut)
+Bird_pcs %>% distinct(Uniq_db, Id_muestreo, Habitat_ut) %>% 
+  count(Uniq_db, Habitat_ut)
 
 # Show counts of finalized habitat types
-ggplot(data = Pc_hab, aes(x = Habitat_homologado_ut)) +
-  geom_bar(aes(y = (..count..), color = Habitat_homologado_ut)) +
+ggplot(data = Pc_hab, aes(x = Habitat_ut)) +
+  geom_bar(aes(y = (..count..), color = Habitat_ut)) +
   theme(axis.text.x = element_blank()) +
   ylab("Count")
 
@@ -85,7 +85,7 @@ ggplot(data = Birds_all4, aes(x= Uniq_db, y = Hora)) +
 # Reduce the number of columns and join w/ # of repeat surveys
 Dist_farms <- Bird_pcs %>%
   distinct(
-    Id_muestreo, Nombre_finca_mixed, Id_gcs, Finca_referencia, Uniq_db, Distancia_m
+    Id_muestreo, Nombre_finca_mixed, Id_gcs, Finca_referencia, Uniq_db, Distancia_farm
   ) %>%
   group_by(Id_muestreo) %>%
   slice_head() %>%
@@ -96,7 +96,7 @@ Dist_farms <- Bird_pcs %>%
 
 # 50m
 Num_PCs_farm50 <- Dist_farms %>% 
-  filter(Distancia_m < 50) %>%
+  filter(Distancia_farm < 50) %>%
   group_by(Id_gcs) %>%
   summarize(
     Num_PCs50 = n(),
@@ -105,7 +105,7 @@ Num_PCs_farm50 <- Dist_farms %>%
 
 #500m
 Num_PCs_farm500 <- Dist_farms %>%
-  filter(Distancia_m < 500) %>%
+  filter(Distancia_farm < 500) %>%
   group_by(Id_gcs) %>%
   summarize(
     Num_PCs500 = n(),
@@ -132,7 +132,7 @@ Num_PCs_farm <- Num_PCs_farm %>% add_row(Id_gcs = "671", ) %>%
 
 # Add in information about which data collectors surveyed which point counts. Note I used the larger buffered distance (500m)
 Surveyor_farms <- Dist_farms %>%
-  filter(Distancia_m < 500) %>%
+  filter(Distancia_farm < 500) %>%
   distinct(Id_gcs, Uniq_db) %>%
   mutate(Surveyed = "Y") %>%
   group_by(Id_gcs) %>%
@@ -209,8 +209,8 @@ hist(Num_PCs_farm_S[Num_PCs_farm_S$Dif_Num_PCs > 0, ]$Dif_Num_PCs, main = "Diffe
 
 # Histogram of point counts with distances from farm > 0
 Dist_farms %>%
-  filter(Distancia_m > 0) %>%
-  ggplot(aes(x = Distancia_m)) +
+  filter(Distancia_farm > 0) %>%
+  ggplot(aes(x = Distancia_farm)) +
   geom_histogram(color = "black") +
   xlab("Distance to GCS farm (m)") +
   labs(title = "Distances to nearest farm for 126 point counts") #+ 
@@ -333,14 +333,14 @@ ggplot(data = SA) +
 # Plot environmental vars ------------------------------------------------
 # Boxplots for Elevation, temp, & precipitation
 p <- list()
-var_names <- names(envi_df2[, c(4:6)])
+var_names <- names(Envi_df2[, c(4:6)])
 ylab <- c("meters", "Celsius", "millimeters")
 title <- c("Elevation", "Temperature", "Precipitation")
 ecoreg_labs <- c("Bajo \nMagdalena", "Boyaca \nSantander", "Cafetera", "Piedemonte", "Rio Cesar")
 
 for (i in c(1:3)) {
   print(i)
-  p[[i]] <- envi_df2 %>%
+  p[[i]] <- Envi_df2 %>%
     group_by(Ecoregion) %>%
     ggplot(aes(
       x = fct_reorder(Ecoregion, elev, .fun = median),
@@ -361,7 +361,7 @@ ggarrange(p[[1]], p[[2]], p[[3]], nrow = 1, common.legend = T, labels = "AUTO")
 #ggsave("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Figures/Proposal/envi_vars.png", bg = "white", width = 10)
 
 # Correlation matrix -- Notice temp & elevation perfectly inverse correlated
-envi_df2 %>%
+Envi_df2 %>%
   select(-c(1:3)) %>%
   cor() %>%
   data.frame() %>%
@@ -445,6 +445,20 @@ Prec_ecor %>%
 #ggsave("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Figures/Proposal/Prec_historical_sampling.png", bg = "white")
 
 # Sampling through time ---------------------------------------------------
+## CHECK:: Ensure that the 'Rep' column matches with the metadata that Ecotropico made 
+diff_df <- df_birds_red$Gaica_dist %>% 
+  distinct(Id_muestreo, Pc_start, Fecha, Ocasion_muestreo_repeticion) %>% 
+  full_join(Rep_dfs$Gaica_dist) %>% 
+  filter(Ocasion_muestreo_repeticion != Rep) %>% 
+  arrange(Id_muestreo, Fecha, Pc_start)
+
+# Confirm these differences are due to no observations using the metadata file
+ids <- df_metadata$Gaica_dist %>% filter(Spp_obs == 0) %>% 
+  pull(Id_muestreo) %>% 
+  unique()
+
+diff_df %>% filter(!Id_muestreo %in% ids)
+
 # >Repeat surveys per point count -----------------------------------------
 # Boxplot showing the number of times each survey location was sampled by region and Ano
 Pc_date4 %>%
@@ -554,16 +568,16 @@ Birds_all4 %>% filter(Uniq_db != "UBC_GAICA DOM") %>%
   filter(n>1)
 
 #Identify sampling points that have multiple habitat types. This is expected in Distance sampling, but not in others..
-mult_habs <- Bird_pcs %>% filter(Pregunta_investigacion_gsc != "Distancia") %>% 
+mult_habs <- Bird_pcs %>% filter(Pregunta_gsc != "Distancia") %>% 
   group_by(Uniq_db, Id_muestreo) %>% 
-  count(Habitat_homologado_ut) %>% 
+  count(Habitat_ut) %>% 
   ungroup() %>% 
   count(Id_muestreo) %>% 
   filter(n>1) %>% 
   pull(Id_muestreo)
 
 Bird_pcs %>% filter(Id_muestreo %in% mult_habs) %>% 
-  distinct(Id_muestreo, Ano, Habitat_og, Habitat_homologado_ut) %>% 
+  distinct(Id_muestreo, Ano, Habitat_og, Habitat_ut) %>% 
   arrange(Id_muestreo, Ano) %>% 
   group_split(Id_muestreo)
 
@@ -694,7 +708,7 @@ Prob_IDs <- c(IDs_too_close) # , IDs_too_far
 Pc_hab %>% st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"),
                     crs = 4326) %>% 
   filter(Id_muestreo %in% Prob_IDs) %>% 
-  select(-Habitat_homologado_ut) %>% 
+  select(-Habitat_ut) %>% 
   rename(name = Id_muestreo) #%>%
 #st_write(driver='kml', dsn="/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/SCR_documents/Preguntas/Prob_dists/Dists_too_close_CIPAV.kml", layer = "Dists_too_close_CIPAV")
 
@@ -999,14 +1013,14 @@ map(df_habitats[2:3], \(habs){
     select(Id_muestreo, Ano, Habitat_og, Habitat_ajustado)
 }) 
 
-#NOTE:: There is not perfect synchrony between Habitat_homologado_ut & Cuerpo_de_agua columns
+#NOTE:: There is not perfect synchrony between Habitat_ut & Cuerpo_de_agua columns
 map2(UBC_gaica_metadata_l[1:2], df_habitats[2:3], 
      \(metadata, habs){
        full_join(metadata[,c("Id_muestreo", "Cuerpo_de_agua")], 
-                 habs[,c("Id_muestreo", "Habitat_homologado_ut")], 
+                 habs[,c("Id_muestreo", "Habitat_ut")], 
                  by = "Id_muestreo") %>% 
-         select(Id_muestreo, Habitat_homologado_ut, "Cuerpo_de_agua") %>% 
-         filter(Habitat_homologado_ut == "Bosque ripario") %>% 
+         select(Id_muestreo, Habitat_ut, "Cuerpo_de_agua") %>% 
+         filter(Habitat_ut == "Bosque ripario") %>% 
          filter(Cuerpo_de_agua == "__" | is.na(Cuerpo_de_agua)) %>%
          distinct()
      })
@@ -1142,9 +1156,9 @@ Pc_hab %>% filter(Uniq_db == "UBC MBD") %>%
 ## Recorridos Libres 2017 ##
 # 39 unique IDs + habitat type combination, each one with a unique coordinate.
 GaicaRL <- Birds_all %>% filter(Protocolo_muestreo == "Observacion ad hoc en recorridos libres")
-GaicaRL %>% distinct(Id_muestreo, Habitat_homologado_ut, as.character(Latitud_decimal), as.character(Longitud_decimal))
+GaicaRL %>% distinct(Id_muestreo, Habitat_ut, as.character(Latitud_decimal), as.character(Longitud_decimal))
 
 # Transects were sampled between 1 and 6 (13?) times
 GaicaRL %>%
-  distinct(Id_muestreo, Habitat_homologado_ut, Mes, Dia, as.character(Latitud_decimal), as.character(Longitud_decimal)) %>%
+  distinct(Id_muestreo, Habitat_ut, Mes, Dia, as.character(Latitud_decimal), as.character(Longitud_decimal)) %>%
   count(Id_muestreo, sort = T)

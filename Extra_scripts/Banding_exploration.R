@@ -10,7 +10,7 @@ names(gaica)
 # Separate banding data
 banding <- dfPCs$`AVES_GAICA_MONITOREO-BD_2013-2017_V6.xlsx` %>% filter(Protocolo_muestreo == "Captura con redes de niebla")
 banding <- banding %>%
-  select(1:14, contains(c("ID_punto_conteo", "Protocolo_muestreo", "Mes", "Dia", "Hora", "Fecha", "Orden", "Especie", "Numero_individuos", "Habitat", "Sistema", "Distancia_observacion")), "Ano", "Sexo", "Anillo", "CT", "CE", "LN", "AN", "AC", "LH", "T", "CA", "C", "Peso", "Observacion_campo_captura") %>%
+  select(1:14, contains(c("ID_punto_conteo", "Protocolo_muestreo", "Mes", "Dia", "Hora", "Fecha", "Orden", "Especie", "Count", "Habitat", "Sistema", "Distancia_observacion")), "Ano", "Sexo", "Anillo", "CT", "CE", "LN", "AN", "AC", "LH", "T", "CA", "C", "Peso", "Observacion_campo_captura") %>%
   replace_with_na(list(CA = 0, C = 0, Peso = 0, T = 0))
 # CA = Cuerda alar, C = Cola, T = Tarso
 lapply(banding[, c("CA", "C", "Peso", "T")], function(x) {

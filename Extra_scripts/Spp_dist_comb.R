@@ -38,7 +38,7 @@ conflicts_prefer(dplyr::filter)
 # Look for possible species misidentifications or other errors in the data
 spp_obs_sf <- Birds_all4 %>%
   st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), crs = 4326, remove = F) %>%
-  left_join(envi_df2[, c("Id_muestreo", "Elev")])
+  left_join(Envi_df2[, c("Id_muestreo", "Elev")])
 ## CHECK:: The polygon is the same for all 3 previous names of this species
 Ayerbe_sf2 %>%
   filter(Nombre_ayerbe == "Spinus psaltria") %>%
@@ -46,7 +46,7 @@ Ayerbe_sf2 %>%
 
 # Compare reported elevations (in field) to those from the Colombia DEM
 ElevErrors <- Bird_pcs %>%
-  left_join(envi_df2[, c("Id_muestreo", "Elev")]) %>%
+  left_join(Envi_df2[, c("Id_muestreo", "Elev")]) %>%
   select(Id_muestreo, Latitud_decimal, Longitud_decimal, Elevacion, Elev) %>%
   rename(Elevacion_reported = Elevacion) %>%
   mutate(Difference_elev = Elev - Elevacion_reported) %>%
@@ -165,7 +165,7 @@ names(range) <- SppDb$Nombre_ayerbe
 OutRangeObsDf <- OutRangeObs %>%
   bind_rows() %>%
   rename(DistsKM = DistsKM..i..) %>%
-  dplyr::select(Uniq_db, Nombre_institucion, Nombre_finca, Registrado_por, Numero_individuos, Protocolo_muestreo, Departamento, Id_muestreo, Nombre_ayerbe, Fecha, Latitud_decimal, Longitud_decimal, DistsKM, Elev) %>%
+  dplyr::select(Uniq_db, Nombre_institucion, Nombre_finca, Registrado_por, Count, Protocolo_muestreo, Departamento, Id_muestreo, Nombre_ayerbe, Fecha, Latitud_decimal, Longitud_decimal, DistsKM, Elev) %>%
   filter(!is.na(DistsKM)) # Remove spp that didn't have associated shapefile (eg Leptotila verreauxi)
 nrow(OutRangeObsDf)
 

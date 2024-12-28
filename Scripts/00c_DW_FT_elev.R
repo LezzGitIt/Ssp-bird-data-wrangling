@@ -23,8 +23,8 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 #Load data
-load("Rdata/the_basics_12.24.24.Rdata")
-load("Rdata/Taxonomy_11.14.24.Rdata")
+load("Rdata/the_basics_12.27.24.Rdata")
+load("Rdata/Taxonomy_12.27.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 # Functional traits database ----------------------------------------------
@@ -246,7 +246,5 @@ Avo_traits_final <- Avo_traits_form %>% full_join(Elev_ranges[, c("Species_ayerb
 # Export Avonet morphology table
 # write.xlsx(Avo_traits_final, "Intermediate_products/Excels/Avo_traits_final.xlsx", sheetName = "Traits", row.names = F, showNA = FALSE)
 
-names(Elev_ranges)
-
 rm(list = ls()[!(ls() %in% c("Elev_ranges", "Avo_traits_final"))])
-save.image(paste0("Rdata/Traits_elev_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
+#save.image(paste0("Rdata/Traits_elev_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))

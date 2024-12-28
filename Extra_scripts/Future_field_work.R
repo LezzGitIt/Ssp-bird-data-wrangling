@@ -70,7 +70,7 @@ Pc_date4 %>%
 EC_PCs_df <- Bird_pcs %>%
   filter(Uniq_db == "GAICA MBD" & Ecoregion == "Cafetera") %>%
   mutate(Seas = ifelse(Mes %in% c(7, 8), "Dry", "Wet")) %>%
-  distinct(Departamento, Nombre_finca, Id_gcs, Id_muestreo, Ano, Seas, Latitud_decimal, Longitud_decimal, Habitat_og, Habitat_homologado_ut, Habitat_homologado_SUB_UT, Elevacion) %>%
+  distinct(Departamento, Nombre_finca, Id_gcs, Id_muestreo, Ano, Seas, Latitud_decimal, Longitud_decimal, Habitat_og, Habitat_ut, Habitat_SUB_UT, Elevacion) %>%
   group_by(Id_muestreo) %>%
   mutate(
     visit_num = row_number(),
@@ -156,7 +156,7 @@ PCs_GMB_M %>%
 
 # Generate Excel for changing habitats
 PCs_GMB_M %>%
-  distinct(Id_gcs, Nombre_finca, Ano, Id_muestreo, Habitat_og, Habitat_homologado_ut) %>%
+  distinct(Id_gcs, Nombre_finca, Ano, Id_muestreo, Habitat_og, Habitat_ut) %>%
   mutate(Habitat_ajustado = "", Observacion = "") %>%
   arrange(Nombre_finca, Id_muestreo, Ano) #%>%
   #write.xlsx(file = "Intermediate_products/Excels/Habitats_Meta.xlsx", row.names = F, showNA = F)
