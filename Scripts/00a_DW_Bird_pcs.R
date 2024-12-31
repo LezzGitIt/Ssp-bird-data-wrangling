@@ -117,13 +117,18 @@ df_birds_red <- lapply(df_birds_red, function(df) {
 
 # Create 'Same_pc' column to indicate the rows where the time is less than the value in the cutoff_time vector. These observations of the same Id_muestreo & Fecha will be grouped as a point count.
 # Specify database specific cutoff times, as CIPAV has a single point count that is 90 minutes long (and thus should be grouped together), and UBC & Unillanos has distinct same day point counts that are only separated by 68 and 74 minutes, respectively (and thus should be grouped apart). Otherwise, largest difference in point count times in the same day is 13 minutes (from an 18 minute point count), so I used that for convenience for all other databases. 
-cutoff_time <- c(91, rep(18, 5), 68, 74)
+cutoff_time <- c(91, rep(18, 5), 61, 74)
 
 df_birds_red <- map2(df_birds_red, cutoff_time, \(df, cutoff){
   df %>% group_by(Id_muestreo, Fecha) %>% 
     arrange(Hora) %>% 
     mutate(Pc_length_day = as.numeric((Hora - first(Hora)) * 1440), #For entire day, not within a PC
-           Same_pc = if_else(Pc_length_day < cutoff, "Same", "Diff")) %>% 
+           Same_pc = case_when(
+             Pc_length_day < cutoff ~ "Same",
+             # One manual adjustment 
+             Id_muestreo == "UBC-MB-M-LBR_02" & Hora == chron::times("11:05:00") ~ "Diff2", 
+             Pc_length_day >= cutoff ~ "Diff"
+             )) %>% 
     select(-Pc_length_day)
 }) 
 
@@ -160,42 +165,23 @@ df_birds_red <- map(df_birds_red, \(df){
         Departamento == "Quindio" | Departamento == "Valle del Cauca" ~ "Cafetera",
       Departamento == "Meta" ~ "Piedemonte",
       .default = Departamento
-    ), 
-    Uniq_db = paste(Nombre_institucion, Pregunta_gsc, sep = " ")
-  )
+    ))
 })
 
-# Function to convert the entries within columns to title case & remove underscores for consistency & predictability 
-standardize_column_contents <- function(col) {
-  unique_vals <- unique(col)
-  transformed_vals <- setNames(
-    str_replace_all(unique_vals, "_", " ") %>% str_to_sentence(),
-    unique_vals
-  )
-  transformed_vals[col]
-}
+df_birds_red <- map(df_birds_red, \(df){
+  df %>% mutate(Uniq_db = paste(Nombre_institucion, Pregunta_gsc, sep = " "), 
+                Id_muestreo2 = str_remove(Id_muestreo, "^[^-]+-"))
+})
 
 # Apply the function to each data frame in the list
 df_birds_red <- map(df_birds_red, \(df) {
   df %>% mutate(
     across(
-      .cols = -c(Id_muestreo) & where(is.character), 
-      .fns = ~ standardize_column_contents(.)
+      .cols = -c(Id_muestreo, Id_muestreo2) & where(is.character), 
+      .fns = ~ standardize_column_contents(.) # Custom function 
     )
   )
 })
-
-# WORKS, BACKUP CODE
-if (FALSE){
-  df_birds_red <- map(df_birds_red, \(df){
-    df %>% mutate(across(
-      .cols = -c(Id_muestreo) & where(is.character), 
-      .fns = ~ {unique_vals <- unique(.)
-      transformed_vals <- setNames(str_to_sentence(unique_vals), unique_vals)
-      return(transformed_vals[.])}
-    ))
-  })
-}
 
 # >Dataset specific operations -------------------------------------------
 # CIPAV data frame has a single individual for each row whereas all other databases have the total number of individuals of a given species per row (Count column).
@@ -242,7 +228,7 @@ head(Birds_all)
 names(Birds_all)
 dim(Birds_all)
 
-# Continue formatting columns
+# Create Id_group, plus additional column formatting
 Birds_all2 <- Birds_all %>%
   rename(Habitat_og = Habitat, Nombre_ayerbe = Nombre_cientifico_final) %>% 
   mutate(
@@ -258,7 +244,8 @@ Birds_all2 <- Birds_all %>%
       function(x) {
         x[1]
       })) %>%
-  mutate(across(.cols = c(matches("Id_pr|Distancia_pr"), Latitud_decimal, Longitud_decimal, Count), as.numeric))
+  mutate(across(.cols = c(matches("Id_pr|Distancia_pr"), Latitud_decimal, Longitud_decimal, Count), 
+                as.numeric))
 
 ### Distancias FULL y Buffer##
 Birds_all3 <- Birds_all2 %>%
@@ -282,9 +269,10 @@ Birds_all3 <- Birds_all2 %>%
   mutate(Id_gcs = if_else(is.na(Id_gcs), first(na.omit(Id_gcs)), Id_gcs), .by = Id_muestreo) %>%
   select(-c(Nombre_predio_gcs_poligono_full, Id_predio_gcs_poligono_full, Id_predio_mas_cercano_gcs_poligono_full, Nombre_predio_gcs_poligono_buffer, Id_predio_gcs_poligono_buffer, Id_predio_mas_cercano_gcs_poligono_buffer, Distancia_predio_mas_cercano_gcs_poligono_full, Distancia_predio_mas_cercano_gcs_poligono_buffer, Row_sum, Same))
 
-# Create data base with just point counts
-Bird_pcs <- Birds_all3 %>% filter(Protocolo_muestreo == "Punto conteo") 
-nrow(Bird_pcs)
+# Create data base with just point counts and Id_muestreo2 column
+Bird_pcs <- Birds_all3 %>% filter(Protocolo_muestreo == "Punto conteo")
+# NOTE:: This worked, as the difference in unique Ids is the 54 UniLlanos points 
+length(unique(Bird_pcs$Id_muestreo)) - length(unique(Bird_pcs$Id_muestreo2))
 
 # Format metadata ---------------------------------------------------------
 # Standardize metadata column names
@@ -322,7 +310,7 @@ rownames(df_meta) <- NULL
 
 # Create Additional metadata df to join with the No_obs list 
 Add_metadata <- map(df_birds_red, \(df){
-  df %>% distinct(Ecoregion, Nombre_institucion, Uniq_db, Id_muestreo, Ano, Ano_grp)
+  df %>% distinct(Ecoregion, Departamento, Nombre_institucion, Uniq_db, Id_muestreo, Ano, Ano_grp)
 })
 
 # PROBLEM:
@@ -334,8 +322,10 @@ No_obs_l <- map2(df_metadata, Add_metadata,
                  \(meta, add){
   meta %>% filter(Spp_obs == 0) %>% 
     left_join(add) %>%
-    select(Ecoregion, Nombre_institucion, Uniq_db, Id_muestreo, Ano_grp, Fecha, Hora, Spp_obs) %>% 
-    rename(Pc_start = Hora)
+    select(Ecoregion, Departamento, Nombre_institucion, Uniq_db, 
+           Id_muestreo, Ano_grp, Fecha, Hora, Spp_obs) %>% 
+    rename(Pc_start = Hora) %>% 
+    mutate(Id_muestreo2 = str_remove(Id_muestreo, "^[^-]+-"))
 })
 
 No_obs_l$UniLlanos <- No_obs_l$UniLlanos %>% mutate(Fecha = NA)
@@ -350,7 +340,7 @@ Rep_dfs <- map2(df_birds_red, No_obs_l, \(df, No_obs){
     group_by(Id_muestreo, Ano_grp) %>% 
     arrange(Fecha, Pc_start) %>% 
     mutate(Rep = row_number()) %>% 
-    distinct(Ecoregion, Nombre_institucion, Uniq_db, Id_muestreo, Ano_grp, Fecha, Pc_start, Pc_length, Same_pc, Rep, Spp_obs) %>% 
+    distinct(Ecoregion, Departamento, Nombre_institucion, Uniq_db, Id_muestreo, Id_muestreo2, Ano_grp, Fecha, Pc_start, Pc_length, Same_pc, Rep, Spp_obs) %>% 
     ungroup()
 })
 
@@ -371,7 +361,7 @@ Pc_locs <- Pc_locs_mult %>%
   full_join(Pc_uniq, by = "Id_muestreo")
 
 # Inclusion of date, time, and Ano_grp
-Pc_date <- Bird_pcs %>% distinct(Nombre_institucion, Uniq_db, Ecoregion, Departamento, Nombre_finca, Id_gcs, Id_group, Id_muestreo, Ano, Mes, Dia, Fecha, Pc_start, Ano_grp) 
+Pc_date <- Bird_pcs %>% distinct(Nombre_institucion, Uniq_db, Ecoregion, Departamento, Nombre_finca, Id_gcs, Id_group, Id_muestreo, Id_muestreo2, Ano, Mes, Dia, Fecha, Pc_start, Ano_grp) 
 nrow(Pc_date)
 
 # Combine Rep_dfs with additional information
@@ -385,9 +375,9 @@ Pc_date3 <- Pc_date2 %>% reframe(N_reps = n(), across(.cols = everything()), .by
 # Calculate the number of samp_periods for each point count -- The idea is that b/c some point counts were surveyed up to 3 times, but always 2 of which were in the same Ano_grp (e.g., 13-14), using distinct() will remove a row in the same Ano_grp. The point count IDs with 2 rows are possible resurvey sites (although see the temporal sampling plot for potential issues of seasonality). 
 # NOTE:: There are challenges given that Id_muestreo is not always the same, even when the point is the same.. For example UBC-MB-M-A_01 & U-MB-M-A_01 are the same point, but they have different Id_muestreos. If you created a new column removing the datacollectors initials this would fix the problem, but it's probably not necessary at present
 Pc_samp_periods <- Pc_date2 %>% 
-  distinct(Id_muestreo, Uniq_db, Ano_grp, Ecoregion) %>%
+  distinct(Id_muestreo, Id_muestreo2, Uniq_db, Ano_grp, Ecoregion) %>%
   reframe(N_samp_periods = n(), across(.cols = everything()), 
-          .by = Id_muestreo) %>%
+          .by = Id_muestreo2) %>%
   distinct(Id_muestreo, Uniq_db, N_samp_periods) %>% 
   tibble() 
 
@@ -527,7 +517,7 @@ Prec_daily <- bind_rows(Prec_daily19, Prec_daily22) %>%
 #ggplot() + geom_sf(data = mpio_sf)
 
 # Save & export -----------------------------------------------------------
-rm(list= ls()[!(ls() %in% c("Birds_all", "Birds_all3", "Bird_pcs", "Pc_date4", 'Pc_hab', "Pc_locs", "df_birds", "df_metadata", "df_birds_red", "Mes_mod", "Pc_locs_mult", "Pc_locs_sf", "Envi_df2", "Prec_df", "Prec_daily"))])
+rm(list= ls()[!(ls() %in% c("Birds_all", "Birds_all3", "Bird_pcs", "Pc_date4", 'Pc_hab', "Pc_locs", "df_birds", "df_metadata", "df_birds_red", "Mes_mod", "Pc_locs_mult", "Pc_locs_sf", "Envi_df2", "Prec_df", "Prec_daily", "Rep_dfs"))])
 #save.image(paste0("Rdata/the_basics_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 
 
