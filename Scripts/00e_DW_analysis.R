@@ -10,8 +10,13 @@
 # 5)
 # 6)
 
+#TO DO: 
+# Bring in the DW steps from the iNEXT script, look for overlap
+
 # Load libraries & data ---------------------------------------------------
 library(tidyverse)
+library(janitor)
+library(chron)
 library(unmarked)
 library(readxl)
 library(spOccupancy)
@@ -19,19 +24,23 @@ library(ubms) # function get_stancode() could be used to get code from model tha
 library(flocker)
 library(brms)
 library(ggpubr)
+library(sf)
 library(cowplot)
+library(conflicted)
 ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-load("Rdata/the_basics_12.27.24.Rdata")
-load("Rdata/Taxonomy_12.27.24.Rdata")
+load("Rdata/the_basics_12.30.24.Rdata")
+load("Rdata/Taxonomy_12.29.24.Rdata")
 
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 # General formatting -------------------------------------------------------------
 # Format point count data for downstream analyses 
-Birds_analysis <- Bird_pcs %>% filter(Nombre_ayerbe %in% Tax_df3$Species_ayerbe) %>% 
+Birds_analysis <- Bird_pcs %>% 
+  mutate(Nombre_ayerbe_ = str_replace_all(Nombre_ayerbe, " ", "_")) %>%
+  filter(Nombre_ayerbe %in% Tax_df3$Species_ayerbe) %>% 
   filter(is.na(Grabacion) | Grabacion == "Cf") %>% # Remove birds identified only in recording
   mutate(Count = ifelse(is.na(Count), 1, Count)) #Add 1 individual when # individuals = NA (6 rows in UBC data)
   
@@ -53,7 +62,6 @@ Birds_analysis3 <- Birds_analysis2 %>%
   )) %>%
   mutate(Distancia_bird = as.numeric(Distancia_bird))
 
-
 # Removing records with distance > 50m
 Birds_fin <- Birds_analysis3 %>% filter(Distancia_bird < 51 | is.na(Distancia_bird))
 Birds_fin %>% tabyl(Distancia_bird)
@@ -65,36 +73,159 @@ Birds_fin %>%
   select(Uniq_db, Fecha, Departamento, Id_muestreo, Nombre_finca, Nombre_ayerbe) %>%
   count(Id_muestreo, sort = T)
 
+## Simplify exercise by using only most abundant species 
+Spp_counts <- Birds_fin %>%
+  #filter(Uniq_db == "Ubc mbd") %>%
+  summarize(Count = sum(Count), .by = c(Nombre_ayerbe, Nombre_ayerbe_))
+
+# Pull the 30 species that have been observed more than 30 times
+Ubc30 <- Spp_counts %>% 
+  filter(Count > 30) %>%
+  distinct(Nombre_ayerbe, Nombre_ayerbe_)
+
+# The most abundant species in the project
+Top_abu <- Spp_counts %>% slice_max(order_by = Count, n = 2) %>% 
+  pull(Nombre_ayerbe)
+
+
+# Biogeographic_clipping --------------------------------------------------
+## Working with 3 different approaches to 
+# Load in relevant shapefiles 
+Ayerbe_mod_spp_l <- map(Top_abu, \(spp){
+  st_read(dsn = "../Geospatial_data/Ayerbe_shapefiles_1890spp", layer = spp) %>% st_make_valid()
+})
+Ayerbe_mod_spp <- do.call(rbind, Ayerbe_mod_spp_l)
+
+# Calculate the distance (km) from each point count location to the species range
+Dist_to_pcs <- Pc_locs_sf %>%
+  distinct(Id_muestreo, geometry) %>%
+  st_distance(Ayerbe_mod_spp) %>% 
+  as_tibble() %>% 
+  rename_with(~ Top_abu) %>%
+  Cap_snake %>%
+  mutate(across(everything(), ~ (.x / 1000) %>% units::drop_units())) %>% 
+  bind_cols(distinct(Pc_locs_sf, Id_muestreo)) %>% 
+  relocate(Id_muestreo, 1)
+
+# Add Pc_ids & their geometries back in
+Dist_pcs_sf <- Pc_locs_sf %>% distinct(Id_muestreo, geometry) %>% 
+  full_join(Dist_to_pcs)
+
+# Examine rows with Pcs > 0 km
+Dist_pcs_sf %>% filter(if_any(where(is.numeric), ~ .x > 0)) %>%
+  ggplot() + 
+  geom_sf(aes(color = Eupsittula_pertinax)) +
+  geom_sf(data = Ayerbe_mod_spp_l[[2]]) #+
+  #geom_sf(data = Pc_locs_sf, color = "red") 
+
+# In future will want to use some distance cutoff, ideally as a proportion of the total area via st_area()
+st_area(Ayerbe_mod_spp) 
+
+# For each column that is numeric 
+Pcs_in_range <- Dist_to_pcs %>%
+  select(where(is.numeric)) %>% # Select only numeric columns
+  map(~ Dist_to_pcs %>%
+        filter(.x == 0) %>% # Filter rows where the column equals 0
+        pull(Id_muestreo)) # Extract 'Nombre_ayerbe' for matching rows
+
+# EXPLORE IN FUTURE
+## Nested tibble:: Create a data frame with species names and their respective maps
+species_maps_df <- tibble(
+  species = Top_abu, 
+  spp_map = map(Top_abu, \(spp) {
+    st_read(dsn = "../Geospatial_data/Ayerbe_shapefiles_1890spp", layer = spp) %>% 
+      st_make_valid()
+  })
+)
+
+species_maps_df %>% unnest()
+
+# Add a nested column with Pc_locs_sf intersections or joins
+nested_results <- species_maps_df %>%
+  mutate(
+    intersected_points = map(spp_map, \(spp_map) {
+      Pc_locs_sf %>%
+        distinct(Id_muestreo, geometry) %>%
+        st_intersection(spp_map)
+    })
+  )
+
+
+# Vignette --------------------------------------------------------------
+# Examine data structure 
+# Each data structure has 237 rows, the number of sites there are 
+wt <- read.csv(system.file("csv","widewt.csv", package="unmarked"))
+y <- wt[,2:4]
+siteCovs <-  wt[,c("elev", "forest", "length")]
+obsCovs <- list(date=wt[,c("date.1", "date.2", "date.3")],
+                ivel=wt[,c("ivel.1",  "ivel.2", "ivel.3")])
+wt <- unmarkedFrameOccu(y = y, siteCovs = siteCovs, obsCovs = obsCovs)
+head(wt)
+str(wt)
+
 # Event covariates -----------------------------------------------------------
+# We have 551 unique Id_muestreos, so all data frames should have 551 rows
 # Covariates that vary by visit, where there is a row for each visit to each point count
-event_covs <- Pc_date4 %>% distinct(Id_muestreo, Ano_grp, Rep, Fecha, Pc_start, Spp_obs) %>% 
-  arrange(Id_muestreo, Ano_grp, Rep)
+
+# Need a wide dataframe, where all point counts have a single row
+Obs_covs_df <- Pc_date4 %>%
+  mutate(across(everything(), as.character)) %>%
+  pivot_longer(
+    cols = c(Fecha, Pc_start, Pc_length),      
+    names_to = "Variable",          
+    values_to = "Value"             
+  ) %>%
+  arrange(Ano_grp) %>%
+  pivot_wider(
+    id_cols = c(Id_muestreo, Variable),
+    names_from = c(Ano_grp, Rep),
+    names_glue = "Ano{Ano_grp}_Rep{Rep}",
+    values_from = c(Value)
+  ) #%>% #head()
+  
+Obs_covs_l <- Obs_covs_df %>% group_by(Variable) %>%
+  group_split(.keep = FALSE)
+names(Obs_covs_l) <- unique(Obs_covs_df$Variable)
 
 # Unit covariates ---------------------------------------------------------
 # Covariates that are fixed for a given point count
 unit_covs <- Envi_df2 %>%
   arrange(Id_muestreo) %>%
-  select(Elev, Avg_temp, Tot.prec)
+  select(Id_muestreo, Elev, Avg_temp, Tot.prec)
 
 # Occ abu formatting  -----------------------------------------------------
+Pc_date_join <- Pc_date4 %>% distinct(Id_muestreo, Ano_grp, Pc_start, Rep)
+
 # Abundances
-Ubc_abu <- Birds_fin %>%
-  full_join(event_covs) %>%
+Abund_long <- Birds_fin %>%
+  full_join(Pc_date_join, relationship = "many-to-many") %>%
   summarize(
     Count = sum(Count),
     .by = c(Id_muestreo, Ano_grp, Rep, Nombre_ayerbe)
-  ) %>%
-  mutate(Nombre_ayerbe_ = str_replace_all(Nombre_ayerbe, " ", "_")) %>% 
-  select(-Nombre_ayerbe) %>%
+  )
+
+## nesting by Uniq_db likely makes more sense, maybe by ecoregion? Do 2 species instead of 30
+Abund_long %>% nest(.by = Nombre_ayerbe) %>% 
+  filter(Nombre_ayerbe %in% Spp30)
+
+# This works but doesn't seem to maintain all reps (if species wasn't observed?)
+Abund_long %>% filter(Nombre_ayerbe == "Bubulcus ibis") %>% 
+  arrange(Ano_grp, Rep) %>%
+  #select(Id_muestreo, Ano_grp, Rep, Bubulcus_ibis, Amazona_ochrocephala) %>% 
+  pivot_wider(id_cols = c(Id_muestreo),
+              names_from = c(Ano_grp, Rep),
+              names_glue = "Ano{Ano_grp}_Rep{Rep}",
+              values_from = Count, 
+              values_fill = 0)
+
+# For iNEXT
+Spp_wide <- Abund_long %>% 
   pivot_wider(
     names_from = Nombre_ayerbe_,
     values_from = Count,
     values_fill = 0
   ) %>% arrange(Id_muestreo, Ano_grp, Rep)
 
-# CHECK:: Should be same number of rows
-nrow(Ubc_abu)
-nrow(event_covs)
 
 # CHECK:: There are several point counts that have rows in event_covs but are not in Birds_fin
 test <- Birds_fin %>% full_join(event_covs) 
@@ -111,6 +242,9 @@ Ubc_occ <- Ubc_abu %>% select(-c(Id_muestreo, Ano_grp, Rep)) %>%
   mutate(across(.cols = everything(), .fns = ~ ifelse(. > 0, 1, 0)))
 
 # Flocker -----------------------------------------------------------------
+# TRY unmarked or ubms? 
+d <- simulate_flocker_data()
+
 # Create occupancy data frame
 Ubc_occ <- Ubc_abu %>% select(-c(Id_muestreo, Ano_grp, Rep)) %>% 
   mutate(across(.cols = everything(), .fns = ~ ifelse(. > 0, 1, 0)))
@@ -126,13 +260,6 @@ fd_rep_varying <- make_flocker_data(
 
 
 # Misc --------------------------------------------------------------------
-# Pull the 30 species that have been observed more than 30 times
-spp30 <- Birds_fin %>%
-  filter(Uniq_db == "UBC MBD") %>%
-  group_by(Nombre_ayerbe) %>%
-  summarize(Count = sum(Count)) %>%
-  filter(Count > 30) %>%
-  pull(Nombre_ayerbe)
 
 #Nest?
 Pcs_nest <- Bird_pcs %>% group_by(Uniq_db) %>% # Nombre_institucion
