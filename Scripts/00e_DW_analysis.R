@@ -14,18 +14,11 @@
 # Bring in the DW steps from the iNEXT script, look for overlap
 # KEY to keeping workflows with map() tractable, keep things in a single df as long as possible, then split into hierarchical lists if needed. Avoid hierarchical map calls.
 
-
 # Load libraries & data ---------------------------------------------------
 library(tidyverse)
 library(janitor)
 library(chron)
-library(unmarked)
 library(readxl)
-library(spOccupancy)
-library(ubms) # function get_stancode() could be used to get code from model that could then be adapted
-library(flocker)
-library(brms)
-library(ggpubr)
 library(sf)
 library(cowplot)
 library(conflicted)
@@ -37,7 +30,7 @@ load("Rdata/the_basics_01.03.25.Rdata")
 load("Rdata/Taxonomy_12.29.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
-# vignette("unmarked") # helpful
+# vignette("unmarked") # Used vignette to help understand how data should be formatted
 
 # General formatting -------------------------------------------------------------
 # Format point count data for downstream analyses 
@@ -259,89 +252,6 @@ Spp_wide <- Abund_long %>%
 # Save & Export -----------------------------------------------------------
 rm(list = ls()[!(ls() %in% c("Abund_nas", "Site_covs", "Obs_covs"))])
 #save.image(paste0("Rdata/DW_umf_inputs_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
-
-# Flocker -----------------------------------------------------------------
-# TRY unmarked or ubms? 
-d <- simulate_flocker_data()
-
-
-
-# NOTE:: Abundance data, event & unit covs were arranged in the same order
-event_covs2 <- event_covs %>% select(Fecha, Pc_start)
-
-fd_rep_varying <- make_flocker_data(
-  obs = Ubc_occ,
-  unit_covs = unit_covs,
-  event_covs = event_covs2
-)
-
-# Misc --------------------------------------------------------------------
-# >Nested tibble workflow -------------------------------------------------
-# Seems like there's potential for sure, idea of avoiding hierarchical lists is really nice. But couldn't quite figure it out, was really challenging to get data where it was needed. 
-
-# Create a data frame with species names and their respective maps
-spp_nested <- tibble(
-  Species = Top_abu, 
-  Data = map(Top_abu, \(spp) {
-    Birds_fin %>%
-      filter(Nombre_ayerbe == spp) # Filter rows for each species
-  }),
-  Pcs_in_range = map(Pcs_in_range, ~pluck(.x)),
-)
-
-## Subset covariates by the point counts in range for each species but using a nested tibble
-spp_nested2 <- spp_nested %>% rowwise() %>%
-  mutate(
-    Obs_covs_subsets = list(map(Obs_covs_l, ~ .x %>% filter(Id_muestreo %in% Pcs_in_range))), 
-    Site_covs = list(Site_covs %>% filter(Id_muestreo %in% Pcs_in_range))
-  ) %>% 
-  unnest_wider(Obs_covs_subsets)
-
-spp_nested %>% rowwise() %>%
-  mutate(
-    # Subset Obs_covs_l for each Pcs_in_range
-    Obs_covs_subsets = list(
-      map(Obs_covs_l, ~ .x %>% filter(Id_muestreo %in% Pcs_in_range))
-    ),
-    # Subset Site_covs for each Pcs_in_range
-    Site_covs = list(
-      Site_covs %>% filter(Id_muestreo %in% Pcs_in_range)
-    ),
-    # Create y_mat by joining Pcs_in_range with Abund_l
-    y_mat = list(map2(Abund_l, Date_in_range, ~ .x %>%
-                        full_join(.y))
-    )) %>%
-  ungroup() %>% 
-  select(Species, y_mat) %>% 
-  unnest_longer(y_mat) %>% 
-  unnest_longer(y_mat) #%>% 
-#filter(is.na(y_mat$Count))
-
-spp_nested3 <- spp_nested2 %>% mutate(Abund_nas = map2(Abund_zeros, Pc_start, \(abund, nas){
-  abund %>% mutate(across(everything(), ~ if_else(is.na(nas[[cur_column()]]), NA, .x)))
-})) 
-
-spp_nested3 %>% rowwise() %>% 
-  mutate(
-    unmarkedFrame = map( \(df) unmarkedFramePCount(y = df %>% select(Abund_nas), 
-                                                   SiteCovs = df %>% select(Elev, Avg_temp, Tot.prec),
-                                                   ObsCovs = df %>% select(Fecha, Pc_length, Pc_start)))
-  )
-
-deframe_cols <- function(nest_tib, vars){
-  nest_tib %>% select({{ vars }}) %>% 
-    deframe()
-}
-
-SiteCovs_l <- spp_nested3 %>% deframe_cols(c(Elev, Avg_temp, Tot.prec))
-
-spp_nested2 %>% select(Site_covs) %>% 
-  deframe()
-spp_nested3 %>% select(ObsCovs) %>% 
-  deframe() %>%
-  unnest_longer()
-
-
 
 # >Interpolate Pc_start ----------------------------------------------------
 # Also Pc_date for UniLlanos. Ask Natalia for help if needed
