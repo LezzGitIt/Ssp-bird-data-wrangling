@@ -12,6 +12,8 @@
 
 #TO DO: 
 # Bring in the DW steps from the iNEXT script, look for overlap
+# KEY to keeping workflows with map() tractable, keep things in a single df as long as possible, then split into hierarchical lists if needed. Avoid hierarchical map calls.
+
 
 # Load libraries & data ---------------------------------------------------
 library(tidyverse)
@@ -31,10 +33,11 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-load("Rdata/the_basics_12.30.24.Rdata")
+load("Rdata/the_basics_01.03.25.Rdata")
 load("Rdata/Taxonomy_12.29.24.Rdata")
-
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+
+# vignette("unmarked") # helpful
 
 # General formatting -------------------------------------------------------------
 # Format point count data for downstream analyses 
@@ -87,9 +90,10 @@ Ubc30 <- Spp_counts %>%
 Top_abu <- Spp_counts %>% slice_max(order_by = Count, n = 2) %>% 
   pull(Nombre_ayerbe)
 
-
 # Biogeographic_clipping --------------------------------------------------
-## Working with 3 different approaches to 
+## Idea from Socolar's (2022) paper: Biogeographic multi-species occupancy models for large-scale survey data. We only want to include point count locations that are within the species range (+ some buffer), differentiating a true zero (possible but not observed) vs points that are simply out of range (more like an NA).
+## NOTE:: Working with 2 different approaches - a data frame vs nested list
+
 # Load in relevant shapefiles 
 Ayerbe_mod_spp_l <- map(Top_abu, \(spp){
   st_read(dsn = "../Geospatial_data/Ayerbe_shapefiles_1890spp", layer = spp) %>% st_make_valid()
@@ -118,54 +122,19 @@ Dist_pcs_sf %>% filter(if_any(where(is.numeric), ~ .x > 0)) %>%
   geom_sf(data = Ayerbe_mod_spp_l[[2]]) #+
   #geom_sf(data = Pc_locs_sf, color = "red") 
 
-# In future will want to use some distance cutoff, ideally as a proportion of the total area via st_area()
+## Extract 'Id_muestreo' where the distance to the spp range == 0 for later subsetting
+Pcs_in_range <- Dist_to_pcs %>%
+  select(where(is.numeric)) %>% 
+  map(~ Dist_to_pcs %>%
+        filter(.x == 0) %>% 
+        pull(Id_muestreo)) 
+
+# NOTE:: In the future will likely want to use some proportion of the total area via st_area()
 st_area(Ayerbe_mod_spp) 
 
-# For each column that is numeric 
-Pcs_in_range <- Dist_to_pcs %>%
-  select(where(is.numeric)) %>% # Select only numeric columns
-  map(~ Dist_to_pcs %>%
-        filter(.x == 0) %>% # Filter rows where the column equals 0
-        pull(Id_muestreo)) # Extract 'Nombre_ayerbe' for matching rows
-
-# EXPLORE IN FUTURE
-## Nested tibble:: Create a data frame with species names and their respective maps
-species_maps_df <- tibble(
-  species = Top_abu, 
-  spp_map = map(Top_abu, \(spp) {
-    st_read(dsn = "../Geospatial_data/Ayerbe_shapefiles_1890spp", layer = spp) %>% 
-      st_make_valid()
-  })
-)
-
-species_maps_df %>% unnest()
-
-# Add a nested column with Pc_locs_sf intersections or joins
-nested_results <- species_maps_df %>%
-  mutate(
-    intersected_points = map(spp_map, \(spp_map) {
-      Pc_locs_sf %>%
-        distinct(Id_muestreo, geometry) %>%
-        st_intersection(spp_map)
-    })
-  )
-
-
-# Vignette --------------------------------------------------------------
-# Examine data structure 
-# Each data structure has 237 rows, the number of sites there are 
-wt <- read.csv(system.file("csv","widewt.csv", package="unmarked"))
-y <- wt[,2:4]
-siteCovs <-  wt[,c("elev", "forest", "length")]
-obsCovs <- list(date=wt[,c("date.1", "date.2", "date.3")],
-                ivel=wt[,c("ivel.1",  "ivel.2", "ivel.3")])
-wt <- unmarkedFrameOccu(y = y, siteCovs = siteCovs, obsCovs = obsCovs)
-head(wt)
-str(wt)
-
-# Event covariates -----------------------------------------------------------
+# Observation covariates -----------------------------------------------------------
 # We have 551 unique Id_muestreos, so all data frames should have 551 rows
-# Covariates that vary by visit, where there is a row for each visit to each point count
+# Generate Obs_covs_l where each row is a point count, each column is a site visit, and each slot in the list is a covariate 
 
 # Need a wide dataframe, where all point counts have a single row
 Obs_covs_df <- Pc_date4 %>%
@@ -182,72 +151,120 @@ Obs_covs_df <- Pc_date4 %>%
     names_glue = "Ano{Ano_grp}_Rep{Rep}",
     values_from = c(Value)
   ) #%>% #head()
-  
-Obs_covs_l <- Obs_covs_df %>% group_by(Variable) %>%
-  group_split(.keep = FALSE)
-names(Obs_covs_l) <- unique(Obs_covs_df$Variable)
 
-# Unit covariates ---------------------------------------------------------
+# Define functions to convert type back to date & time
+convert_type <- list(as.Date, chron::as.times, chron::as.times)
+
+# Split Obs_covs_df into a list, map function
+Obs_covs <- map(Pcs_in_range, \(in_range){
+  Obs_covs <- Obs_covs_df %>%
+    filter(Id_muestreo %in% in_range) %>% 
+    arrange(Id_muestreo) %>%
+    group_by(Variable) %>%
+    group_split(.keep = FALSE)
+  names(Obs_covs) <- sort(unique(Obs_covs_df$Variable)) 
+  
+  # Convert back to dates and times respectively
+  map2(Obs_covs, convert_type, \(oc, type){
+    oc %>% mutate(across(-1, ~ type(.))) %>% 
+      select(-Id_muestreo) %>% 
+      mutate(across(everything(), scale))
+  })
+})
+
+# NOTE:: These are not all NAs, just the values shown are (early years of CIPAV)
+Obs_covs[[1]][[2]] %>% 
+  filter(if_any(everything(), ~!is.na(.x))) %>% 
+  select(`Ano16-17_Rep1`)
+
+# Site covariates ---------------------------------------------------------
 # Covariates that are fixed for a given point count
-unit_covs <- Envi_df2 %>%
+Site_covs_df <- Envi_df2 %>%
   arrange(Id_muestreo) %>%
-  select(Id_muestreo, Elev, Avg_temp, Tot.prec)
+  select(Id_muestreo, Elev, Avg_temp, Tot.prec, Habitat_ut2) %>% 
+  mutate(Habitat_ut2 = factor(Habitat_ut2, 
+                              levels = c("Pastizales", "Cultivos", "Ssp", "Bosque ripario", "Bosque")))
+
+Site_covs <- map(Pcs_in_range, \(in_range){
+  Site_covs_df %>% filter(Id_muestreo %in% in_range) %>% 
+    select(-Id_muestreo) %>% 
+    mutate(across(where(is.numeric), scale))
+}) 
 
 # Occ abu formatting  -----------------------------------------------------
 Pc_date_join <- Pc_date4 %>% distinct(Id_muestreo, Ano_grp, Pc_start, Rep)
 
-# Abundances
+# Abundances -- join with Pc_date_join 
 Abund_long <- Birds_fin %>%
   full_join(Pc_date_join, relationship = "many-to-many") %>%
   summarize(
     Count = sum(Count),
     .by = c(Id_muestreo, Ano_grp, Rep, Nombre_ayerbe)
   )
+ 
+# Create filtered list
+Abund_l <- Abund_long %>% filter(Nombre_ayerbe %in% Top_abu) %>% 
+  group_split(Nombre_ayerbe)
 
-## nesting by Uniq_db likely makes more sense, maybe by ecoregion? Do 2 species instead of 30
-Abund_long %>% nest(.by = Nombre_ayerbe) %>% 
-  filter(Nombre_ayerbe %in% Spp30)
 
-# This works but doesn't seem to maintain all reps (if species wasn't observed?)
-Abund_long %>% filter(Nombre_ayerbe == "Bubulcus ibis") %>% 
-  arrange(Ano_grp, Rep) %>%
-  #select(Id_muestreo, Ano_grp, Rep, Bubulcus_ibis, Amazona_ochrocephala) %>% 
-  pivot_wider(id_cols = c(Id_muestreo),
-              names_from = c(Ano_grp, Rep),
-              names_glue = "Ano{Ano_grp}_Rep{Rep}",
-              values_from = Count, 
-              values_fill = 0)
+# Join abundance data (just containing points where species was observed) with all the point counts that the species could have been observed with
+# Add Rep & Ano_grp info to allow for a successful join with Abund_l
+Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
+  Date_in_range <- tibble(Id_muestreo = in_range) %>% left_join(Pc_date_join)
+  abund %>% full_join(Date_in_range)
+})
 
-# For iNEXT
+# Pivot_wider and fill in with zeros 
+# TO DO: Make a function here? Depending on iNEXT needs
+Abund_zeros <- map(Abund_in_range, \(abund){
+  abund %>% mutate(Count = if_else(is.na(Count), 0, Count)) %>%  
+    arrange(Ano_grp, Rep) %>%
+    pivot_wider(id_cols = c(Id_muestreo),
+                names_from = c(Ano_grp, Rep),
+                names_glue = "Ano{Ano_grp}_Rep{Rep}",
+                values_from = Count, 
+                values_fill = 0) %>% 
+    arrange(Id_muestreo) %>% 
+    select(-Id_muestreo)
+})
+
+# Any of the observation covs (start time, pc length, or date) dataframes have NAs where a given point count wasn't surveyed at a given repetition. Use this data frame to assign NAs to the abundance dataframe
+Abund_nas <- map2(Abund_zeros, Obs_covs, \(abund, oc){
+  NAs <- oc$Pc_start
+  abund %>% mutate(across(everything(), ~ if_else(is.na(NAs[[cur_column()]]), NA, .x)))
+})
+
+# Ensure the orders of Id_muestreo are the same in all input values to UMF
+# Function to check if all values in a row are identical
+is_same <- function(x) {
+  all(x == x[1])
+}
+
+same_df <- tibble(
+  az = Abund_nas$Bubulcus_ibis$Id_muestreo,
+  sc = Site_covs$Bubulcus_ibis$Id_muestreo,
+  oc = Obs_covs$Bubulcus_ibis$Fecha$Id_muestreo
+) %>% rowwise() %>% 
+  mutate(is_same = is_same(c_across(everything())))
+table(same_df$is_same)
+
+# iNEXT -------------------------------------------------------------------
 Spp_wide <- Abund_long %>% 
   pivot_wider(
-    names_from = Nombre_ayerbe_,
+    names_from = Nombre_ayerbe,
     values_from = Count,
     values_fill = 0
   ) %>% arrange(Id_muestreo, Ano_grp, Rep)
 
-
-# CHECK:: There are several point counts that have rows in event_covs but are not in Birds_fin
-test <- Birds_fin %>% full_join(event_covs) 
-Not_in_bf <- test %>% anti_join(Birds_fin) %>% # Not in Birds_fin df
-  filter(Spp_obs != 0) %>% # We know these will be in event_covs and not Birds_fin
-  distinct(Id_muestreo, Rep, Fecha, Pc_start, Spp_obs) 
-# I confirmed that all of these point counts are due to 1) having only birds >50m, 2) having Estrato_vertical as flyover, or 3) Not observing species that are in Tax_df3 (genus, for example)
-# For example:
-Bird_pcs %>% right_join(Not_in_bf) %>% 
-  distinct(Id_muestreo, Rep, Fecha, Pc_start, Spp_obs, Ano_grp, Distancia_bird, Estrato_vertical)
-
-# Occupancy
-Ubc_occ <- Ubc_abu %>% select(-c(Id_muestreo, Ano_grp, Rep)) %>% 
-  mutate(across(.cols = everything(), .fns = ~ ifelse(. > 0, 1, 0)))
+# Save & Export -----------------------------------------------------------
+rm(list = ls()[!(ls() %in% c("Abund_nas", "Site_covs", "Obs_covs"))])
+#save.image(paste0("Rdata/DW_umf_inputs_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 
 # Flocker -----------------------------------------------------------------
 # TRY unmarked or ubms? 
 d <- simulate_flocker_data()
 
-# Create occupancy data frame
-Ubc_occ <- Ubc_abu %>% select(-c(Id_muestreo, Ano_grp, Rep)) %>% 
-  mutate(across(.cols = everything(), .fns = ~ ifelse(. > 0, 1, 0)))
+
 
 # NOTE:: Abundance data, event & unit covs were arranged in the same order
 event_covs2 <- event_covs %>% select(Fecha, Pc_start)
@@ -258,19 +275,146 @@ fd_rep_varying <- make_flocker_data(
   event_covs = event_covs2
 )
 
-
 # Misc --------------------------------------------------------------------
+# >Nested tibble workflow -------------------------------------------------
+# Seems like there's potential for sure, idea of avoiding hierarchical lists is really nice. But couldn't quite figure it out, was really challenging to get data where it was needed. 
 
-#Nest?
-Pcs_nest <- Bird_pcs %>% group_by(Uniq_db) %>% # Nombre_institucion
-  nest()
+# Create a data frame with species names and their respective maps
+spp_nested <- tibble(
+  Species = Top_abu, 
+  Data = map(Top_abu, \(spp) {
+    Birds_fin %>%
+      filter(Nombre_ayerbe == spp) # Filter rows for each species
+  }),
+  Pcs_in_range = map(Pcs_in_range, ~pluck(.x)),
+)
 
-# Access the nested data for a specific Uniq_db
-Ubc_mbd_data <- Pcs_nest %>% 
-  filter(Uniq_db == "UBC MBD") %>% 
-  pluck("data", 1)
+## Subset covariates by the point counts in range for each species but using a nested tibble
+spp_nested2 <- spp_nested %>% rowwise() %>%
+  mutate(
+    Obs_covs_subsets = list(map(Obs_covs_l, ~ .x %>% filter(Id_muestreo %in% Pcs_in_range))), 
+    Site_covs = list(Site_covs %>% filter(Id_muestreo %in% Pcs_in_range))
+  ) %>% 
+  unnest_wider(Obs_covs_subsets)
 
-# Save & Export -----------------------------------------------------------
+spp_nested %>% rowwise() %>%
+  mutate(
+    # Subset Obs_covs_l for each Pcs_in_range
+    Obs_covs_subsets = list(
+      map(Obs_covs_l, ~ .x %>% filter(Id_muestreo %in% Pcs_in_range))
+    ),
+    # Subset Site_covs for each Pcs_in_range
+    Site_covs = list(
+      Site_covs %>% filter(Id_muestreo %in% Pcs_in_range)
+    ),
+    # Create y_mat by joining Pcs_in_range with Abund_l
+    y_mat = list(map2(Abund_l, Date_in_range, ~ .x %>%
+                        full_join(.y))
+    )) %>%
+  ungroup() %>% 
+  select(Species, y_mat) %>% 
+  unnest_longer(y_mat) %>% 
+  unnest_longer(y_mat) #%>% 
+#filter(is.na(y_mat$Count))
+
+spp_nested3 <- spp_nested2 %>% mutate(Abund_nas = map2(Abund_zeros, Pc_start, \(abund, nas){
+  abund %>% mutate(across(everything(), ~ if_else(is.na(nas[[cur_column()]]), NA, .x)))
+})) 
+
+spp_nested3 %>% rowwise() %>% 
+  mutate(
+    unmarkedFrame = map( \(df) unmarkedFramePCount(y = df %>% select(Abund_nas), 
+                                                   SiteCovs = df %>% select(Elev, Avg_temp, Tot.prec),
+                                                   ObsCovs = df %>% select(Fecha, Pc_length, Pc_start)))
+  )
+
+deframe_cols <- function(nest_tib, vars){
+  nest_tib %>% select({{ vars }}) %>% 
+    deframe()
+}
+
+SiteCovs_l <- spp_nested3 %>% deframe_cols(c(Elev, Avg_temp, Tot.prec))
+
+spp_nested2 %>% select(Site_covs) %>% 
+  deframe()
+spp_nested3 %>% select(ObsCovs) %>% 
+  deframe() %>%
+  unnest_longer()
 
 
 
+# >Interpolate Pc_start ----------------------------------------------------
+# Also Pc_date for UniLlanos. Ask Natalia for help if needed
+
+# Visualize the problem: The sites where no species were observed (Spp_obs == 0) have varying amounts of NAs. May be a few additional weird NAs, but this is main challenge
+Pc_date4 %>% filter(Spp_obs == 0) %>% 
+  select(Uniq_db, Fecha, Pc_length, Pc_start) %>% 
+  view()
+#drop_na()
+
+# Visualize Pc_lengths by Uniq_db
+Pc_date4 %>% distinct(Uniq_db, Pc_length) %>% 
+  filter(!Uniq_db %in% c("Cipav mbd", "Gaica distancia"))
+
+# Assign Pc_length based on what we know of the data collectors' methodologies. 
+# Really, this is only relevant for CIPAV. Pc_length is helpful for data checking, but in models only CIPAV has meaningful variation (within a Uniq_db), and could just blanket assign values for between Uniq_dbs
+# NOTE this provides solution to challenge with different types of class times, use as.numeric first
+Pc_date5 <- Pc_date4 %>%
+  mutate(
+    Pc_length = case_when(
+      is.na(Pc_length) & Uniq_db %in% c("Gaica mbd", "Ubc mbd", "Unillanos mbd") ~ 
+        as.numeric(times("00:00:00")),
+      is.na(Pc_length) & Uniq_db == "Gaica distancia" ~ 
+        as.numeric(times("00:10:00")),
+      .default = as.numeric(Pc_length) # Convert existing Pc_length to numeric for consistency
+    ),
+    Pc_length = times(Pc_length) # Convert back to times at the end
+  )
+
+# Using Obs_covs_l
+TF_mat <- is.na(Obs_covs_l$Fecha) == is.na(Obs_covs_l$Pc_start) & is.na(Obs_covs_l$Fecha) == is.na(Obs_covs_l$Pc_length)
+discrepancies <- which(!TF_mat, arr.ind = TRUE) %>% as_tibble()
+discrepancies
+
+
+ids_na_diff <- Obs_covs_l$Fecha[discrepancies$row, 1] %>% pull(Id_muestreo)
+Obs_covs_df %>% filter(Id_muestreo %in% ids_na_diff) %>% 
+  select(Id_muestreo, unique(discrepancies$col)) %>%
+  filter(if_any(everything(), is.na))
+
+# Visualize example
+df_meta %>% filter(Id_muestreo == "G-AD-M-LCA1_09") %>% 
+  select(Id_muestreo, Fecha, Hora, Spp_obs)
+
+# Think about how imputation might work. Would want to create AM_PM variable 
+Pc_date4 %>% filter(Fecha == "2019-09-24") %>% 
+  distinct(Id_muestreo, Fecha, Pc_start, Spp_obs) %>% 
+  arrange(Id_muestreo, Fecha) 
+
+# Example GPT code to fill in times
+Pc_date4_filled <- Pc_date4 %>%
+  arrange(Id_muestreo, Fecha, Pc_start) %>% # Arrange by Id_muestreo and Pc_start
+  group_by(Fecha, Id_group) %>%
+  mutate(
+    Pc_start = if_else(
+      is.na(Pc_start),
+      {
+        # Find the previous and next Pc_start times
+        prev_time <- dplyr::lag(Pc_start)
+        next_time <- lead(Pc_start)
+        
+        # Interpolate or use available neighbors, ensuring the result is of class 'times'
+        if (!is.na(prev_time) & !is.na(next_time)) {
+          times((as.numeric(prev_time) + as.numeric(next_time)) / 2) # Midpoint
+        } else if (!is.na(prev_time)) {
+          prev_time # Use previous time if no next
+        } else if (!is.na(next_time)) {
+          next_time # Use next time if no previous
+        } else {
+          NA # Fallback if no neighbors
+        }
+      },
+      Pc_start # Keep original values
+    )
+  ) %>%
+  ungroup()
