@@ -20,7 +20,6 @@ library(janitor)
 library(chron)
 library(readxl)
 library(sf)
-library(cowplot)
 library(conflicted)
 ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
@@ -75,12 +74,16 @@ Spp_counts <- Birds_fin %>%
   summarize(Count = sum(Count), .by = c(Nombre_ayerbe, Nombre_ayerbe_))
 
 # Pull the 30 species that have been observed more than 30 times
-Ubc30 <- Spp_counts %>% 
-  filter(Count > 30) %>%
-  distinct(Nombre_ayerbe, Nombre_ayerbe_)
+#Ubc30 <- Spp_counts %>% 
+ # filter(Count > 30) %>%
+  #distinct(Nombre_ayerbe, Nombre_ayerbe_)
 
 # The most abundant species in the project
-Top_abu <- Spp_counts %>% slice_max(order_by = Count, n = 2) %>% 
+No_maps <- c("Leptotila verreauxi", "Accipiter bicolor", "Sirystes sibilator", "Thripadectes virgaticeps")
+Top_abu_df <- Spp_counts %>% slice_max(order_by = Count, n = 30) %>%
+  filter(!Nombre_ayerbe %in% No_maps)
+Top_abu <- Top_abu_df %>% 
+  arrange(Nombre_ayerbe) %>%
   pull(Nombre_ayerbe)
 
 # Biogeographic_clipping --------------------------------------------------
@@ -91,9 +94,10 @@ Top_abu <- Spp_counts %>% slice_max(order_by = Count, n = 2) %>%
 Ayerbe_mod_spp_l <- map(Top_abu, \(spp){
   st_read(dsn = "../Geospatial_data/Ayerbe_shapefiles_1890spp", layer = spp) %>% st_make_valid()
 })
+names(Ayerbe_mod_spp_l) <- Top_abu
 Ayerbe_mod_spp <- do.call(rbind, Ayerbe_mod_spp_l)
 
-# Calculate the distance (km) from each point count location to the species range
+# Calculate the shortest distance (km) from each point count location to the species range
 Dist_to_pcs <- Pc_locs_sf %>%
   distinct(Id_muestreo, geometry) %>%
   st_distance(Ayerbe_mod_spp) %>% 
@@ -108,19 +112,35 @@ Dist_to_pcs <- Pc_locs_sf %>%
 Dist_pcs_sf <- Pc_locs_sf %>% distinct(Id_muestreo, geometry) %>% 
   full_join(Dist_to_pcs)
 
-# Examine rows with Pcs > 0 km
-Dist_pcs_sf %>% filter(if_any(where(is.numeric), ~ .x > 0)) %>%
-  ggplot() + 
-  geom_sf(aes(color = Eupsittula_pertinax)) +
-  geom_sf(data = Ayerbe_mod_spp_l[[2]]) #+
+# Plot the rows with Pcs > 0 km
+if(FALSE){
+  Dist_pcs_sf %>% filter(if_any(where(is.numeric), ~ .x > 0)) %>%
+    ggplot() + 
+    geom_sf(data = Ayerbe_mod_spp_l$`Ixothraupis guttata`) +
+    geom_sf(aes(color = Ixothraupis_guttata)) #+
   #geom_sf(data = Pc_locs_sf, color = "red") 
+}
 
 ## Extract 'Id_muestreo' where the distance to the spp range == 0 for later subsetting
 Pcs_in_range <- Dist_to_pcs %>%
   select(where(is.numeric)) %>% 
   map(~ Dist_to_pcs %>%
         filter(.x == 0) %>% 
-        pull(Id_muestreo)) 
+        pull(Id_muestreo))
+
+# Only retain species that have at least some observations within its range 
+length(spp_rm)
+spp_rm <- Pcs_in_range %>%
+  imap(~ if (length(.x) == 0) .y) %>% # Retain names of length-0 slots
+  compact() 
+if(length(spp_rm) > 0){
+  spp_rm %>% list_simplify()
+  Pcs_in_range <- Pcs_in_range %>% discard_at(spp_rm)
+  
+  spp_rm <- str_replace(spp_rm, "_", " ")
+  Top_abu_df <- Top_abu_df %>% filter(!Nombre_ayerbe %in% spp_rm2)
+  Top_abu <- Top_abu[!Top_abu %in% spp_rm2] 
+}
 
 # NOTE:: In the future will likely want to use some proportion of the total area via st_area()
 st_area(Ayerbe_mod_spp) 
@@ -161,6 +181,7 @@ Obs_covs <- map(Pcs_in_range, \(in_range){
   map2(Obs_covs, convert_type, \(oc, type){
     oc %>% mutate(across(-1, ~ type(.))) %>% 
       select(-Id_muestreo) %>% 
+      #column_to_rownames(var = "Id_muestreo") %>%
       mutate(across(everything(), scale))
   })
 })
@@ -178,9 +199,11 @@ Site_covs_df <- Envi_df2 %>%
   mutate(Habitat_ut2 = factor(Habitat_ut2, 
                               levels = c("Pastizales", "Cultivos", "Ssp", "Bosque ripario", "Bosque")))
 
+# Does rownames works?
 Site_covs <- map(Pcs_in_range, \(in_range){
   Site_covs_df %>% filter(Id_muestreo %in% in_range) %>% 
     select(-Id_muestreo) %>% 
+    #column_to_rownames(var = "Id_muestreo") %>%
     mutate(across(where(is.numeric), scale))
 }) 
 
@@ -195,17 +218,24 @@ Abund_long <- Birds_fin %>%
     .by = c(Id_muestreo, Ano_grp, Rep, Nombre_ayerbe)
   )
  
-# Create filtered list
+# Create abundance list with just most abundant species 
 Abund_l <- Abund_long %>% filter(Nombre_ayerbe %in% Top_abu) %>% 
-  group_split(Nombre_ayerbe)
-
+  group_split(Nombre_ayerbe, .keep = FALSE)
+names(Abund_l) <- names(Pcs_in_range)
 
 # Join abundance data (just containing points where species was observed) with all the point counts that the species could have been observed with
 # Add Rep & Ano_grp info to allow for a successful join with Abund_l
 Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
   Date_in_range <- tibble(Id_muestreo = in_range) %>% left_join(Pc_date_join)
-  abund %>% full_join(Date_in_range)
+#NOTE:: right_join effectively does the clip, ensuring that there are not observations outside of buffer
+  abund %>% right_join(Date_in_range)
 })
+
+# Issue is that Crotophaga_sulcirostris was NOT seen at all on this Ano_rep combo (or any in 2019 I think). So these columns are not created in the abundance
+is.na(Obs_covs$Crotophaga_sulcirostris$Fecha$Ano19_Rep3) %>% table()
+# It might work to ensure that all of these combos are in Abund_l
+colnames(Obs_covs$Crotophaga_sulcirostris$Fecha)
+Abund_l$Crotophaga_sulcirostris
 
 # Pivot_wider and fill in with zeros 
 # TO DO: Make a function here? Depending on iNEXT needs
@@ -219,6 +249,15 @@ Abund_zeros <- map(Abund_in_range, \(abund){
                 values_fill = 0) %>% 
     arrange(Id_muestreo) %>% 
     select(-Id_muestreo)
+    #column_to_rownames(var = "Id_muestreo") 
+})
+
+# Use the Abund_zeros list to select only the relevant columns for the observation covariates
+Obs_covs2 <- map2(Obs_covs, Abund_zeros, \(oc, abund){
+  map(oc, \(oc){
+    cols <- colnames(abund)
+    oc %>% select(all_of(cols))
+  })
 })
 
 # Any of the observation covs (start time, pc length, or date) dataframes have NAs where a given point count wasn't surveyed at a given repetition. Use this data frame to assign NAs to the abundance dataframe
@@ -241,6 +280,57 @@ same_df <- tibble(
   mutate(is_same = is_same(c_across(everything())))
 table(same_df$is_same)
 
+# unmarkedFrame -----------------------------------------------------------
+## Create unmarkedFrames
+# Abundance
+umf_abu_l <- pmap(
+  .l = list(Abund_nas, Site_covs, Obs_covs2), 
+  .f = \(abund, sc, oc){
+    unmarkedFramePCount(y = abund, siteCovs = sc, obsCovs = oc)
+  })
+
+# Occupancy
+Occ_nas <- map(Abund_nas, \(abund){
+  abund %>% mutate(across(.cols = everything(), .fns = ~ ifelse(. > 0, 1, 0)))
+})
+
+umf_occ_l <- pmap(.l = list(Occ_nas, Site_covs, Obs_covs2), 
+                  .f = \(abund, sc, oc){
+                    unmarkedFrameOccu(y = abund, siteCovs = sc, obsCovs = oc)
+                  })
+
+# spOccupancy -------------------------------------------------------------
+## Prep the data structure for spOccupancy package
+
+# One benefit is that spOccupancy can account for spatial autocorrelation. 
+# Project coordinates for Colombia and filter by relevant PCs for each species
+Coords <- map(Pcs_in_range,  \(in_range){
+  Pc_locs_sf %>% distinct(Id_muestreo, geometry) %>% 
+    filter(Id_muestreo %in% in_range) %>% 
+    st_transform(crs = st_crs("EPSG:32618")) %>% 
+    st_coordinates() # Remove as needed for plotting 
+})
+
+# Ensure adequate plotting 
+if(FALSE){
+  bi_sf <- Ayerbe_mod_spp %>% filter(Nombre == "Bubulcus ibis") %>% 
+    st_transform(crs = st_crs("EPSG:32618"))
+  ggplot() + 
+    geom_sf(data = bi_sf) +
+    geom_sf(data = Coords[[1]])
+}
+
+# Combine inputs into the list structure needed by spOccupancy. 
+# NOTE:: Different names require in the list occ.covs = occurrence (or occupancy) covariates
+spOcc_l <- pmap(list(Occ_nas, Site_covs, Obs_covs2, Coords),
+                \(occ, sc, oc, coords){
+                  list(y = occ, occ.covs = sc, det.covs = oc, coords = coords)
+})
+
+
+# Top_abu_df --------------------------------------------------------------
+Top_abu_df2 <- Top_abu_df %>% mutate(Num_pcs = map_dbl(Pcs_in_range, length))
+
 # iNEXT -------------------------------------------------------------------
 Spp_wide <- Abund_long %>% 
   pivot_wider(
@@ -250,8 +340,8 @@ Spp_wide <- Abund_long %>%
   ) %>% arrange(Id_muestreo, Ano_grp, Rep)
 
 # Save & Export -----------------------------------------------------------
-rm(list = ls()[!(ls() %in% c("Abund_nas", "Site_covs", "Obs_covs"))])
-#save.image(paste0("Rdata/DW_umf_inputs_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
+#rm(list = ls()[!(ls() %in% c("umf_abu_l", "umf_occ_l", "spOcc_l", "Top_abu_df2"))]) #"Abund_nas", "Site_covs", "Obs_covs"
+#save.image(paste0("Rdata/Occ_abu_inputs_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 
 # >Interpolate Pc_start ----------------------------------------------------
 # Also Pc_date for UniLlanos. Ask Natalia for help if needed
