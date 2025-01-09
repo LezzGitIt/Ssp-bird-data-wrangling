@@ -155,7 +155,7 @@ Ex500 %>% ggplot() +
 
 # >Metadata files --------------------------------------------------------
 ## Create file w/ appropriate dates for extraction of Planet imagery for Seth
-Pc_date4 %>%
+Pc_date7 %>%
   distinct(
     Id_muestreo, Nombre_institucion,
     Uniq_db, Departamento, Nombre_finca, Ano, Mes
@@ -171,7 +171,7 @@ Pc_date4 %>%
 # write.xlsx("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Mentorship/Digitization_Mathilde/Digitization_Dep_month_year2.xlsx", row.names = F)
 
 ## Metadata file for Mathilde to fill out
-Pc_date4 %>%
+Pc_date7 %>%
   mutate(Id_muestreo = str_split_i(Id_muestreo, "_", i = 1)) %>%
   group_by(Id_muestreo, Ano) %>%
   summarize(across(), Month.min = min(Mes), Month.max = max(Mes)) %>%
