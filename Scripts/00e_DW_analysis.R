@@ -158,9 +158,9 @@ Obs_covs_df <- Pc_date7 %>%
     names_to = "Variable",          
     values_to = "Value"             
   ) %>%
-  arrange(Id_muestreo, Ano_grp, Rep) %>%
+  arrange(Ano_grp, Rep) %>%
   pivot_wider(
-    id_cols = c(Id_muestreo, Variable, Ano_grp),
+    id_cols = c(Id_muestreo, Ano_grp, Variable),
     names_from = c(Rep),
     names_glue = "Rep{Rep}",
     values_from = c(Value)
@@ -174,7 +174,7 @@ convert_type <- list(as.Date, as_hms, as_hms)
 Obs_covs <- map(Pcs_in_range, \(in_range){
   Obs_covs <- Obs_covs_df %>%
     filter(Id_muestreo %in% in_range) %>% 
-    arrange(Id_muestreo) %>%
+    arrange(Id_muestreo, Ano_grp) %>%
     group_by(Variable) %>%
     group_split(.keep = FALSE)
   names(Obs_covs) <- sort(unique(Obs_covs_df$Variable)) 
@@ -182,41 +182,42 @@ Obs_covs <- map(Pcs_in_range, \(in_range){
   
   # Convert back to dates and times respectively
   map2(Obs_covs, convert_type, \(oc, type){
-    oc %>% mutate(across(-1, ~ type(.))) %>% 
-      select(-c(Id_muestreo, Ano_grp)) %>% 
+    oc %>% mutate(across(-c(1,2), ~ type(.))) %>% 
+      select(-c(Id_muestreo, Ano_grp)) %>% #, Ano_grp
       # NOTE:: Already confirmed that hms() objects scale appropriately 
       mutate(across(everything(), scale))
   })
 })
 
-# NOTE:: The Obs_covs list shows all NAs in first 10 rows, but these are just the early years of CIPAV
-Obs_covs[[1]][[2]] %>% 
-  filter(if_any(everything(), ~!is.na(.x))) %>% 
-  select(`Ano16-17_Rep1`)
-
 # Site covariates ---------------------------------------------------------
 # Covariates that are fixed for a given point count
 # Uniq_db, Ano will need to lengthen dataframes (will give abundance trend through time),
+date_join_ano <- Pc_date7 %>% distinct(Id_muestreo, Id_group, Ano_grp)
 Site_covs_df <- Envi_df2 %>%
-  arrange(Id_muestreo) %>%
-  select(Id_muestreo, Elev, Avg_temp, Tot.prec, Habitat_cons) %>% 
-  mutate(Habitat_cons = factor(Habitat_cons, 
-                              levels = c("Pastizales", "Cultivos", "Ssp", "Bosque ripario", "Bosque")))
+  full_join(date_join_ano) %>% tibble() %>%
+  mutate(across(where(is.character), as.factor)) %>% 
+  mutate(
+    Ano1 = as.numeric(str_split_i(Ano_grp, "-", 1)), # Take the earlier of the two years 
+    Habitat_cons = fct_relevel(Habitat_cons, 
+                               c("Pastizales", "Cultivos", "Ssp", "Bosque ripario", "Bosque")),
+    Ecoregion = relevel(Ecoregion, ref = "Piedemonte")
+  ) %>%
+  arrange(Id_muestreo, Ano_grp) %>%
+  select(Id_muestreo, Id_group, Ecoregion, Elev, Avg_temp, Tot.prec, Habitat_cons, Ano1)
 
 # Does rownames works?
 Site_covs <- map(Pcs_in_range, \(in_range){
   Site_covs_df %>% filter(Id_muestreo %in% in_range) %>% 
-    select(-Id_muestreo) %>% 
-    #column_to_rownames(var = "Id_muestreo") %>%
+    select(-c(Id_muestreo)) %>% 
     mutate(across(where(is.numeric), scale))
 }) 
 
 # Occ abu formatting  -----------------------------------------------------
-Pc_date_join <- Pc_date7 %>% distinct(Id_muestreo, Ano_grp, Pc_start, Rep)
+date_join_rep <- Pc_date7 %>% distinct(Id_muestreo, Ano_grp, Pc_start, Rep)
 
-# Abundances -- join with Pc_date_join 
+# Abundances -- join with date_join_rep 
 Abund_long <- Birds_fin %>%
-  full_join(Pc_date_join, relationship = "many-to-many") %>%
+  full_join(date_join_rep, relationship = "many-to-many") %>%
   summarize(
     Count = sum(Count),
     .by = c(Id_muestreo, Ano_grp, Rep, Nombre_ayerbe)
@@ -231,7 +232,7 @@ names(Abund_l) <- names(Pcs_in_range)
 # Join abundance data (just containing points where species was observed) with all the point counts that the species could have been observed with
 # Add Rep & Ano_grp info to allow for a successful join with Abund_l
 Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
-  Date_in_range <- tibble(Id_muestreo = in_range) %>% left_join(Pc_date_join)
+  Date_in_range <- tibble(Id_muestreo = in_range) %>% left_join(date_join_rep)
 #NOTE:: right_join effectively does the clip, ensuring that there are not observations outside of buffer
   abund %>% right_join(Date_in_range)
 })
@@ -240,14 +241,14 @@ Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
 # TO DO: Make a function here? Depending on iNEXT needs
 Abund_zeros <- map(Abund_in_range, \(abund){
   abund %>% mutate(Count = if_else(is.na(Count), 0, Count)) %>%  
-    arrange(Ano_grp, Rep) %>%
-    pivot_wider(id_cols = c(Id_muestreo),
-                names_from = c(Ano_grp, Rep),
-                names_glue = "Ano{Ano_grp}_Rep{Rep}",
+    arrange(Id_muestreo, Ano_grp, Rep) %>%
+    pivot_wider(id_cols = c(Id_muestreo, Ano_grp),
+                names_from = c(Rep),
+                names_glue = "Rep{Rep}",
                 values_from = Count, 
                 values_fill = 0) %>% 
-    arrange(Id_muestreo) %>% 
-    select(-Id_muestreo)
+    arrange(Id_muestreo, Ano_grp) %>% 
+    select(-c(Id_muestreo, Ano_grp))
     #column_to_rownames(var = "Id_muestreo") 
 })
 
