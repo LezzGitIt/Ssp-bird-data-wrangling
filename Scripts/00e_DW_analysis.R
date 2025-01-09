@@ -20,12 +20,14 @@ library(janitor)
 library(chron)
 library(readxl)
 library(sf)
+library(unmarked)
 library(conflicted)
+library(cowplot)
 ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-load("Rdata/the_basics_01.03.25.Rdata")
+load("Rdata/the_basics_01.08.25.Rdata")
 load("Rdata/Taxonomy_12.29.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
@@ -129,7 +131,6 @@ Pcs_in_range <- Dist_to_pcs %>%
         pull(Id_muestreo))
 
 # Only retain species that have at least some observations within its range 
-length(spp_rm)
 spp_rm <- Pcs_in_range %>%
   imap(~ if (length(.x) == 0) .y) %>% # Retain names of length-0 slots
   compact() 
@@ -146,29 +147,30 @@ if(length(spp_rm) > 0){
 st_area(Ayerbe_mod_spp) 
 
 # Observation covariates -----------------------------------------------------------
-# We have 551 unique Id_muestreos, so all data frames should have 551 rows
-# Generate Obs_covs_l where each row is a point count, each column is a site visit, and each slot in the list is a covariate 
+# We have 551 unique Id_muestreos, so the max number of rows a dataframe will have is 551 rows
+# Generate Obs_covs_df where each row is a point count, each column is a site visit, and the 'Variable' column identifies which Observation covariate the row corresponds to  
 
 # Need a wide dataframe, where all point counts have a single row
-Obs_covs_df <- Pc_date4 %>%
+Obs_covs_df <- Pc_date7 %>%
   mutate(across(everything(), as.character)) %>%
   pivot_longer(
     cols = c(Fecha, Pc_start, Pc_length),      
     names_to = "Variable",          
     values_to = "Value"             
   ) %>%
-  arrange(Ano_grp) %>%
+  arrange(Id_muestreo, Ano_grp, Rep) %>%
   pivot_wider(
-    id_cols = c(Id_muestreo, Variable),
-    names_from = c(Ano_grp, Rep),
-    names_glue = "Ano{Ano_grp}_Rep{Rep}",
+    id_cols = c(Id_muestreo, Variable, Ano_grp),
+    names_from = c(Rep),
+    names_glue = "Rep{Rep}",
     values_from = c(Value)
-  ) #%>% #head()
+  ) 
+head(Obs_covs_df)
 
 # Define functions to convert type back to date & time
-convert_type <- list(as.Date, chron::as.times, chron::as.times)
+convert_type <- list(as.Date, as_hms, as_hms)
 
-# Split Obs_covs_df into a list, map function
+# Split Obs_covs_df into a list, where each slot in the list is a covariate 
 Obs_covs <- map(Pcs_in_range, \(in_range){
   Obs_covs <- Obs_covs_df %>%
     filter(Id_muestreo %in% in_range) %>% 
@@ -176,27 +178,29 @@ Obs_covs <- map(Pcs_in_range, \(in_range){
     group_by(Variable) %>%
     group_split(.keep = FALSE)
   names(Obs_covs) <- sort(unique(Obs_covs_df$Variable)) 
+  Obs_covs
   
   # Convert back to dates and times respectively
   map2(Obs_covs, convert_type, \(oc, type){
     oc %>% mutate(across(-1, ~ type(.))) %>% 
-      select(-Id_muestreo) %>% 
-      #column_to_rownames(var = "Id_muestreo") %>%
+      select(-c(Id_muestreo, Ano_grp)) %>% 
+      # NOTE:: Already confirmed that hms() objects scale appropriately 
       mutate(across(everything(), scale))
   })
 })
 
-# NOTE:: These are not all NAs, just the values shown are (early years of CIPAV)
+# NOTE:: The Obs_covs list shows all NAs in first 10 rows, but these are just the early years of CIPAV
 Obs_covs[[1]][[2]] %>% 
   filter(if_any(everything(), ~!is.na(.x))) %>% 
   select(`Ano16-17_Rep1`)
 
 # Site covariates ---------------------------------------------------------
 # Covariates that are fixed for a given point count
+# Uniq_db, Ano will need to lengthen dataframes (will give abundance trend through time),
 Site_covs_df <- Envi_df2 %>%
   arrange(Id_muestreo) %>%
-  select(Id_muestreo, Elev, Avg_temp, Tot.prec, Habitat_ut2) %>% 
-  mutate(Habitat_ut2 = factor(Habitat_ut2, 
+  select(Id_muestreo, Elev, Avg_temp, Tot.prec, Habitat_cons) %>% 
+  mutate(Habitat_cons = factor(Habitat_cons, 
                               levels = c("Pastizales", "Cultivos", "Ssp", "Bosque ripario", "Bosque")))
 
 # Does rownames works?
@@ -208,7 +212,7 @@ Site_covs <- map(Pcs_in_range, \(in_range){
 }) 
 
 # Occ abu formatting  -----------------------------------------------------
-Pc_date_join <- Pc_date4 %>% distinct(Id_muestreo, Ano_grp, Pc_start, Rep)
+Pc_date_join <- Pc_date7 %>% distinct(Id_muestreo, Ano_grp, Pc_start, Rep)
 
 # Abundances -- join with Pc_date_join 
 Abund_long <- Birds_fin %>%
@@ -223,6 +227,7 @@ Abund_l <- Abund_long %>% filter(Nombre_ayerbe %in% Top_abu) %>%
   group_split(Nombre_ayerbe, .keep = FALSE)
 names(Abund_l) <- names(Pcs_in_range)
 
+
 # Join abundance data (just containing points where species was observed) with all the point counts that the species could have been observed with
 # Add Rep & Ano_grp info to allow for a successful join with Abund_l
 Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
@@ -230,12 +235,6 @@ Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
 #NOTE:: right_join effectively does the clip, ensuring that there are not observations outside of buffer
   abund %>% right_join(Date_in_range)
 })
-
-# Issue is that Crotophaga_sulcirostris was NOT seen at all on this Ano_rep combo (or any in 2019 I think). So these columns are not created in the abundance
-is.na(Obs_covs$Crotophaga_sulcirostris$Fecha$Ano19_Rep3) %>% table()
-# It might work to ensure that all of these combos are in Abund_l
-colnames(Obs_covs$Crotophaga_sulcirostris$Fecha)
-Abund_l$Crotophaga_sulcirostris
 
 # Pivot_wider and fill in with zeros 
 # TO DO: Make a function here? Depending on iNEXT needs
@@ -261,7 +260,7 @@ Obs_covs2 <- map2(Obs_covs, Abund_zeros, \(oc, abund){
 })
 
 # Any of the observation covs (start time, pc length, or date) dataframes have NAs where a given point count wasn't surveyed at a given repetition. Use this data frame to assign NAs to the abundance dataframe
-Abund_nas <- map2(Abund_zeros, Obs_covs, \(abund, oc){
+Abund_nas <- map2(Abund_zeros, Obs_covs2, \(abund, oc){
   NAs <- oc$Pc_start
   abund %>% mutate(across(everything(), ~ if_else(is.na(NAs[[cur_column()]]), NA, .x)))
 })
@@ -282,10 +281,17 @@ table(same_df$is_same)
 
 # unmarkedFrame -----------------------------------------------------------
 ## Create unmarkedFrames
+
+# Multi-species
+# NOTE:: Can do multi species occupancy in unmarked , but would only want to do this, for example, with UBC (& UniLlanos data).
+?unmarkedFrameOccuMulti # Set maxOrder = 1L to do zero higherorder interactions OR can manually set by putting covariates for the number of species present and 0s for everything else 
+# Example with 3 species
+stateformulas <- c("~Habitat_cons", "~Habitat_cons", "~Habitat_cons", "0", "0", "0", "0")
+
 # Abundance
 umf_abu_l <- pmap(
   .l = list(Abund_nas, Site_covs, Obs_covs2), 
-  .f = \(abund, sc, oc){
+  \(abund, sc, oc){
     unmarkedFramePCount(y = abund, siteCovs = sc, obsCovs = oc)
   })
 
@@ -295,9 +301,19 @@ Occ_nas <- map(Abund_nas, \(abund){
 })
 
 umf_occ_l <- pmap(.l = list(Occ_nas, Site_covs, Obs_covs2), 
-                  .f = \(abund, sc, oc){
+                  \(abund, sc, oc){
                     unmarkedFrameOccu(y = abund, siteCovs = sc, obsCovs = oc)
                   })
+
+## NOTE:: The UMF will throw an error if any of the dimensions don't match up, which is great. If the code runs this means that dimensions are correct 
+# Error due to SiteCov
+Bad_sites <- Site_covs$Amazona_ochrocephala %>% filter(Habitat_cons != "Bosque")
+unmarkedFramePCount(Abund_nas$Amazona_ochrocephala, Bad_sites, Obs_covs2$Amazona_ochrocephala)
+
+# Error due to obsCov
+Obs_covs3$Amazona_ochrocephala <- Obs_covs2$Amazona_ochrocephala
+Obs_covs3$Amazona_ochrocephala[[3]] <- Obs_covs2$Amazona_ochrocephala[[3]] %>% select(-1)
+unmarkedFramePCount(Abund_nas$Amazona_ochrocephala, Site_covs$Amazona_ochrocephala, Obs_covs3$Amazona_ochrocephala)
 
 # spOccupancy -------------------------------------------------------------
 ## Prep the data structure for spOccupancy package
@@ -329,7 +345,8 @@ spOcc_l <- pmap(list(Occ_nas, Site_covs, Obs_covs2, Coords),
 
 
 # Top_abu_df --------------------------------------------------------------
-Top_abu_df2 <- Top_abu_df %>% mutate(Num_pcs = map_dbl(Pcs_in_range, length))
+Top_abu_df2 <- Top_abu_df %>% mutate(Num_pcs = map_dbl(Pcs_in_range, length)) %>% 
+  rename(Tot_count = Count)
 
 # iNEXT -------------------------------------------------------------------
 Spp_wide <- Abund_long %>% 
@@ -337,47 +354,63 @@ Spp_wide <- Abund_long %>%
     names_from = Nombre_ayerbe,
     values_from = Count,
     values_fill = 0
-  ) %>% arrange(Id_muestreo, Ano_grp, Rep)
+  ) %>% arrange(Id_muestreo, Ano_grp, Rep) %>% 
+  Cap_snake()
 
 # Save & Export -----------------------------------------------------------
+# Export R data object for future analyses 
 #rm(list = ls()[!(ls() %in% c("umf_abu_l", "umf_occ_l", "spOcc_l", "Top_abu_df2"))]) #"Abund_nas", "Site_covs", "Obs_covs"
 #save.image(paste0("Rdata/Occ_abu_inputs_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 
-# >Interpolate Pc_start ----------------------------------------------------
-# Also Pc_date for UniLlanos. Ask Natalia for help if needed
+# Export R data object for BIOL314
+#rm(list = ls()[!(ls() %in% c("Bird_pcs", "Birds_fin", "Pc_hab", "Site_covs_df"))])
+#save.image(paste0("Rdata/Biol314_inputs_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 
-# Visualize the problem: The sites where no species were observed (Spp_obs == 0) have varying amounts of NAs. May be a few additional weird NAs, but this is main challenge
-Pc_date4 %>% filter(Spp_obs == 0) %>% 
-  select(Uniq_db, Fecha, Pc_length, Pc_start) %>% 
-  view()
-#drop_na()
+# Checks ----------------------------------------------------
+# There should be no NAs in the relevant columns at this point 
+Pc_date7 %>% select(Uniq_db, Fecha, Pc_length, Pc_start) %>% 
+  Na_rows_cols(distinct = TRUE)
 
 # Visualize Pc_lengths by Uniq_db
-Pc_date4 %>% distinct(Uniq_db, Pc_length) %>% 
+Pc_date7 %>% distinct(Uniq_db, Pc_length) %>% 
   filter(!Uniq_db %in% c("Cipav mbd", "Gaica distancia"))
 
-# Assign Pc_length based on what we know of the data collectors' methodologies. 
-# Really, this is only relevant for CIPAV. Pc_length is helpful for data checking, but in models only CIPAV has meaningful variation (within a Uniq_db), and could just blanket assign values for between Uniq_dbs
-# NOTE this provides solution to challenge with different types of class times, use as.numeric first
-Pc_date5 <- Pc_date4 %>%
-  mutate(
-    Pc_length = case_when(
-      is.na(Pc_length) & Uniq_db %in% c("Gaica mbd", "Ubc mbd", "Unillanos mbd") ~ 
-        as.numeric(times("00:00:00")),
-      is.na(Pc_length) & Uniq_db == "Gaica distancia" ~ 
-        as.numeric(times("00:10:00")),
-      .default = as.numeric(Pc_length) # Convert existing Pc_length to numeric for consistency
-    ),
-    Pc_length = times(Pc_length) # Convert back to times at the end
-  )
+# Using the nested list Obs_covs 
+map_depth(Obs_covs, 2, dim) # Troglodytes_aedon has all 551 rows possible, so we'll use it
 
-# Using Obs_covs_l
-TF_mat <- is.na(Obs_covs_l$Fecha) == is.na(Obs_covs_l$Pc_start) & is.na(Obs_covs_l$Fecha) == is.na(Obs_covs_l$Pc_length)
+# Add Id_muestreo back to the 3 dataframes
+Example_l <- map(Obs_covs$Troglodytes_aedon, \(df){
+    cbind(Id_muestreo = Site_covs_df$Id_muestreo, df) %>% 
+      tibble()
+  })
+
+# Could replace the nan for NA , but the coding is more complex than it should be 
+Example_l$Pc_length[is.nan(Example_l$Pc_length)] <- NA
+
+# This returns the proportion of values that are TRUE (NA in same loc) vs FALSE (NA in different loc)
+Na_locs_equal(Example_l$Fecha, Example_l$Pc_start)
+Na_locs_equal(Example_l$Fecha, Example_l$Pc_length)
+Na_locs_equal(Example_l$Pc_start, Example_l$Pc_length)
+
+# I think this must be causing the difference.. Likely due to the Pc_lengths that are 0. Fortunately I believe R interprets NA and NaN the same way in 99% of cases 
+table(is.nan(Example_l$Pc_length[[2]]))
+table(is.nan(Example_l$Pc_start[[2]]))
+
+pcl <- Obs_covs_df %>% filter(Variable == "Pc_length")
+pcs <- Obs_covs_df %>% filter(Variable == "Pc_start")
+fecha <- Obs_covs_df %>% filter(Variable == "Fecha")
+
+Na_locs_equal(pcl, pcs)
+Na_locs_equal(fecha, pcs)
+Na_locs_equal(fecha, pcl)
+
+# DELETE 
+TF_mat <- is.na(Example_l$Fecha) == is.na(Example_l$Pc_start) & is.na(Example_l$Fecha) == is.na(Example_l$Pc_length)
 discrepancies <- which(!TF_mat, arr.ind = TRUE) %>% as_tibble()
 discrepancies
 
-
-ids_na_diff <- Obs_covs_l$Fecha[discrepancies$row, 1] %>% pull(Id_muestreo)
+ids_na_diff <- Example_l$Fecha[discrepancies$row, 1] %>% pull(Id_muestreo) %>% 
+  unique()
 Obs_covs_df %>% filter(Id_muestreo %in% ids_na_diff) %>% 
   select(Id_muestreo, unique(discrepancies$col)) %>%
   filter(if_any(everything(), is.na))
@@ -386,35 +419,3 @@ Obs_covs_df %>% filter(Id_muestreo %in% ids_na_diff) %>%
 df_meta %>% filter(Id_muestreo == "G-AD-M-LCA1_09") %>% 
   select(Id_muestreo, Fecha, Hora, Spp_obs)
 
-# Think about how imputation might work. Would want to create AM_PM variable 
-Pc_date4 %>% filter(Fecha == "2019-09-24") %>% 
-  distinct(Id_muestreo, Fecha, Pc_start, Spp_obs) %>% 
-  arrange(Id_muestreo, Fecha) 
-
-# Example GPT code to fill in times
-Pc_date4_filled <- Pc_date4 %>%
-  arrange(Id_muestreo, Fecha, Pc_start) %>% # Arrange by Id_muestreo and Pc_start
-  group_by(Fecha, Id_group) %>%
-  mutate(
-    Pc_start = if_else(
-      is.na(Pc_start),
-      {
-        # Find the previous and next Pc_start times
-        prev_time <- dplyr::lag(Pc_start)
-        next_time <- lead(Pc_start)
-        
-        # Interpolate or use available neighbors, ensuring the result is of class 'times'
-        if (!is.na(prev_time) & !is.na(next_time)) {
-          times((as.numeric(prev_time) + as.numeric(next_time)) / 2) # Midpoint
-        } else if (!is.na(prev_time)) {
-          prev_time # Use previous time if no next
-        } else if (!is.na(next_time)) {
-          next_time # Use next time if no previous
-        } else {
-          NA # Fallback if no neighbors
-        }
-      },
-      Pc_start # Keep original values
-    )
-  ) %>%
-  ungroup()
