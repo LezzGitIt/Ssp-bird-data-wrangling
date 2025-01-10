@@ -1,8 +1,9 @@
 ## PhD birds in silvopastoral landscapes##
-# Mathilde Manual Digitization & GIS work 
-# The purpose of this script is to generate files that Mathilde will need to digitize landcover from satellite imagery in QGIS
+# The purpose of this script is to generate files that collaborators will need to digitize landcover. This consists of 2 distinct but related efforts:
+# Mathilde Manual Digitization & GIS work using satellite imagery in QGIS
+# Diana Laura supervised classification using GEE 
 
-# Final digitization files can be found on Box: SCR Box -> Geodatabase -> Mathilde spatial
+# Final digitization files that Mathilde created can be found on Box: SCR Box -> Geodatabase -> Mathilde spatial
 
 # Load libraries & data ---------------------------------------------------
 library(tidyverse)
@@ -16,7 +17,7 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
-load("Rdata/the_basics_11.21.24.Rdata")
+load("Rdata/the_basics_01.09.25.Rdata")
 
 # Create files to aid in digitization -----------------------------------------------------
 # Create spatial file of point counts -- note that there are multiple coordinates for a single point count in a few cases
@@ -54,7 +55,7 @@ Bird_pcs_hab_sf %>%
   distinct(Id_muestreo, Uniq_db) %>%
   nrow() - 54 # %>% count(Uniq_db)
 
-# >Buffers ---------------------------------------------------------------
+# Buffers ---------------------------------------------------------------
 # Create buffer sizes vector and prepare loop
 # NOTE:: Even though in terra::buffer the argument is called 'width' it still refers to the radius
 buffer_dists <- c(25, 50, 100, 300, 500, 1000, 5000)
@@ -186,3 +187,39 @@ Pc_date7 %>%
 # write.xlsx("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Mentorship/Digitization_Mathilde/Digitization_metadata.xlsx", row.names = F)
 
 # save.image("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/R_Files/PhD/ColombiaPhD.Rdata")
+
+
+# Laura Diana -------------------------------------------------------------
+# Export file for Diana Laura to do landcover classification
+date_join <- Pc_date7 %>%
+  distinct(Id_muestreo_no_dc, Ano, Ecoregion) %>%
+  group_by(Id_muestreo_no_dc, Ecoregion) %>%
+  mutate(Ano_rank = row_number(Ano)) %>%
+  pivot_wider(
+    id_cols = c(Id_muestreo_no_dc, Ecoregion),
+    names_from = Ano_rank,
+    values_from = Ano,
+    names_prefix = "Ano"
+  ) %>% ungroup()
+
+# Export for Diana
+Pc_locs_sf %>% full_join(date_join) %>% 
+  distinct(Id_muestreo_no_dc, Ano1, Ano2, Ano3, Ecoregion, geometry) %>% 
+  rename(Id = Id_muestreo_no_dc, Region = Ecoregion) %>%
+  st_write(
+    driver = "ESRI Shapefile",
+    dsn = "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Colombia-SCR-Rd3/Intermediate_products_geospatial/Diana_laura_digitization/Aaron_points.shp",
+    layer = "Aaron_points"
+  )
+
+# Ensure file exported correctly 
+Exported <- st_read("Intermediate_products_geospatial/Diana_laura_digitization/Aaron_points.shp")
+names(Exported)
+
+# Plot
+load("Rdata/NE_layers_Colombia.Rdata")
+Exported %>% ggplot() + 
+  geom_sf(data = neCol) +
+  geom_sf(data = neColDepts, alpha = .5) +
+  geom_sf(alpha = .2)
+  
