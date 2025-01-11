@@ -156,7 +156,7 @@ Ex500 %>% ggplot() +
 
 # >Metadata files --------------------------------------------------------
 ## Create file w/ appropriate dates for extraction of Planet imagery for Seth
-Pc_date7 %>%
+Pc_date8 %>%
   distinct(
     Id_muestreo, Nombre_institucion,
     Uniq_db, Departamento, Nombre_finca, Ano, Mes
@@ -172,7 +172,7 @@ Pc_date7 %>%
 # write.xlsx("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Mentorship/Digitization_Mathilde/Digitization_Dep_month_year2.xlsx", row.names = F)
 
 ## Metadata file for Mathilde to fill out
-Pc_date7 %>%
+Pc_date8 %>%
   mutate(Id_muestreo = str_split_i(Id_muestreo, "_", i = 1)) %>%
   group_by(Id_muestreo, Ano) %>%
   summarize(across(), Month.min = min(Mes), Month.max = max(Mes)) %>%
@@ -188,38 +188,91 @@ Pc_date7 %>%
 
 # save.image("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/R_Files/PhD/ColombiaPhD.Rdata")
 
-
 # Laura Diana -------------------------------------------------------------
-# Export file for Diana Laura to do landcover classification
-date_join <- Pc_date7 %>%
-  distinct(Id_muestreo_no_dc, Ano, Ecoregion) %>%
-  group_by(Id_muestreo_no_dc, Ecoregion) %>%
-  mutate(Ano_rank = row_number(Ano)) %>%
-  pivot_wider(
-    id_cols = c(Id_muestreo_no_dc, Ecoregion),
-    names_from = Ano_rank,
-    values_from = Ano,
-    names_prefix = "Ano"
-  ) %>% ungroup()
+### Export files (points and buffers) for Diana Laura to do landcover classification
 
-# Export for Diana
-Pc_locs_sf %>% full_join(date_join) %>% 
-  distinct(Id_muestreo_no_dc, Ano1, Ano2, Ano3, Ecoregion, geometry) %>% 
-  rename(Id = Id_muestreo_no_dc, Region = Ecoregion) %>%
-  st_write(
-    driver = "ESRI Shapefile",
-    dsn = "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Colombia-SCR-Rd3/Intermediate_products_geospatial/Diana_laura_digitization/Aaron_points.shp",
-    layer = "Aaron_points"
+## Points
+# Define function to pivot_wider based on sets of variables
+Pivot_wider_grp <- function(distinct_vars, grp_vars) {
+  Pc_date8 %>%
+    distinct(across(all_of(distinct_vars))) %>%           
+    group_by(across(all_of(grp_vars))) %>%                
+    mutate(Ano_rank = row_number(Ano)) %>%                
+    pivot_wider(
+      id_cols = all_of(grp_vars),                         
+      names_from = Ano_rank,                              
+      values_from = Ano,                                  
+      names_prefix = "Ano"                                
+    ) %>%
+    ungroup()
+}
+
+# Create date_join by Id_muestreo
+Date_join_im <- Pivot_wider_grp(distinct_vars = c("Id_group", "Id_muestreo", "Ano", "Ecoregion"), 
+                grp_vars = c("Id_group", "Id_muestreo", "Ecoregion"))
+
+Points_export <- Pc_locs_sf %>% full_join(Date_join_im) %>% 
+  distinct(Id_group, Id_muestreo, Ano1, Ano2, Ano3, Ecoregion, geometry) %>% 
+  rename(Id_point = Id_muestreo, Region = Ecoregion)
+
+## Buffers
+# Create date_join by Id_group
+Date_join_ig <- Pivot_wider_grp(
+  distinct_vars = c("Id_group", "Ano", "Ecoregion"), 
+  grp_vars = c("Id_group", "Ecoregion")
   )
 
-# Ensure file exported correctly 
-Exported <- st_read("Intermediate_products_geospatial/Diana_laura_digitization/Aaron_points.shp")
-names(Exported)
+# Define function to create buffers 
+Buffer_grouped <- function(buff_dist = NULL){
+  Pc_locs_sf %>% full_join(Date_join_ig) %>% 
+    distinct(Id_muestreo, Id_group, Ecoregion, Ano1, Ano2, Ano3, geometry) %>% 
+    st_buffer(buff_dist) %>%
+    summarize(geometry = st_union(geometry), .by = -c(Id_muestreo, geometry)) %>%
+    st_make_valid() %>% 
+    filter(!st_is_empty(geometry)) %>% 
+    st_cast("MULTIPOLYGON")
+}
 
-# Plot
+# Create 1.5 & 5km buffers
+Buffers_group_1500 <- Buffer_grouped(1500)
+Buffers_group_5000 <- Buffer_grouped(5000)
+
+Export_files <- list(Points = Points_export,
+                      Buffers_group_1500 = Buffers_group_1500, 
+                      Buffers_group_5000 = Buffers_group_5000)
+
+## Export points & buffers
+if(FALSE){
+  imap(Export_files, \(buffers, names){
+    buffers %>% st_write(
+      driver = "ESRI Shapefile",
+      dsn = paste0("Intermediate_products_geospatial/Diana_laura_digitization/Aaron_", names, ".shp"),
+      layer = paste0("Aaron_", names)
+    ) 
+  })
+}
+
+# Ensure file exported correctly 
+files <- list.files("Intermediate_products_geospatial/Diana_laura_digitization", pattern = ".shp")
+Exported_files <- st_read("Intermediate_products_geospatial/Diana_laura_digitization/Aaron_points.shp")
+
+path <- "Intermediate_products_geospatial/Diana_laura_digitization/"
+Exported_files <- map(files, \(shp){
+  st_read(paste0(path, shp)) 
+})
+names(Exported_files) <- str_remove_all(files, ".shp")
+
+## Plot examples
 load("Rdata/NE_layers_Colombia.Rdata")
-Exported %>% ggplot() + 
+# At level of country
+Exported_files$Aaron_Buffers_group_5000 %>% ggplot() + #Points_export
   geom_sf(data = neCol) +
   geom_sf(data = neColDepts, alpha = .5) +
   geom_sf(alpha = .2)
-  
+
+# A single 5km buffer 
+Points_ex <- Exported_files$Aaron_points2%>% filter(Id_group == "G-MB-Q-PORT") 
+Exported_files$Aaron_Buffers_group_5000 %>% filter(Id_group == "G-MB-Q-PORT") %>%
+  ggplot() +
+  geom_sf() + 
+  geom_sf(data = Points_ex)
