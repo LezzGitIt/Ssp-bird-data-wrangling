@@ -7,10 +7,12 @@
 
 # Load libraries & data ---------------------------------------------------
 library(tidyverse)
+library(janitor)
 library(terra)
 library(tidyterra)
 library(sf)
 library(cowplot)
+library(ggrepel)
 library(conflicted)
 ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
@@ -116,7 +118,7 @@ files.exp.sf$PC_Cents <- files.exp.sf$PC_Cents %>%
   arrange(name) # %>%
 # st_as_sf()
 
-dir <- "Intermediate_products_geospatial/"
+dir <- "Derived_geospatial/"
 filepath <- c("kml", "shp")
 filetype <- c("kml", "ESRI Shapefile")
 
@@ -190,6 +192,14 @@ Pc_date8 %>%
 
 # Laura Diana -------------------------------------------------------------
 ### Export files (points and buffers) for Diana Laura to do landcover classification
+sabine <- st_read("Derived_geospatial/Diana_laura_digitization/Sabine_Fincas_Potrero/Sabine_Fincas_Potrero.shp") %>% 
+  select(Name, geometry) %>% 
+  rename(Id_muestreo = Name) %>% 
+  mutate(
+    Ecoregion = "Cafetera", 
+    Ano1 = 2024, 
+    Id_group = "Sabine_farms"
+  )
 
 ## Points
 # Define function to pivot_wider based on sets of variables
@@ -213,7 +223,9 @@ Date_join_im <- Pivot_wider_grp(distinct_vars = c("Id_group", "Id_muestreo", "An
 
 Points_export <- Pc_locs_sf %>% full_join(Date_join_im) %>% 
   distinct(Id_group, Id_muestreo, Ano1, Ano2, Ano3, Ecoregion, geometry) %>% 
-  rename(Id_point = Id_muestreo, Region = Ecoregion)
+  bind_rows(sabine) %>%
+  rename(Id_point = Id_muestreo, Region = Ecoregion) %>% 
+  relocate(geometry, .after = last_col())
 
 ## Buffers
 # Create date_join by Id_group
@@ -222,57 +234,92 @@ Date_join_ig <- Pivot_wider_grp(
   grp_vars = c("Id_group", "Ecoregion")
   )
 
+# Join with Pc_locs and add Sabine's points 
+Buffer_df <- Pc_locs_sf %>% 
+  full_join(Date_join_ig) %>% 
+  bind_rows(sabine) %>%
+  distinct(Id_group, Id_muestreo, Ecoregion, Ano1, Ano2, Ano3, geometry)
+
 # Define function to create buffers 
-Buffer_grouped <- function(buff_dist = NULL){
-  Pc_locs_sf %>% full_join(Date_join_ig) %>% 
-    distinct(Id_muestreo, Id_group, Ecoregion, Ano1, Ano2, Ano3, geometry) %>% 
+# NOTE:: This should be made more general & defined earlier in the script
+Buffer_grouped <- function(df, buff_dist = NULL){
+  df %>% 
     st_buffer(buff_dist) %>%
     summarize(geometry = st_union(geometry), .by = -c(Id_muestreo, geometry)) %>%
     st_make_valid() %>% 
     filter(!st_is_empty(geometry)) %>% 
-    st_cast("MULTIPOLYGON")
+    st_cast("MULTIPOLYGON") %>% 
+    rename(Region = Ecoregion)
 }
 
 # Create 1.5 & 5km buffers
-Buffers_group_1500 <- Buffer_grouped(1500)
-Buffers_group_5000 <- Buffer_grouped(5000)
+Buffers_group_1500 <- Buffer_grouped(Buffer_df, 1500)
+Buffers_group_5000 <- Buffer_grouped(Buffer_df, 5000)
+
+Pc_date8 %>% distinct(Ecoregion, Ano_grp) %>% 
+  arrange(Ecoregion, Ano_grp)
+
+# Ensure Sabine's farms were handled correctly
+Buffers_group_1500 %>% filter(Id_group == "Sabine_farms")
 
 Export_files <- list(Points = Points_export,
-                      Buffers_group_1500 = Buffers_group_1500, 
-                      Buffers_group_5000 = Buffers_group_5000)
+                     Buffers_group_1500 = Buffers_group_1500, 
+                     Buffers_group_5000 = Buffers_group_5000)
 
 ## Export points & buffers
 if(FALSE){
-  imap(Export_files, \(buffers, names){
+  dir_path <- "Derived_geospatial/Diana_laura_digitization/"
+  imap(Export_files, \(buffers, names) {
+    # Ensure the directory exists
+    if (!dir.exists(paste0(dir_path, names))) {
+      dir.create(paste0(dir_path, names), recursive = TRUE)
+    }
+    # Write the shapefile
     buffers %>% st_write(
       driver = "ESRI Shapefile",
-      dsn = paste0("Intermediate_products_geospatial/Diana_laura_digitization/Aaron_", names, ".shp"),
-      layer = paste0("Aaron_", names)
+      dsn = file.path(dir_path, paste0(names, "/", names, ".shp")),
+      layer = names
     ) 
   })
 }
 
 # Ensure file exported correctly 
-files <- list.files("Intermediate_products_geospatial/Diana_laura_digitization", pattern = ".shp")
-Exported_files <- st_read("Intermediate_products_geospatial/Diana_laura_digitization/Aaron_points.shp")
+files <- list.files("Derived_geospatial/Diana_laura_digitization", 
+                    pattern = "\\.shp$", recursive = TRUE)
+files <- files[!str_detect(files, "Sabine")]
 
-path <- "Intermediate_products_geospatial/Diana_laura_digitization/"
 Exported_files <- map(files, \(shp){
-  st_read(paste0(path, shp)) 
+  st_read(paste0(dir_path, shp)) 
 })
-names(Exported_files) <- str_remove_all(files, ".shp")
+names(Exported_files) <- str_remove(files, "/.*$")
 
 ## Plot examples
 load("Rdata/NE_layers_Colombia.Rdata")
 # At level of country
-Exported_files$Aaron_Buffers_group_5000 %>% ggplot() + #Points_export
+Buffers_group_1500 %>%
+  ggplot() + #Points_export
   geom_sf(data = neCol) +
   geom_sf(data = neColDepts, alpha = .5) +
-  geom_sf(alpha = .2)
+  geom_sf(alpha = .2, size = 1, color = "red")
 
 # A single 5km buffer 
-Points_ex <- Exported_files$Aaron_points2%>% filter(Id_group == "G-MB-Q-PORT") 
-Exported_files$Aaron_Buffers_group_5000 %>% filter(Id_group == "G-MB-Q-PORT") %>%
+Points_ex <- Exported_files$Points %>% filter(Id_group == "G-MB-Q-PORT") 
+Exported_files$Buffers_group_5000 %>% filter(Id_group == "G-MB-Q-PORT") %>%
   ggplot() +
   geom_sf() + 
   geom_sf(data = Points_ex)
+
+# Plot Sabine's data 
+sabine2 <- sabine %>% mutate(Id_muestreo = str_remove_all(Id_muestreo, " potrero")) %>% 
+  st_zm(drop = TRUE)
+
+Buffers_group_1500 %>%
+  filter(Id_group == "Sabine_farms") %>%
+  ggplot() +
+  geom_sf(alpha = 0.2, size = 1) +
+  geom_sf(data = sabine2) +
+  geom_text_repel(data = sabine2, 
+                  aes(geometry = geometry, label = Id_muestreo), 
+                  stat = "sf_coordinates")
+
+?rstanarm::stan_glm
