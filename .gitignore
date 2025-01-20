@@ -21,9 +21,9 @@
 # Ignore specific folders
 Data/
 Rdata/
-Intermediate_products/
+Derived*/
 Figures/
-
+Simulating_data_Claire/
 
 # Output files from R CMD check
 /*.Rcheck/
