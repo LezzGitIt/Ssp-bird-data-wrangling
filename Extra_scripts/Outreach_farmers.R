@@ -138,6 +138,42 @@ imap(.x = Birds_by_farm, \(df, names){
   )
 })
 
+# Abundance by ecoregion --------------------------------------------------
+Ecoregions <- unique(Bird_counts$Ecoregion)
+Ecoregions <- setNames(Ecoregions, Ecoregions)
+
+# Relative abundance plots by Ecoregion
+Birds_region <- Birds_comb %>% sum_by_group(group = c(Ecoregion, Nombre_ayerbe))
+Abu_by_region_plots <- imap(Ecoregions, \(region, title){
+  Birds_region %>% 
+    filter(Ecoregion == region) %>% 
+    create_barplot(slice_n = 30, plot_title = title)
+})
+
+# Save as PDF
+if(FALSE){
+  pdf(paste0(path, "Alex_fun_facts/Abu_plots_by_ecoregion.pdf"), 
+      width = 11, height = 8.5) # Landscape orientation
+  gridExtra::marrangeGrob(
+    grobs = Abu_by_region_plots, 
+    nrow = 2, # Number of rows per page
+    ncol = 1  # Number of columns per page
+  )
+  dev.off()
+}
+
+## Export Excel
+# For each region, take the 40 most abundant species, then pivot wider so abundance is listed for each Ecoregion
+Birds_region %>% slice_max(Count, n = 40, by = Ecoregion) %>%
+  pivot_wider(id_cols = Nombre_ayerbe, 
+              names_from = Ecoregion, 
+              values_from = Count) %>% 
+  mutate(Non_na_count = rowSums(!is.na(across(-Nombre_ayerbe)))) %>%
+  arrange(desc(Non_na_count)) %>% 
+  as.data.frame() %>%
+  write.xlsx(paste0(path, "Excels/Abundance_by_ecoregion.xlsx"),
+             row.names = FALSE, showNA = FALSE, append = TRUE)
+
 # Export Excel for .py ------------------------------------------------------
 # Create Excel to bring into Python (called 'data_list') & run through for loop in Python
 Birds_comb %>%
