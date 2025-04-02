@@ -1,21 +1,27 @@
 ## PhD birds in silvopastoral landscapes##
-## Data wrangling 00e -- Setting up occupancy & abundance data, the unit covs, and event covs
-## This script generates the data frames that will be used as inputs for hierarchical modeling in future scripts 
+## Data wrangling 00f -- Setting up occupancy & abundance data, the site (unit) covs, and obsrvation (event) covariates
+## This script generates the data structures that will be used as inputs for hierarchical modeling in future scripts 
 
-# Contents
-# 1)
-# 2)
-# 3)
-# 4)
-# 5)
-# 6)
+# Script contents ---------------------------------------------------------
+# 1) Formatting: Remove observations that should not be analyzed (flyovers, observations beyond 50m fixed radius) and filter to 30 most abundant species
+# 2) Biogeographic clipping: Remove point counts that are outside of the species distribution
+# 3) Observation covariates: Create dataframes of covariates that vary by visit (time, date, etc.)
+# 4) Site covariates: Create dataframe of covariates that are fixed for each unique row identifier (elevation, average temperature, landcover). 
+# 4b) Merge the Lsm files, 
+# 5) Abundance data: Create dataframe of observed abundances for each unique row identifier
+# 6) Create unmarked::unmarkedFrame to store data in format understood by unmarked fitting function
+# 7) spOccupancy: Use Obs, Site, & occupancy data to format for spOccupancy package. The main difference here is that spOccupancy also accepts coordinates of the sites 
+# 8) Save & export important objects
 
-#TO DO: 
-# Bring in the DW steps from the iNEXT script, look for overlap
-# KEY to keeping workflows with map() tractable, keep things in a single df as long as possible, then split into hierarchical lists if needed. Avoid hierarchical map calls.
+# STILL TO DO: 
+# Bring in the DW steps from the iNEXT script, look for overlap, create functions 
+
+#NOTE:: The unique row identifier  [e.g. ID x Year] is critical , this defines what a row is in your dataframes and how many rows each dataframe will have 
+Row_identifier <- c("Id_muestreo", "Ano_grp")
 
 # Load libraries & data ---------------------------------------------------
 library(tidyverse)
+library(hms)
 library(janitor)
 library(chron)
 library(readxl)
@@ -27,14 +33,20 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-load("Rdata/the_basics_01.09.25.Rdata")
+load("Rdata/the_basics_02.27.25.Rdata")
 load("Rdata/Taxonomy_12.29.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
-
 # vignette("unmarked") # Used vignette to help understand how data should be formatted
 
-# UPDATE:: UNIQUE IDENTIFIER NOW ID X YR X SEASON
-Pc_date8 %>% distinct(Id_muestreo, Ano_grp, Season) 
+## Lsm files
+Lsm_path <- "Derived/Excels/Lsm"
+Lsm_files <- list.files(Lsm_path, pattern = "Lsm")
+
+# Read in files
+Lsm_l <- map(Lsm_files, \(file){
+  read_excel(path = paste0(Lsm_path, "/", file))
+}) 
+names(Lsm_l) <- c("middle", "past", "ubc")
 
 # General formatting -------------------------------------------------------------
 # Format point count data for downstream analyses 
@@ -44,7 +56,7 @@ Birds_analysis1 <- Bird_pcs  %>%
   filter(is.na(Grabacion) | Grabacion == "Cf") %>% # Remove birds identified only in recording
   mutate(Count = ifelse(is.na(Count), 1, Count)) #Add 1 individual when # individual = NA (6 rows)
   
-## Remove vuelos
+## Remove flyovers (vuelos)
 #STILL TO DO: INVESTIGATE UNILLANOS, CIPAV, GAICA MBD
 Birds_analysis2 <- Birds_analysis1 %>% filter(Estrato_vertical != "Vuelo" | is.na(Estrato_vertical) & !(tolower(Distancia_bird) %in% c("sobrevuelo", "vuelo")))
 
@@ -60,8 +72,7 @@ Birds_analysis2 %>% filter(is.na(Distancia_bird)) %>%
 
 # There are a few species (e.g. hummingbirds) that would be nearly impossible to identify at >50m.
 Birds_analysis3 <- Birds_analysis2 %>%
-  mutate(Distancia_bird = if_else(is.na(Distancia_bird) & Familia %in% c("Trochilidae", "Pipridae"), 
-                                  "<50", Distancia_bird))
+  mutate(Distancia_bird = if_else(is.na(Distancia_bird) & Familia %in% c("Trochilidae", "Pipridae"), "<50", Distancia_bird))
 
 # Make distances numeric
 Birds_analysis4 <- Birds_analysis3 %>%
@@ -96,22 +107,18 @@ Birds_analysis <- Birds_analysis6 %>% summarize(Count = sum(Count), .by = -Count
 ## Simplify this exercise by using only most abundant species 
 Spp_counts <- Birds_analysis %>%
   summarize(Count = sum(Count), .by = c(Nombre_ayerbe, Nombre_ayerbe_)) %>%
-  arrange(desc(Count)) %>%
-  slice_max(n = 30, order_by = Count)
+  arrange(desc(Count))
 
 # The most abundant species in the project
 No_maps <- c("Leptotila verreauxi", "Accipiter bicolor", "Sirystes sibilator", "Thripadectes virgaticeps")
-Top_abu_df <- Spp_counts %>% slice_max(order_by = Count, n = 30) %>%
-  filter(!Nombre_ayerbe %in% No_maps)
+Top_abu_df <- Spp_counts %>% filter(!Nombre_ayerbe %in% No_maps) %>%
+  slice_max(order_by = Count, n = 30) 
 Top_abu <- Top_abu_df %>% 
   arrange(Nombre_ayerbe) %>%
   pull(Nombre_ayerbe)
 
-Pc_locs_sf %>% distinct(geometry)
-
 # Biogeographic_clipping --------------------------------------------------
 ## Idea from Socolar's (2022) paper: Biogeographic multi-species occupancy models for large-scale survey data. We only want to include point count locations that are within the species range (+ some buffer), differentiating a true zero (possible but not observed) vs points that are simply out of range (more like an NA).
-## NOTE:: Working with 2 different approaches - a data frame vs nested list
 
 # Load in relevant shapefiles 
 Ayerbe_mod_spp_l <- map(Top_abu, \(spp){
@@ -167,85 +174,109 @@ if(length(spp_rm) > 0){
 # NOTE:: In the future will likely want to use some proportion of the total area via st_area()
 st_area(Ayerbe_mod_spp) 
 
-# Observation covariates -----------------------------------------------------------
-# We have 551 unique Id_muestreos, so the max number of rows a dataframe will have is 551 rows
-# Generate Obs_covs_df where each row is a point count, each column is a site visit, and the 'Variable' column identifies which Observation covariate the row corresponds to  
-Bird_pcs %>% distinct(Id_muestreo, Ano_grp, Uniq_db)
+# Observation covariates ----------------------------------------------------
+# Generate Obs_covs_df where each row is a  unique ID [Id_muestreo, Ano_grp], each column is a site visit, and the 'Variable' column identifies which Observation covariate the row corresponds to  
 
-# Need a wide dataframe, where all point counts have a single row
+# Lengthen then widen dataframe
 Obs_covs_df <- Pc_date8 %>%
   mutate(across(everything(), as.character)) %>%
   pivot_longer(
-    cols = c(Fecha, Pc_start, Pc_length, Uniq_db),      
+    cols = c(j_day, Pc_start, Pc_length),      
     names_to = "Variable",          
     values_to = "Value"             
   ) %>%
   arrange(Ano_grp, Rep) %>%
   pivot_wider(
-    id_cols = c(Id_muestreo, Ano_grp, Variable),
+    id_cols = c(all_of(Row_identifier), Variable),
     names_from = c(Rep),
     names_glue = "Rep{Rep}",
     values_from = c(Value)
   ) 
-head(Obs_covs_df)
+Obs_covs_df
 
 # Split Obs_covs_df into a list, where each slot in the list is a covariate 
 Obs_covs_spp <- map(Pcs_in_range, \(in_range){
-  Obs_covs <- Obs_covs_df %>%
+  Obs_covs_grp <- Obs_covs_df %>%
     filter(Id_muestreo %in% in_range) %>% 
-    arrange(Id_muestreo, Ano_grp) %>%
-    group_by(Variable) %>%
-    group_split(.keep = FALSE)
-  names(Obs_covs) <- sort(unique(Obs_covs_df$Variable)) 
-  Obs_covs
+    arrange(across(all_of(Row_identifier))) %>%
+    group_by(Variable) 
+  Obs_covs <- Obs_covs_grp %>% group_split(.keep = FALSE)
+  keys <- Obs_covs_grp %>% group_keys() %>% pull(Variable)
+  names(Obs_covs) <- keys
+  return(Obs_covs)
 })
 
 # Convert back to dates and times, respectively, and scale
 # Define functions to convert type back to date & time
-convert_type <- list(as.Date, as_hms, as_hms, as.factor)
+convert_type <- list(as_hms, as_hms, as.numeric)
 
 Obs_covs <- map(Obs_covs_spp, \(Obs_covs) {
   # Apply transformations on the first 3 elements
   Obs_covs_hold <- map2(Obs_covs, convert_type, \(oc, type) {
-    oc %>% mutate(across(-c(Id_muestreo, Ano_grp), ~ type(.))) %>% 
-      select(-c(Id_muestreo, Ano_grp)) %>%                    
-      mutate(across(where(is.numeric), scale))                    
+    oc %>% mutate(across(-all_of(Row_identifier), ~ type(.))) %>% 
+      select(-all_of(Row_identifier)) %>%                    
+      mutate(across(where(~ is.numeric(.) | inherits(., "hms")), ~ scale(.)))             
   })
   return(Obs_covs_hold)
 })
 
 # Site covariates ---------------------------------------------------------
 # Covariates that are fixed for a given point count
-# Uniq_db, Ano will need to lengthen dataframes (will give abundance trend through time),
-date_join_ano <- Pc_date8 %>% distinct(Id_muestreo, Id_group, Ano_grp)
+date_join_ano <- Pc_date8 %>% distinct(Id_group, across(all_of(Row_identifier)))
 Site_covs_df <- Envi_df2 %>%
   full_join(date_join_ano) %>% 
-  mutate(across(where(is.character), as.factor)) %>% 
   mutate(
-    Ano1 = as.numeric(str_split_i(Ano_grp, "-", 1)), # Take the earlier of the two years 
-    Habitat_cons = fct_relevel(Habitat_cons, 
-                               c("Pastizales", "Cultivos", "Ssp", "Bosque ripario", "Bosque")),
+    Habitat_cons = if_else(Habitat_cons == "Cultivos", NA, Habitat_cons)
+    ) %>%
+  mutate(
+    # Take the earlier of the two years 
+    Ano1 = as.numeric(str_split_i(Ano_grp, "-", 1)),
+    across(where(is.character), as.factor),
+    Habitat_cons = fct_relevel(Habitat_cons, c("Pastizales", "Ssp", "Bosque ripario", "Bosque")),
     Ecoregion = relevel(Ecoregion, ref = "Piedemonte")
-  ) %>%
-  arrange(Id_muestreo, Ano_grp) %>%
-  select(Id_muestreo, Id_group, Ecoregion, Elev, Avg_temp, Tot.prec, Habitat_cons, Ano1)
+  ) %>% arrange(across(all_of(Row_identifier))) %>%
+  select(Id_muestreo, Id_group, Uniq_db, Ecoregion, Elev, Avg_temp, Tot.prec, Habitat_cons, Ano1)
 
-# Does rownames works?
+# >Lsm_files --------------------------------------------------------------
+# FOR NOW, just keep the 300m buffer. In final analysis will want to do the scale of effect analysis to determine the most appropriate buffer size
+Lsm_l_300 <- map(Lsm_l, \(df){
+  df %>% slice_max(by = Id_muestreo, order_by = buffer) %>% 
+    select(-buffer)
+})
+
+# Rename year column in ubc & past files to match with the site covs file 
+Lsm_l_300[2:3] <- map(Lsm_l_300[2:3], \(df){
+  df %>% rename(Ano1 = data_year) %>% 
+    mutate(Ano1 = str_remove(Ano1, "20"),
+           Ano1 = as.numeric(Ano1))
+})
+
+# Join site covs with landscapemetrics. First, match Site_covs_df with 'middle' shapefile, & then overwrite the middle file using the past & ubc files in the correct locations. 
+# NOTE:: The 'lc_file' column specifies where the lc information comes from
+Site_covs_df2 <- Site_covs_df %>% left_join(Lsm_l_300$middle) %>%
+  rows_update(Lsm_l_300$ubc, by = c("Id_muestreo", "Ano1")) %>%
+  rows_update(Lsm_l_300$past, by = c("Id_muestreo", "Ano1"))
+
+# Already did several checks & all look good, except for this one!
+# Should be no NAs!
+Site_covs_df2 %>% filter(is.na(forest))
+
+# 
 Site_covs <- map(Pcs_in_range, \(in_range){
-  Site_covs_df %>% filter(Id_muestreo %in% in_range) %>% 
+  Site_covs_df2 %>% filter(Id_muestreo %in% in_range) %>% 
     select(-c(Id_muestreo)) %>% 
-    mutate(across(where(is.numeric), scale))
+    mutate(across(where(is.numeric), ~ as.numeric(scale(.))))
 }) 
 
-# Occ abu formatting  -----------------------------------------------------
+# Abundance formatting  -----------------------------------------------------
 # Include point counts with no spp observed 
 date_bind_no_obs <- Pc_date8 %>% filter(Spp_obs == 0) %>% 
-  distinct(Id_muestreo, Ano_grp, Rep) %>% 
+  distinct(across(all_of(Row_identifier)), Rep) %>% 
   mutate(Nombre_ayerbe = NA, Count = NA)
 
 # Abundances -- Use rbind with date_bind_no_obs to add counts where no species were observed
 Abund_no_obs <- Birds_analysis %>%
-  distinct(Id_muestreo, Ano_grp, Rep, Nombre_ayerbe, Count) %>% 
+  distinct(across(all_of(Row_identifier)), Rep, Nombre_ayerbe, Count) %>% 
   rbind(date_bind_no_obs) 
  
 # Create abundance list with just most abundant species 
@@ -254,8 +285,8 @@ Abund_l <- Abund_no_obs %>% filter(Nombre_ayerbe %in% Top_abu) %>%
 names(Abund_l) <- names(Pcs_in_range)
 
 # Join abundance data (just containing points where species was observed) with all the point counts that the species could have been observed with. 
-date_join_rep <- Pc_date8 %>% distinct(Id_muestreo, Ano_grp, Rep)
-# Add Rep & Ano_grp info to allow for a successful join with Abund_l
+date_join_rep <- Pc_date8 %>% distinct(across(all_of(Row_identifier)), Rep)
+# Add Rep & Ano_grp to the IDs in range to allow for a successful join with Abund_l
 Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
   Date_in_range <- tibble(Id_muestreo = in_range) %>% left_join(date_join_rep)
 #NOTE:: right_join effectively adds NAs for Count where species could have been observed but weren't (greatly lengthening the dataframe), and also does a clip, ensuring that there are not observations outside of buffer
@@ -267,14 +298,14 @@ Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
 # Pivot_wider and fill in with zeros 
 # TO DO: Make a function here? Depending on iNEXT needs
 Abund_zeros <- map(Abund_in_range, \(abund){
-  abund %>% arrange(Id_muestreo, Ano_grp, Rep) %>%
-    pivot_wider(id_cols = c(Id_muestreo, Ano_grp),
+  abund %>% arrange(across(all_of(Row_identifier)), Rep) %>%
+    pivot_wider(id_cols = all_of(Row_identifier),
                 names_from = c(Rep),
                 names_glue = "Rep{Rep}",
                 values_from = Count, 
                 values_fill = 0) %>% 
-    arrange(Id_muestreo, Ano_grp) %>% 
-    select(-c(Id_muestreo, Ano_grp))
+    arrange(across(all_of(Row_identifier))) %>% 
+    select(-all_of(Row_identifier))
     #column_to_rownames(var = "Id_muestreo") 
 })
 
@@ -315,7 +346,7 @@ table(same_df$is_same)
 
 # Multi-species
 # NOTE:: Can do multi species occupancy in unmarked , but would only want to do this, for example, with UBC (& UniLlanos data).
-?unmarkedFrameOccuMulti # Set maxOrder = 1L to do zero higherorder interactions OR can manually set by putting covariates for the number of species present and 0s for everything else 
+#?unmarkedFrameOccuMulti # Set maxOrder = 1L to do zero higherorder interactions OR can manually set by putting covariates for the number of species present and 0s for everything else 
 # Example with 3 species
 stateformulas <- c("~Habitat_cons", "~Habitat_cons", "~Habitat_cons", "0", "0", "0", "0")
 
@@ -339,20 +370,11 @@ umf_occ_l <- pmap(.l = list(Occ_nas, Site_covs, Obs_covs2),
                     unmarkedFrameOccu(y = abund, siteCovs = sc, obsCovs = oc)
                   })
 
-## NOTE:: The UMF will throw an error if any of the dimensions don't match up, which is great. If the code runs this means that dimensions are correct 
-# Error due to SiteCov
-Bad_sites <- Site_covs$Amazona_ochrocephala %>% filter(Habitat_cons != "Bosque")
-unmarkedFramePCount(Abund_nas$Amazona_ochrocephala, Bad_sites, Obs_covs2$Amazona_ochrocephala)
-
-# Error due to obsCov
-Obs_covs3$Amazona_ochrocephala <- Obs_covs2$Amazona_ochrocephala
-Obs_covs3$Amazona_ochrocephala[[3]] <- Obs_covs2$Amazona_ochrocephala[[3]] %>% select(-1)
-unmarkedFramePCount(Abund_nas$Amazona_ochrocephala, Site_covs$Amazona_ochrocephala, Obs_covs3$Amazona_ochrocephala)
-
 # spOccupancy -------------------------------------------------------------
 ## Prep the data structure for spOccupancy package
-
 # One benefit is that spOccupancy can account for spatial autocorrelation. 
+# NOTE:: This is currently failing when fitting using spOccupancy because you cannot have multiple sites with the same coordinates. Quick solution would be to jitter coordinates a bit 
+
 # Project coordinates for Colombia and filter by relevant PCs for each species
 Coords <- map(Pcs_in_range,  \(in_range){
   Pc_locs_sf %>% distinct(Id_muestreo, geometry) %>% 
@@ -377,7 +399,6 @@ spOcc_l <- pmap(list(Occ_nas, Site_covs, Obs_covs2, Coords),
                   list(y = occ, occ.covs = sc, det.covs = oc, coords = coords)
 })
 
-
 # Top_abu_df --------------------------------------------------------------
 Top_abu_df2 <- Top_abu_df %>% mutate(Num_pcs = map_dbl(Pcs_in_range, length)) %>% 
   rename(Tot_count = Count)
@@ -393,14 +414,27 @@ Spp_wide <- Abund_long %>%
 
 # Save & Export -----------------------------------------------------------
 # Export R data object for future analyses 
-rm(list = ls()[!(ls() %in% c("Birds_analysis", "umf_abu_l", "umf_occ_l", "spOcc_l", "Top_abu_df2"))]) #"Abund_nas", "Site_covs", "Obs_covs"
+#rm(list = ls()[!(ls() %in% c("Birds_analysis", "umf_abu_l", "umf_occ_l", "spOcc_l", "Top_abu_df2", "Abund_nas", "Abund_in_range", "Occ_nas"))]) #, "Site_covs", "Obs_covs2"
 #save.image(paste0("Rdata/Occ_abu_inputs_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
+#save.image("Rdata/Occ_abu_inputs_02.27.25.Rdata") # Manual
 
+stop()
 # Export R data object for BIOL314
 #rm(list = ls()[!(ls() %in% c("Bird_pcs", "Birds_analysis", "Pc_hab", "Site_covs_df"))])
 #save.image(paste0("Rdata/Biol314_inputs_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 
 # Checks ----------------------------------------------------
+## NOTE:: The UMF will throw an error if any of the dimensions don't match up, which is great. If the code runs this means that dimensions are correct 
+# Error due to differing dimensions of SiteCovs
+Bad_sites <- Site_covs$Amazona_ochrocephala %>% filter(Habitat_cons != "Bosque")
+unmarkedFramePCount(Abund_nas$Amazona_ochrocephala, Bad_sites, Obs_covs2$Amazona_ochrocephala)
+
+# Error due to obsCov
+Obs_covs3$Amazona_ochrocephala <- Obs_covs2$Amazona_ochrocephala
+Obs_covs3$Amazona_ochrocephala[[3]] <- Obs_covs2$Amazona_ochrocephala[[3]] %>% select(-1)
+unmarkedFramePCount(Abund_nas$Amazona_ochrocephala, Site_covs$Amazona_ochrocephala, Obs_covs3$Amazona_ochrocephala)
+
+
 # There should be no NAs in the relevant columns at this point 
 Pc_date8 %>% select(Uniq_db, Fecha, Pc_length, Pc_start) %>% 
   Na_rows_cols(distinct = TRUE)
@@ -414,9 +448,9 @@ map_depth(Obs_covs, 2, dim) # Troglodytes_aedon has all 551 rows possible, so we
 
 # Add Id_muestreo back to the 3 dataframes
 Example_l <- map(Obs_covs$Troglodytes_aedon, \(df){
-    cbind(Id_muestreo = Site_covs_df$Id_muestreo, df) %>% 
-      tibble()
-  })
+  cbind(Id_muestreo = Site_covs_df$Id_muestreo, df) %>% 
+    tibble()
+})
 
 # Could replace the nan for NA , but the coding is more complex than it should be 
 Example_l$Pc_length[is.nan(Example_l$Pc_length)] <- NA
@@ -452,4 +486,3 @@ Obs_covs_df %>% filter(Id_muestreo %in% ids_na_diff) %>%
 # Visualize example
 df_meta %>% filter(Id_muestreo == "G-AD-M-LCA1_09") %>% 
   select(Id_muestreo, Fecha, Hora, Spp_obs)
-
