@@ -27,7 +27,8 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
-load("Rdata/the_basics_02.27.25.Rdata")
+load("Rdata/the_basics_05.10.25.Rdata")
+load("Rdata/Lsm_l.Rdata")
 
 # Extract LC covs ---------------------------------------------------------
 # Aggregate polygons by lc & id group (or just lc?) first, & then try erasing? I TRIED AGGREGATING JUST BY LC_TYP AND HAD NO LUCK
@@ -45,11 +46,11 @@ load("Rdata/the_basics_02.27.25.Rdata")
 ## Goal:: Each point count needs landcover values in 300m radius that are temporally matched with when the point count was sampled
 
 # Bring in data -----------------------------------------------------------
-tbl_row <- 3 # 1 = middle, 2 = ubc, 3 = past
+tbl_row <- 3 # 1 = middle, 2 = "past", 3 = "ubc"
 
 # Create Index_tbl
 Uniq_db <- unique(Bird_pcs$Uniq_db)
-Index_tbl <- tibble(name = c("middle", "ubc", "past"), index = c(2,3,4), data_collector = list(Uniq_db[c(1:3,6)], "Ubc mbd", c("Gaica mbd", "Cipav mbd")))
+Index_tbl <- tibble(name = c("middle", "past", "ubc"), index = c(2,3,4), data_collector = list(Uniq_db[c(1:3,6)], c("Gaica mbd", "Cipav mbd"), "Ubc mbd"))
 
 # Bring in Mathilde shapefiles
 path <- "../../Mentorship/Digitization_Mathilde/Final_docs/final_shp_for_natalia"
@@ -68,8 +69,11 @@ shp.lc.L[c(2:4)] <- map(shp.lc.L[c(2:4)], \(polys_df){
   polys_df
 })
 
+# Past -- Poly_num is not unique in the past file
+shp.lc.L[[3]] <- shp.lc.L[[3]] %>% mutate(poly_num = row_number())
+
 ## Identify small polys to remove
-Small_polys <- shp.lc.L[[Index_tbl[tbl_row,]$index]] %>% filter(area < 2)
+Small_polys <- shp.lc.L[[Index_tbl[tbl_row,]$index]] %>% filter(area < 2)  
 
 # Small polys plot
 Small_pp <- map(seq_along(Small_polys), \(row){
@@ -79,7 +83,7 @@ Small_pp <- map(seq_along(Small_polys), \(row){
 })
 
 ## Visually inspect small polygons and make note of polygons that are good to keep
-Small_pp 
+Small_pp
 
 # >Dataset_specific -------------------------------------------------------
 ## UBC:: Polys to delete
@@ -88,24 +92,35 @@ Del_polys_ubc <- Small_polys %>% pull(poly_num)
 TF <- !Del_polys_ubc %in% polys_keep_ubc
 
 # Subset shapefile to remove prob polys UBC
-shp.lc.L[[Index_tbl[tbl_row,]$index]] <-shp.lc.L[[Index_tbl[tbl_row,]$index]] %>% 
+shp.lc.L[[Index_tbl[tbl_row,]$index]] <- shp.lc.L[[Index_tbl[tbl_row,]$index]] %>% 
   filter(!poly_num %in% Del_polys_ubc[TF])
 
+# ubc - Delete polys of larger size (between 2 & 100)
+Del_lrg_ubc <- c(1600, 437, 191, 357, 359)
+shp.lc.L[[Index_tbl[tbl_row,]$index]] <- shp.lc.L[[Index_tbl[tbl_row,]$index]] %>% filter(!poly_num %in% Del_lrg_ubc)
+
 ## Past:: Polys to delete
-polys_keep_past <- c(521, 511, 107, 526, 157, 84)
+polys_keep_past <- c(446, 440, 419, 318, 114, 84) # but should investigate
 Del_polys_past <- Small_polys %>% pull(poly_num) 
 # Add 16 as it causes problems down the line
-Del_polys_past[length(Del_polys_past) + 1] <- 16 
+Del_polys_past[length(Del_polys_past) + 1] <- 16 #REDO THIS ONE 
 TF <- !Del_polys_past %in% polys_keep_past
 
 # Subset shapefile to remove small area polys past
 shp.lc.L[[Index_tbl[tbl_row,]$index]]<-shp.lc.L[[Index_tbl[tbl_row,]$index]] %>% 
   filter(!poly_num %in% Del_polys_past[TF])
 
+# Ensure poly_num are unique
+map(shp.lc.L[c(2:4)], \(polys_df){
+  polys_df %>% data.frame() %>% 
+    count(poly_num, sort = T) %>% 
+    filter(n > 1)
+})
+
 
 # Export as gpkg ----------------------------------------------------------
 # Export updated files that will be read into the main DW_LC scripts
-shp.lc.L[[Index_tbl[tbl_row,]$index]] %>% writeVector(paste0("../../Mentorship/Digitization_Mathilde/Final_docs/final_shp_for_natalia/Final_lc_", Index_tbl[[tbl_row, "name"]], ".gpkg")) #, overwrite = TRUE
+shp.lc.L[[Index_tbl[tbl_row,]$index]] %>% writeVector(paste0("../../Mentorship/Digitization_Mathilde/Final_docs/final_shp_for_natalia/Lc_", Index_tbl[[tbl_row, "name"]], "_final.gpkg"), overwrite = TRUE) #, overwrite = TRUE
 
 
 
@@ -143,6 +158,63 @@ LCs_comb <- pmap(
   }
 )
 sum(sapply(shp.lc.L[2:4], nrow))
+
+
+# Inconsistencies habitat: continuous & binary -------------------------------
+# >Continuous --------------------------------------------------------------
+## Our working assumption has been that data collectors used the predominant landcover within the point count to classify the landcover type (except when LC == Ssp, e.g. live fence). Thus, we'd expect that >50% of the manually digitized landcover within the 50m radius should be in agreement with the data collector's assigned habitat type
+
+# Select landcovers within 25m if CIPAV & 50m otherwise, ie the appropriate buffer size
+Lsm_long_buf <- Lsm_long %>% 
+  filter(
+    (str_starts(Id_muestreo, "C") & buffer == 25) |
+      (!str_starts(Id_muestreo, "C") & buffer == 50)
+  )
+
+# Plot the digitized landcover within 25m (CIPAV) or 50m (all others) for each categorical landcover assigned by the data collectors
+Lsm_long_buf %>% 
+  ggplot(aes(x = Habitat_cons, y = Percent_cover, color = Lc_manual)) +
+  geom_hline(yintercept = 50, linetype = "dashed") +
+  geom_boxplot() + 
+  geom_point(position = position_jitterdodge(jitter.width = .05), 
+             alpha = .3) + 
+  facet_wrap(~lc_file) + 
+  theme(axis.text.x = element_text(angle = 75, hjust=1)) + 
+  labs(title = "Landcover within 25/50m of point count")
+
+# Create tibble of continuous inconsistencies (generate & filter on 'Investigate' column)
+Inconsistencies_cont <- Lsm_long_buf %>% mutate(Investigate = case_when(
+  Habitat_cons %in% c("Bosque", "Bosque ripario") & Lc_manual == "forest" & Percent_cover < 50 ~ "Y", 
+  Habitat_cons %in% "Pastizales" & Lc_manual == "intpast" & Percent_cover < 50 ~ "Y",
+  Habitat_cons %in% "Ssp" & Lc_manual == "ssp" & Percent_cover < 10 ~ "Y", 
+  .default = NA
+)) %>% filter(Investigate == "Y") %>% 
+  arrange(lc_file, Habitat_cons, Lc_manual, Id_muestreo)
+Inconsistencies_cont
+
+# Export Investigate_tbl
+Inconsistencies_cont %>% select(-c(buffer, Investigate)) %>% 
+  rename(Habitat_reported = Habitat_cons) %>%
+  as.data.frame() %>%
+  write.xlsx(file = paste0("Derived/Excels/Lsm/Inconsistencies_lc_", format(Sys.Date(), "%m.%d.%y"), ".xlsx"), sheetName = "Continuous", showNA = FALSE, row.names = FALSE)
+
+
+# >Binary -----------------------------------------------------------------
+## Identify point counts that are within digitized forest polygons, but that data collectors called something other than forest (or vice a versa). Note that this was only done for the 'middle' digitized file. 
+# Min_dist_forest (created in 00e_DW_Lsm.R) contains a categorical 'In_forest' column, that indicates whether the point count centroid is within a forest polygon or not. 
+Inconsistencies_bin <- Pc_hab %>% distinct(Id_muestreo, Habitat_cons) %>% 
+  left_join(Min_dist_forest) %>% 
+  filter(Habitat_cons %in% c("Bosque", "Bosque ripario") & In_forest == 0 | !Habitat_cons %in% c("Bosque", "Bosque ripario") & In_forest == 1) %>% 
+  filter(!is.na(Habitat_cons)) %>% 
+  arrange(desc(In_forest), desc(Dist_to_edge)) %>% 
+  rename(Habitat_reported = Habitat_cons)
+Inconsistencies_bin
+
+# Export
+Inconsistencies_bin %>% as.data.frame() %>%
+  write.xlsx(file = paste0("Derived/Excels/Lsm/Inconsistencies_lc_", format(Sys.Date(), "%m.%d.%y"), ".xlsx"), sheetName = "Binary", showNA = FALSE, row.names = FALSE, append = TRUE)
+
+# EXPLORATION -------------------------------------------------------------
 
 # Explore metadata  ------------------------------------------------------
 ## The metadata associated with the shapefiles is key for workflow
