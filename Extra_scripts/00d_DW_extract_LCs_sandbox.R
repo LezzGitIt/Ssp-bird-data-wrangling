@@ -159,7 +159,6 @@ LCs_comb <- pmap(
 )
 sum(sapply(shp.lc.L[2:4], nrow))
 
-
 # Inconsistencies habitat: continuous & binary -------------------------------
 # >Continuous --------------------------------------------------------------
 ## Our working assumption has been that data collectors used the predominant landcover within the point count to classify the landcover type (except when LC == Ssp, e.g. live fence). Thus, we'd expect that >50% of the manually digitized landcover within the 50m radius should be in agreement with the data collector's assigned habitat type
@@ -189,30 +188,43 @@ Inconsistencies_cont <- Lsm_long_buf %>% mutate(Investigate = case_when(
   Habitat_cons %in% "Ssp" & Lc_manual == "ssp" & Percent_cover < 10 ~ "Y", 
   .default = NA
 )) %>% filter(Investigate == "Y") %>% 
+  left_join(Min_dist_forest) %>%
   arrange(lc_file, Habitat_cons, Lc_manual, Id_muestreo)
-Inconsistencies_cont
-
-# Export Investigate_tbl
-Inconsistencies_cont %>% select(-c(buffer, Investigate)) %>% 
-  rename(Habitat_reported = Habitat_cons) %>%
-  as.data.frame() %>%
-  write.xlsx(file = paste0("Derived/Excels/Lsm/Inconsistencies_lc_", format(Sys.Date(), "%m.%d.%y"), ".xlsx"), sheetName = "Continuous", showNA = FALSE, row.names = FALSE)
-
+Inconsistencies_cont 
 
 # >Binary -----------------------------------------------------------------
 ## Identify point counts that are within digitized forest polygons, but that data collectors called something other than forest (or vice a versa). Note that this was only done for the 'middle' digitized file. 
 # Min_dist_forest (created in 00e_DW_Lsm.R) contains a categorical 'In_forest' column, that indicates whether the point count centroid is within a forest polygon or not. 
-Inconsistencies_bin <- Pc_hab %>% distinct(Id_muestreo, Habitat_cons) %>% 
+Inconsistencies_bin <- Pc_hab %>% distinct(Id_muestreo, Habitat_cons) %>%
+  filter(!is.na(Habitat_cons)) %>%
   left_join(Min_dist_forest) %>% 
+  mutate(lc_file = "middle") %>%
   filter(Habitat_cons %in% c("Bosque", "Bosque ripario") & In_forest == 0 | !Habitat_cons %in% c("Bosque", "Bosque ripario") & In_forest == 1) %>% 
   filter(!is.na(Habitat_cons)) %>% 
-  arrange(desc(In_forest), desc(Dist_to_edge)) %>% 
-  rename(Habitat_reported = Habitat_cons)
+  arrange(desc(In_forest), desc(Dist_to_edge)) 
 Inconsistencies_bin
 
+# Create file to export
+Inconsistencies_exp <- Inconsistencies_cont %>% 
+  full_join(Inconsistencies_bin) %>% 
+  # Given that binary check was only done in the 'middle' file, manually set to NA for the "past" file
+  mutate(
+    In_forest = if_else(lc_file == "past", NA_real_, In_forest),
+    Dist_to_edge = if_else(lc_file == "past", NA_real_, Dist_to_edge),
+    forest_typ = if_else(lc_file == "past", NA, forest_typ)
+  ) %>%
+  mutate(Forest_type_reviewer = NA, Revision_made = NA, Comments = NA) %>%
+  select(-Investigate) %>% 
+  rename(Habitat_reported = Habitat_cons)
+
+# NOTE:: These are points that passed the 'continuous' check, but not the binary check
+Inconsistencies_exp %>% filter(is.na(Percent_cover))
+
 # Export
-Inconsistencies_bin %>% as.data.frame() %>%
-  write.xlsx(file = paste0("Derived/Excels/Lsm/Inconsistencies_lc_", format(Sys.Date(), "%m.%d.%y"), ".xlsx"), sheetName = "Binary", showNA = FALSE, row.names = FALSE, append = TRUE)
+if(FALSE){
+  Inconsistencies_exp %>% as.data.frame() %>%
+    write.xlsx(file = paste0("Derived/Excels/Lsm/Inconsistencies_lc_", format(Sys.Date(), "%m.%d.%y"), ".xlsx"), showNA = FALSE, row.names = FALSE)
+}
 
 # EXPLORATION -------------------------------------------------------------
 
