@@ -16,9 +16,6 @@
 # STILL TO DO: 
 # Bring in the DW steps from the iNEXT script, look for overlap, create functions 
 
-#NOTE:: The unique row identifier  [e.g. ID x Year] is critical , this defines what a row is in your dataframes and how many rows each dataframe will have 
-Row_identifier <- c("Id_muestreo", "Ano_grp")
-
 # Load libraries & data ---------------------------------------------------
 library(tidyverse)
 library(hms)
@@ -38,6 +35,10 @@ load("Rdata/Taxonomy_12.29.24.Rdata")
 load("Rdata/Lsm_l.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 # vignette("unmarked") # Used vignette to help understand how data should be formatted
+
+# Row identifier ----------------------------------------------------------
+#NOTE:: The unique row identifier  [e.g. ID x Year] is critical , this defines what a row is in your dataframes and how many rows each dataframe will have 
+Row_identifier <- c("Id_muestreo", "Ano_grp")
 
 # General formatting ---------------------------------------------------------
 # Format point count data for downstream analyses 
@@ -224,7 +225,7 @@ Site_covs_df <- Envi_df2 %>%
     Habitat_cons = if_else(Habitat_cons == "Cultivos", NA, Habitat_cons)
     ) %>%
   mutate(
-    # Take the earlier of the two years 
+    # Take the earlier of the two years so it is numeric
     Ano1 = as.numeric(str_split_i(Ano_grp, "-", 1)),
     across(where(is.character), as.factor),
     Habitat_cons = fct_relevel(Habitat_cons, c("Pastizales", "Ssp", "Bosque ripario", "Bosque")),
@@ -233,7 +234,7 @@ Site_covs_df <- Envi_df2 %>%
   select(Id_muestreo, Id_group, Uniq_db, Ecoregion, Elev, Avg_temp, Tot.prec, Habitat_cons, Ano1)
 
 # >Lsm_files --------------------------------------------------------------
-# FOR NOW, just keep the 300m buffer. In final analysis will want to do the scale of effect analysis to determine the most appropriate buffer size
+# FOR NOW, just keep the 300m buffer.
 Lsm_l_300 <- map(Lsm_l, \(df){
   df %>% slice_max(by = Id_muestreo, order_by = buffer) %>% 
     select(-buffer)
@@ -256,9 +257,19 @@ Site_covs_df2 <- Site_covs_df %>% left_join(Lsm_l_300$middle) %>%
 # Should be no NAs!
 Site_covs_df2 %>% filter(is.na(forest))
 
-# 
-Site_covs <- map(Pcs_in_range, \(in_range){
-  Site_covs_df2 %>% filter(Id_muestreo %in% in_range) %>% 
+# For each species, subset the relevant point counts
+Site_covs_in_range <- map(Pcs_in_range, \(in_range){
+  Site_covs_df2 %>% filter(Id_muestreo %in% in_range) 
+}) 
+
+# Extract Ids to match up with spOccupancy frame down the line
+Ids_in_range_l <- map(Site_covs_in_range, \(sc_in_range){
+  sc_in_range %>% pull(Id_muestreo)
+})
+
+# Remove Id_muestreo, scale numeric values
+Site_covs <- map(Site_covs_in_range, \(sc_in_range){
+  sc_in_range %>%
     select(-c(Id_muestreo)) %>% 
     mutate(across(where(is.numeric), ~ as.numeric(scale(.))))
 }) 
@@ -392,12 +403,50 @@ if(FALSE){
     geom_sf(data = Coords[[1]])
 }
 
-# Combine inputs into the list structure needed by spOccupancy. 
-# NOTE:: Different names require in the list occ.covs = occurrence (or occupancy) covariates
-spOcc_l <- pmap(list(Occ_nas, Site_covs, Obs_covs2, Coords),
-                \(occ, sc, oc, coords){
-                  list(y = occ, occ.covs = sc, det.covs = oc, coords = coords)
+## Combine inputs into the list structure needed by spOccupancy. 
+# Adjust Row_identifier
+if(any(str_detect(Row_identifier, "Ano_grp"))){
+  Row_identifier <- str_replace_all(Row_identifier, "_grp", "1")
+}
+
+# NOTE:: Different names required in the spOccupancy list, occ.covs = occurrence (or occupancy) covariates
+spOcc_ll <- pmap(
+  list(Occ_nas, Site_covs, Obs_covs2, Ids_in_range_l),
+  \(occ, sc, oc, ids){
+    # Create tbl with Ids & Ano1 to remove the habitats with NA
+    rm_tbl <- sc %>% bind_cols(Id_muestreo = ids) %>% 
+      filter(is.na(Habitat_cons)) %>% 
+      distinct(across(all_of(Row_identifier)))
+    
+    ## Add in coordinates
+    # Would be good to add coordinates in at some point, but first need to understand what the end goal is. How do we handle when it's the same coordinates across multiple years? 
+    if(FALSE){
+      rm_ids <- rm_tbl %>% distinct(Id_muestreo)
+      coords <- Pc_locs_sf %>% distinct(Id_muestreo, geometry) %>% 
+        anti_join(rm_ids) %>% 
+        st_transform(crs = st_crs("EPSG:32618")) %>% 
+        st_coordinates() 
+    }
+    
+    # Create list 
+    spOcc_l <- list(y = occ, occ.covs = sc, det.covs = oc) #, coords = coords
+    
+    # Use rm_tbl to remove the necessary rows across all dataframes
+    # modify_depth handles that det.covs is already a list 
+    modify_depth(spOcc_l, 1, \(x){
+      if (is.list(x) && all(map_lgl(x, is.data.frame))) {
+        map(x, \(df) df %>% bind_cols(Id_muestreo = ids) %>% 
+              anti_join(rm_tbl) %>% 
+              select(-Id_muestreo)) 
+      } else if (is.data.frame(x)) {
+        x %>% bind_cols(Id_muestreo = ids) %>% 
+          anti_join(rm_tbl) %>% 
+          select(-Id_muestreo)
+      } 
+    })
 })
+
+spOcc_ll$Amazona_ochrocephala$det.covs #%>% count(Id_muestreo, Ano1, sort = T)
 
 # Top_abu_df --------------------------------------------------------------
 Top_abu_df2 <- Top_abu_df %>% 
