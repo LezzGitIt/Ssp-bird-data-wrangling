@@ -1,0 +1,192 @@
+---
+title: Bird diversity in working landscapes of Colombia 
+subtitle: Data paper
+date: last-modified
+bibliography: ../PhD.bib
+# If you do not want code to show... echo: false
+execute: 
+ echo: false
+ #include: false
+ message: false
+ warning: false 
+metadata-files: 
+  - authors.yml
+  - abstract_keywords.yml
+format: 
+  elsevier-pdf:
+    include-in-header:
+      text: |
+        \usepackage{lineno}
+        \linenumbers
+    journal:
+      name: Journal Name
+      formatting: preprint
+      cite-style: authoryear
+editor: visual 
+editor_options: 
+  chunk_output_type: console
+---
+
+# Outline
+
+Add Temp, precip, elevation, forest cover (3 spatial scales)\
+Functional traits (elevational range), phylogeny, taxonomic equivalence of names
+
+# Explore dataset
+
+```{r}
+#| label: Load-libraries
+
+library(readxl)
+library(tidyverse)
+library(sf)
+```
+
+```{r}
+#| label: Load-data-and-fns
+
+load("Rdata/the_basics_07.18.25.Rdata")
+
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+```
+
+I've included the broad categories from the Ecology template, the associated short description, and then my suggested response.
+
+Example category
+
+Description
+
+# Class I. Data Set Descriptors
+
+## A. Data set identity:
+
+Title or theme of data set \[Bird diversity in working landscapes of Colombia\]
+
+## B. Data set identification code:
+
+Database accession numbers or site-specific codes used to uniquely identify data set \[Bird_abundances.csv\]
+
+## C. Data set description
+
+### 1. Originators:
+
+Names and address of principal investigators associated with data set
+
+\[CMK - Tomas & Diego Lizcano?\]
+
+### 2. Abstract:
+
+Descriptive abstract summarizing research objectives, data contents (including temporal, spatial, and thematic domain), context and potential uses of data set. This abstract can be a maximum of 350 words.
+
+### D. Key words/phrases:
+
+Location (spatial scale), time period and sampling frequency (temporal scale), theme or contents (thematic scale)
+
+# Class II. Research origin descriptors
+
+## A. Overall project description:
+
+*\[Note: This section may be essential if data set represents a component of a larger or more comprehensive database; otherwise, relevant items may be incorporated into II.B.\]*
+
+CMK - please look at this section and provide references, copy & paste in relevant
+
+1.  Identity: The Sustainable Cattle Ranching Project
+2.  Originators: Names and addresses of principal investigators associated with project\
+    \[Tomas Walschburger, Manuel Gómez Vivas, Christina Kennedy, Juliana Delgado, Jose Manuel Ochoa-Quintero\]
+3.  Period of study: Date commenced, date terminated, or expected duration\
+    \[2013-2019\]
+4.  Objectives: Scope and purpose of research program\
+5.  Abstract: Descriptive abstract summarizing broader scientific scope of overall research project
+6.  Sources of funding: Grant and contract numbers, names, and addresses of funding sources
+
+## B. Specific subproject description
+
+### 1. Site description
+
+a.  Site type: Descriptive (e.g., short-grass prairie, blackwater stream, etc.)\
+    This dataset
+
+b.  Geography: Location (e.g., latitude/longitude), size
+
+    ```{r}
+    #| label: Geo-extent
+
+    Pc_locs_sf %>% st_bbox()
+    ```
+
+c.  Habitat: Detailed characteristics of habitats sampled
+
+d.  Geology, landform: Soils, slope/elevation/aspect, terrain/physiography, geology/lithology\
+    Also see BOOK for a map and description of the geology regarding the influence on bird distributions.
+
+e.  Watersheds, hydrology: Size, boundaries, receiving streams, etc.
+
+f.  Site history: Site management practices, disturbance history, etc.
+
+g.  Climate: Descriptive summary of site climatic characteristics
+
+### 2. Experimental or sampling design:
+
+a.  Design characteristics: Description of statistical/sampling design
+
+b.  Permanent plots: Dimension, location, general vegetation characteristics (if applicable).
+
+c.  Data collection period, frequency, etc.: Information necessary to understand temporal sampling regime
+
+### 3. Research methods
+
+a.  Field/laboratory: Description or reference to standard field/laboratory methods
+
+b.  Instrumentation: Description and model/serial numbers
+
+c.  Taxonomy and systematics: References for taxonomic keys, identification, and location of voucher specimens, etc.
+
+d.  Permit history: References to pertinent scientific and collecting permits
+
+e.  Legal/organizational requirements: Relevant laws, decision criteria, compliance standards, etc.
+
+### 4. Project personnel:
+
+Principal and associated investigator(s), technicians, supervisors, students
+
+# Questions
+
+-   Examining recent data papers published in Ecology I notice there seem to be differences between the published 'Metadata_S1' files & the template I've found online 'Ecology-Data-Paper-Metadata-Template-Mar2021.docx' \[INCLUDE ATTACHMENT\]. For example, both this paper \[LINK\] and this paper \[LINK\] have an "Introduction" section, which is not in the template. Am I looking at the wrong template file?
+
+-   Christina:
+
+    -   
+
+-   Ecotropico:
+
+    -   Most recent databases
+
+    -   Use figures / text in the databases
+
+# Default text to examine after reading pdf
+
+Please make sure that your manuscript follows the guidelines in the Guide for Authors of the relevant journal. It is not necessary to typeset your manuscript in exactly the same way as an article, unless you are submitting to a camera-ready copy (CRC) journal.
+
+For detailed instructions regarding the elsevier article class, see <https://www.elsevier.com/authors/policies-and-guidelines/latex-instructions>
+
+# Bibliography styles
+
+With this template using elsevier class, natbib will be used. Three bibliographic style ﬁles (\*.bst) are provided and their use controled by `cite-style` option:
+
+-   `citestyle: number` (default) will use `elsarticle-num.bst` - can be used for the numbered scheme
+-   `citestyle: numbername` will use `elsarticle-num-names.bst` - can be used for numbered with new options of natbib.sty
+-   `citestyle: authoryear` will use `elsarticle-harv.bst` — can be used for author year scheme
+
+This `citestyle` will insert the right `.bst` and set the correct `classoption` for `elsarticle` document class.
+
+Using `natbiboptions` variable in YAML header, you can set more options for `natbib` itself . Example
+
+``` yaml
+natbiboptions: longnamesfirst,angle,semicolon
+```
+
+## Using CSL
+
+If `cite-method` is set to `citeproc` in `elsevier_article()`, then pandoc is used for citations instead of `natbib`. In this case, the `csl` option is used to format the references. By default, this template will provide an appropriate style, but alternative `csl` files are available from <https://www.zotero.org/styles?q=elsevier>. These can be downloaded and stored locally, or the url can be used as in the example header.
+
+# References {.unnumbered}
