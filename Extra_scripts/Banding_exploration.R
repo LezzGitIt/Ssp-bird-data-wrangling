@@ -20,7 +20,7 @@ lapply(banding[, c("CA", "C", "Peso", "T")], function(x) {
 banding$Habitat_AJUSTADO_2022
 
 banding %>%
-  distinct(ID_punto_conteo, Latitud_decimal, Longitud_decimal) %>%
+  distinct(ID_punto_conteo, Latitud, Longitud_decimal) %>%
   count(ID_punto_conteo, sort = T)
 banding %>%
   count(Observacion_campo_captura, Sexo, Departamento, sort = T) %>%

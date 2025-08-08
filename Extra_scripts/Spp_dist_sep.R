@@ -37,8 +37,8 @@ conflicts_prefer(dplyr::filter)
 
 # Elev out of range ------------------------------------------------------------
 # Look for possible species misidentifications or other errors in the data
-spp_obs_sf <- Birds_all4 %>%
-  st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), crs = 4326, remove = F) %>%
+spp_obs_sf <- Birds_all3 %>%
+  st_as_sf(coords = c("Longitud_decimal", "Latitud"), crs = 4326, remove = F) %>%
   left_join(Envi_df2[, c("Id_muestreo", "Elev")])
 ## CHECK:: The polygon is the same for all 3 previous names of this species
 Ayerbe_sf2 %>%
@@ -48,7 +48,7 @@ Ayerbe_sf2 %>%
 # Compare reported elevations (in field) to those from the Colombia DEM
 ElevErrors <- Bird_pcs %>%
   left_join(Envi_df2[, c("Id_muestreo", "Elev")]) %>%
-  select(Id_muestreo, Latitud_decimal, Longitud_decimal, Elevacion, Elev) %>%
+  select(Id_muestreo, Latitud, Longitud_decimal, Elevacion, Elev) %>%
   rename(Elevacion_reported = Elevacion) %>%
   mutate(Difference_elev = Elev - Elevacion_reported) %>%
   arrange(desc(Difference_elev)) %>%
@@ -173,7 +173,7 @@ names(range) <- paste(SppDb$Nombre_ayerbe, SppDb$Uniq_db, sep = "_")
 OutRangeObsDf <- OutRangeObs %>%
   bind_rows() %>%
   rename(DistsKM = DistsKM..i..) %>%
-  dplyr::select(Uniq_db, Nombre_institucion, Nombre_finca, Registrado_por, Count, Protocolo_muestreo, Departamento, Id_muestreo, Nombre_ayerbe, Fecha, Latitud_decimal, Longitud_decimal, DistsKM, Elev) %>%
+  dplyr::select(Uniq_db, Nombre_institucion, Nombre_finca, Registrado_por, Count, Protocolo_muestreo, Departamento, Id_muestreo, Nombre_ayerbe, Fecha, Latitud, Longitud_decimal, DistsKM, Elev) %>%
   filter(!is.na(DistsKM)) # Remove spp that didn't have associated shapefile (eg Leptotila verreauxi)
 nrow(OutRangeObsDf)
 
@@ -217,11 +217,11 @@ FueraRango %>%
   ) %>%
   relocate(Nombre_cambiado, .after = Nombre_ayerbe) # %>%
 # Combined file for Nick
-#write.xlsx(file = "Intermediate_products/Fuera_rango/Excels/Combined/Fuera_Rango_Comb12.10.23_v2.xlsx", sheetName = "FueraRango", row.names = F, showNA = F)
+#write.xlsx(file = "Derived/Fuera_rango/Excels/Combined/Fuera_Rango_Comb12.10.23_v2.xlsx", sheetName = "FueraRango", row.names = F, showNA = F)
 
 ## Create data collector specific files
-#write.xlsx(data.frame(FueraRangoCIPAV), file = "Intermediate_products/Fuera_rango/CIPAV/FueraRangoCIPAV_12.11.23.xlsx", sheetName = "FueraRango", row.names = F)
-#write.xlsx(data.frame(FueraRangoGAICA), file = "Intermediate_products/Fuera_rango/GAICA/FueraRangoGAICA_12.11.23.xlsx", sheetName = "FueraRango", row.names = F)
+#write.xlsx(data.frame(FueraRangoCIPAV), file = "Derived/Fuera_rango/CIPAV/FueraRangoCIPAV_12.11.23.xlsx", sheetName = "FueraRango", row.names = F)
+#write.xlsx(data.frame(FueraRangoGAICA), file = "Derived/Fuera_rango/GAICA/FueraRangoGAICA_12.11.23.xlsx", sheetName = "FueraRango", row.names = F)
 
 # Distribution maps -------------------------------------------------------
 # Bring in Colombia spatial layers and then let's plot
@@ -343,7 +343,7 @@ Nums2 <- Nums %>%
   summarize(min_i = min(min_i), max_i = max(max_i)) # Inst = Institution
 length(dist_plots)
 for (i in 1:nrow(Nums2)) { #
-pdf(file = paste0("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Colombia-SCR-Rd3/Intermediate_products/Fuera_rango/Maps/Separate/", Nums2$Inst[i], "/DistributionsPCs_", Nums2$Inst[i], "2_", format(Sys.Date(), "%m.%d.%y"), ".pdf"), width = 8.5, height = 11, bg = "white")
+pdf(file = paste0("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Colombia-SCR-Rd3/Derived/Fuera_rango/Maps/Separate/", Nums2$Inst[i], "/DistributionsPCs_", Nums2$Inst[i], "2_", format(Sys.Date(), "%m.%d.%y"), ".pdf"), width = 8.5, height = 11, bg = "white")
 print(marrangeGrob(dist_plots[Nums2[i, ]$min_i:Nums2[i, ]$max_i], ncol = 3, nrow = 3, layout_matrix = matrix(1:9, 3, 3, TRUE)))
   dev.off()
 }
@@ -361,7 +361,7 @@ legend <- ggpubr::get_legend(p_legend)
 dist_plots[[length(dist_plots) + 1]] <- legend
 
 #Print PDF file with 9 plots per page
-pdf(file = paste0("Intermediate_products/Fuera_rango/Maps/Combined/PCs_Comb_Departments2_", format(Sys.Date(), "%m.%d.%y"), ".pdf"), width = 8.5, height = 11, bg = "white")
+pdf(file = paste0("Derived/Fuera_rango/Maps/Combined/PCs_Comb_Departments2_", format(Sys.Date(), "%m.%d.%y"), ".pdf"), width = 8.5, height = 11, bg = "white")
 print(marrangeGrob(grobs = dist_plots, ncol = 3, nrow = 3, layout_matrix = matrix(1:9, 3, 3, TRUE)))
 dev.off()
 

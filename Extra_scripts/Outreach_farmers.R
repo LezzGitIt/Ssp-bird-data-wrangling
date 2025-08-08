@@ -15,7 +15,7 @@
 # 7) Extra plotting
 
 # Load libraries & data ---------------------------------------------------------------
-load("Rdata/the_basics_01.09.25.Rdata")
+load("Rdata/the_basics_05.10.25.Rdata")
 
 library(tidyverse)
 library(cowplot)
@@ -189,11 +189,11 @@ create.extension.file <- function(df, var1, tbl = TRUE, output_name = NULL, outp
   var1 <- ensym(var1)
   if(rlang::as_string(var1) == "Id_group"){
     df <- df %>% group_by(!!var1) %>% 
-      mutate(Latitud_decimal = round(mean(Latitud_decimal, na.rm = TRUE), 3),
+      mutate(Latitud = round(mean(Latitud, na.rm = TRUE), 3),
              Longitud_decimal = round(mean(Longitud_decimal, na.rm = TRUE), 3))
   }
   df <- df %>% 
-    st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), crs = 4326) %>%
+    st_as_sf(coords = c("Longitud_decimal", "Latitud"), crs = 4326) %>%
     filter(Departamento == "Meta") %>%
     distinct(Nombre_finca, Id_gcs, Ano, !!var1, geometry) %>%
     group_by(Nombre_finca, Id_gcs, !!var1, geometry) %>%

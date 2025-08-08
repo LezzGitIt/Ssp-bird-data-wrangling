@@ -19,7 +19,7 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
-load("Rdata/the_basics_01.09.25.Rdata")
+load("Rdata/the_basics_05.10.25.Rdata")
 
 # Create files to aid in digitization -----------------------------------------------------
 # Create spatial file of point counts -- note that there are multiple coordinates for a single point count in a few cases
@@ -29,7 +29,7 @@ Bird_pcs_hab_sf <- Bird_pcs %>%
   distinct(
     Id_muestreo, Id_group, Departamento, Uniq_db,
     Id_gcs, Nombre_finca_mixed, Nombre_finca, Habitat_og,
-    Habitat_ut, Longitud_decimal, Latitud_decimal
+    Habitat_ut, Longitud_decimal, Latitud
   ) %>%
   group_by(Id_muestreo) %>% # Habitat_og, Habitat_ut
   mutate(Habitat = row_number()) %>% # Create numbers to add to columns
@@ -38,7 +38,7 @@ Bird_pcs_hab_sf <- Bird_pcs %>%
     values_from = c(Habitat_ut, Habitat_og)
   ) %>%
   ungroup() %>%
-  st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), crs = 4326)
+  st_as_sf(coords = c("Longitud_decimal", "Latitud"), crs = 4326)
 
 # Combine Habitat_ut & Habitat_og into a single column with unite()
 endings <- 1:7
@@ -105,7 +105,7 @@ sapply(buffers_df, round, 2)
 
 # >Export files ----------------------------------------------------------
 # Create kmz & shapefiles of buffers + points. WILL WANT TO CHANGE PROJECTION
-Buffers_cipav <- buffers_ms$b25 %>% filter(Uniq_db == "CIPAV MBD")
+Buffers_cipav <- buffers_ms$b25 %>% filter(Uniq_db == "Cipav mbd")
 
 # Put items that need to be exported in a list
 files.exp <- list(PC_Cents = cents_sv, Buffers_cipav = Buffers_cipav, Buffers_50m = buffers_ms$b50, Buffers_300m = union_ms$b300)
@@ -136,16 +136,18 @@ map2(
       obj = files.exp.sf[[name]],
       dsn = if (path == "shp") path_shp else path_kml,
       driver = type,
-      layer = name
+      layer = name, 
+      append = FALSE # Overwrites files
     )
   }
 ))
 }
+?st_write
 
 # >Example farm figure ----------------------------------------------------
 Bird_pcs %>%
   filter(Nombre_finca == "La herradura" | Id_gcs == 4121) %>%
-  distinct(Id_gcs, Id_group, Nombre_finca, Nombre_finca_mixed, Latitud_decimal, Longitud_decimal)
+  distinct(Id_gcs, Id_group, Nombre_finca, Nombre_finca_mixed, Latitud, Longitud_decimal)
 
 Ex <- buffers[[4]] %>% filter(Uniq_db == "GAICA MBD" & Id_group == "G-MB-M-LH")
 Ex_cents <- Pc_locs_sf %>% filter(Id_group == "G-MB-M-LH")
@@ -266,16 +268,19 @@ Export_files <- list(Points = Points_export,
                      Buffers_group_1500 = Buffers_group_1500, 
                      Buffers_group_5000 = Buffers_group_5000)
 
+
+# >Export files ------------------------------------------------------------
+
 ## Export points & buffers
 if(FALSE){
   dir_path <- "Derived_geospatial/Diana_laura_digitization/"
-  imap(Export_files, \(buffers, names) {
+  imap(Export_files, \(shp_vectors, names) {
     # Ensure the directory exists
     if (!dir.exists(paste0(dir_path, names))) {
       dir.create(paste0(dir_path, names), recursive = TRUE)
     }
     # Write the shapefile
-    buffers %>% st_write(
+    shp_vectors %>% st_write(
       driver = "ESRI Shapefile",
       dsn = file.path(dir_path, paste0(names, "/", names, ".shp")),
       layer = names
@@ -283,7 +288,7 @@ if(FALSE){
   })
 }
 
-# Ensure file exported correctly 
+## Visualization: Ensure files exported correctly 
 files <- list.files("Derived_geospatial/Diana_laura_digitization", 
                     pattern = "\\.shp$", recursive = TRUE)
 files <- files[!str_detect(files, "Sabine")]
@@ -292,6 +297,10 @@ Exported_files <- map(files, \(shp){
   st_read(paste0(dir_path, shp)) 
 })
 names(Exported_files) <- str_remove(files, "/.*$")
+
+Exported_files$Points %>% 
+  filter(if_any(starts_with("Ano"), ~ . == 2024)) %>% 
+  filter(Region == "Cafetera")
 
 ## Plot examples
 load("Rdata/NE_layers_Colombia.Rdata")
@@ -310,7 +319,8 @@ Exported_files$Buffers_group_5000 %>% filter(Id_group == "G-MB-Q-PORT") %>%
   geom_sf(data = Points_ex)
 
 # Plot Sabine's data 
-sabine2 <- sabine %>% mutate(Id_muestreo = str_remove_all(Id_muestreo, " potrero")) %>% 
+sabine2 <- sabine %>% 
+  mutate(Id_muestreo = str_remove_all(Id_muestreo, " potrero")) %>% 
   st_zm(drop = TRUE)
 
 Buffers_group_1500 %>%
@@ -322,4 +332,58 @@ Buffers_group_1500 %>%
                   aes(geometry = geometry, label = Id_muestreo), 
                   stat = "sf_coordinates")
 
-?rstanarm::stan_glm
+Pc_locs_sf %>% filter(Departamento == "Meta") %>% 
+  distinct(Id_muestreo)
+
+# Come up with estimates 
+Exported_files$Buffers_group_1500 %>% filter(Region == "Piedemonte") %>% 
+  st_union() %>%
+  st_make_valid() %>% 
+  ggplot() + 
+  geom_sf() + 
+  labs(title = "1.5km buffers to digitize in Meta") +
+  theme_min
+
+
+## Bring in Cropped_lcs, select relevant columns, & export as training polygons
+Cropped_lcs <- vect("Derived_geospatial/shp/Cropped_lcs/Cropped_lcs.shp")
+## Subset to just relevant & export shapefiles for Diana Laura 
+if(FALSE){
+  cropped_lcs %>% 
+    select(Ecoregion, Departamento, lc_typ, trees_perc, image_date, alt_source) %>%
+    terra::writeVector("Derived_geospatial/Diana_laura_digitization/Training/Training_polygons/Training_polygons.shp")
+}
+
+
+# >Training ---------------------------------------------------------------
+Habitats_eje <- read_xlsx("Data/Habitats/Habitats_eje_cafetero.xlsx", 
+                          na = c("Sin informacion", "N/A"))
+Training_points_eje_2024 <- Habitats_eje %>%
+  mutate(Habitat_final = case_when(
+    !is.na(Habitat_ajustado) ~ Habitat_ajustado,
+    Habitat_homologado_ut == "Bosque" & Ano == 2017 ~ Habitat_og, 
+    Habitat_homologado_ut == "SSP" ~ Habitat_og, 
+    Id_muestreo == "G-MB-Q-LA_01" ~ NA,
+    .default = Habitat_homologado_ut
+  )) %>% filter(!(Id_muestreo == "G-MB-Q-LCA_03" & Ano != 2024)) %>% 
+  filter(!is.na(Habitat_final)) %>%
+  distinct(Id_muestreo, Habitat_final)
+
+Pc_locs_sf %>% filter(Uniq_db == "Ubc gaica dom") %>%
+  right_join(Training_points_eje_2024) %>% 
+  select(Ecoregion, Departamento, Id_muestreo, Habitat_final) #%>% 
+  #st_write("Derived_geospatial/Diana_laura_digitization/Training/Training_points_eje_2024/Training_points_eje_2024.shp")
+
+# Working -----------------------------------------------------------------
+
+cropped_lcs %>% 
+  select(Ecoregion, Departamento, lc_typ, trees_perc,
+         image_date, alt_source) %>% 
+  filter(!is.na(alt_source)) %>%
+  pull(image_date) %>% table()
+
+Pcs_hab %>% distinct(Id_muestreo, Habitat_ut, Habitat_sub_ut)
+
+Bird_pcs %>%  distinct(Ecoregion)
+
+Lcs_comb2 %>% head() %>% view()

@@ -1,12 +1,11 @@
 ##eBird status & trends products to assess connectivity in Colombia##
 # eBird occ & abu------------------------------------------------------------
 #set_ebirdst_access_key("8rh7l6t8edbd")
+library(tidyverse)
 library(ebirdst)
-library(dplyr)
-library(ggplot2)
-library(lubridate)
 library(sf)
 library(terra)
+library(cowplot)
 ggplot2::theme_set(theme_cowplot())
 select <- dplyr::select
 #library(auk) #see vignette on working with raw eBird data, i.e., eBird Basic Dataset (EBD): https://cornelllabofornithology.github.io/ebird-best-practices/ebird.html
@@ -17,13 +16,12 @@ ebirdst_data_dir()
 
 View(ebirdst_runs)
 
-path_yebsap <- ebirdst_download(species = "example_data") #, tifs_only = FALSE)
+path_yebsap <- ebirdst_download_status(species = "example_data") #, tifs_only = FALSE)
 abu_lr <- load_raster(path_yebsap, product = "abundance", resolution = "lr") #cube, 52 weeks of raster layers.
 parse_raster_dates(abu_lr)
 
 abu_ss <- abu_lr[[1:3]] #abundance subsample 
 plot(abu_ss) #Notice that extent is global (or at least all W hemisphere), so need to reduce the extent 
-
 
 # Centroids_movement ------------------------------------------------------
 #Trying to think about movement of spp, where high difference values mean abundance was high at one point in year and then low at another point in the year. IF THE CENTROIDS APPROACH WORKS THIS SEEMS MUCH CLEANER
@@ -87,7 +85,8 @@ runsDists %>% dplyr::select(c(1:8)) %>% arrange(desc(resident), overall_dist_max
 ?ebirdst_predictors
 View(ebirdst_predictors)
 
-#Example with yellow bellied sapsucker
+
+# >Yellow bellied sapsucker -----------------------------------------------
 #From convo with Tom Auer:
 
 #PIs tell us importance of given variable for each stixel. See ranger package (package used for random forest classifications) documentation for more information on how these 'importance' scores are calculated. 
@@ -98,10 +97,11 @@ View(pds_yebsap)
 View(pis_yebsap)
 
 #Define extent. The extent can be a polygon as well (e.g., Colombia polygon)
-pis_yebsap %>% summarize(xmin = min(longitude), xmax = max(longitude), ymin = min(latitude), ymax = max(latitude))
+pis_yebsap %>% 
+  summarize(xmin = min(longitude), xmax = max(longitude), 
+            ymin = min(latitude), ymax = max(latitude))
 ext_yebsap <- ebirdst_extent(c(xmin = -90.1, xmax = -82.5, ymin = 41.8, ymax = 46.9))
-?ebirdst_extent
-pis_yebsap <- ebirdst_subset(pis_yebsap, ext = ext_yebsap) #key function I was missing
+pis_yebsap <- ebirdst_subset(pis_yebsap, ext = ext_yebsap) 
 plot_pis(pis_yebsap, ext = ext_yebsap, by_cover_class = TRUE, n_top_pred = 15)
 
 #Plot relationships from the loaded pds.. X-axis is the predictor value (e.g., % forest), and y-axis is the expected (E) difference from the mean of occurrence on the logit scale
@@ -111,7 +111,6 @@ plot_pds(pds_yebsap, predictor = "mcd12q1_lccs1_fs_c14_1500_pland", ext = ext_ye
 #Habitat associations for yebsap#
 #The ebirdst_habitat() function uses both the PIs (which tell us importance) and the PDs to show how habitat associations change during each week of the year for the given extent we've defined.PIs tell you the importance of the relationship (from random forest), PDs define the relationship (show you the slope) 
 #The object created by ebirdst_habitat() has importance values (similar to a beta coefficient, but is always positive), the prob_pos_slope column has the proportion of stixels within your extent that have a positive relationship, and the direction is a trinary column with either a 1 when the prob_pos_slope column > .7, a -1 when the the prob_pos_slope is < .3, and NA if the prob_pos_slope is between .3 and .7
-?ebirdst_habitat
 hab_yebsap <- ebirdst_habitat(path = path_yebsap, ext = ext_yebsap)
 plot(hab_yebsap, n_habitat_types = 18)
 
@@ -120,11 +119,11 @@ hab_yebsap_stat <- ebirdst_habitat(path = path_yebsap, ext = ext_yebsap, station
 arrange(hab_yebsap_stat, desc(importance))
 
 #Tried to do my own summaries, but it doesn't quite work. Notice there are some variable that have neg relationships at one point in year and pos relationships at other points of year (see ntl_mean)
-hab_yebsap %>% group_by(predictor) %>% summarize(avg_pi = mean(importance, na.rm = T) * mean(direction, na.rm = T)) %>% arrange(desc(avg_pi))
-View(hab_yebsap)
+hab_yebsap %>% group_by(predictor) %>% 
+  summarize(avg_pi = mean(importance, na.rm = T) * mean(direction, na.rm = T)) %>% arrange(desc(avg_pi))
 
 
-
+# >Long-billed-hermit -----------------------------------------------------
 ##Try w/ a Colombian species, long-billed hermit##
 path_lbhe <- ebirdst_download(species = "Long-billed hermit", pattern = "stixel_summary", tifs_only = F)
 

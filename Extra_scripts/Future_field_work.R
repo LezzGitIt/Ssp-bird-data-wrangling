@@ -26,7 +26,7 @@ conflicts_prefer(dplyr::filter)
 
 # DynOcc Targets --------------------------------------------------------
 # Identify how many distinct sampling periods each point count location has #
-Rep_surv <- Pc_date4 %>%
+Rep_surv <- Pc_date8 %>%
   filter(N_samp_periods > 1) %>%
   distinct(Id_muestreo, Uniq_db, Ecoregion, Id_gcs)
 
@@ -45,7 +45,7 @@ Pc_locs_sf %>%
   distinct(Uniq_db, Id_group, Id_muestreo, .keep_all = TRUE) %>%
   filter(Uniq_db != "UNILLANOS MBD") %>%
   rename(name = Id_muestreo) # %>%
-# st_write(driver='kml', dsn = paste0("Intermediate_products_geospatial/kml/Rep_surv_GAICA", format(Sys.Date(), "%m.%d.%y"), ".kml"))
+# st_write(driver='kml', dsn = paste0("Derived_geospatial/kml/Rep_surv_GAICA", format(Sys.Date(), "%m.%d.%y"), ".kml"))
 
 # Summary table
 Rep_surv %>%
@@ -57,8 +57,8 @@ Rep_surv %>%
     Num_PCs = 54, Landcover = "Across gradient"
   )
 
-# NOTE:: Using Pc_date4 we arrive at the same 72 points & the same break down by Ecoregion
-Pc_date4 %>%
+# NOTE:: Using Pc_date8 we arrive at the same 72 points & the same break down by Ecoregion
+Pc_date8 %>%
   filter(N_samp_periods > 1) %>%
   distinct(Id_muestreo, Ecoregion) %>%
   pull(Ecoregion) %>%
@@ -70,7 +70,7 @@ Pc_date4 %>%
 EC_PCs_df <- Bird_pcs %>%
   filter(Uniq_db == "GAICA MBD" & Ecoregion == "Cafetera") %>%
   mutate(Seas = ifelse(Mes %in% c(7, 8), "Dry", "Wet")) %>%
-  distinct(Departamento, Nombre_finca, Id_gcs, Id_muestreo, Ano, Seas, Latitud_decimal, Longitud_decimal, Habitat_og, Habitat_ut, Habitat_SUB_UT, Elevacion) %>%
+  distinct(Departamento, Nombre_finca, Id_gcs, Id_muestreo, Ano, Seas, Latitud, Longitud_decimal, Habitat_og, Habitat_ut, Habitat_SUB_UT, Elevacion) %>%
   group_by(Id_muestreo) %>%
   mutate(
     visit_num = row_number(),
@@ -84,11 +84,11 @@ names(EC_PCs) <- c("1_visit", "2_visits", "3_visits") # Number of visits in dist
 
 # Create data frame of final points I hope to resurvey
 resurvey_pts <- EC_PCs[[3]] %>%
-  select(Id_muestreo, Id_gcs, Habitat_og, Ano, Nombre_finca, Latitud_decimal, Longitud_decimal) %>%
+  select(Id_muestreo, Id_gcs, Habitat_og, Ano, Nombre_finca, Latitud, Longitud_decimal) %>%
   filter(Ano != 2013) %>%
   # Add in point counts from farm 728
   bind_rows(EC_PCs_df %>% filter(Id_gcs %in% c(728)) %>%
-    select(Id_muestreo, Id_gcs, Latitud_decimal, Longitud_decimal)) %>%
+    select(Id_muestreo, Id_gcs, Latitud, Longitud_decimal)) %>%
   distinct() %>%
   mutate(Top_priority = ifelse(Id_gcs == 728, "N", "Y")) %>%
   as.data.frame()
@@ -111,7 +111,7 @@ resurvey_pts %>%
     })
   ) %>%
   rename(name = PC_ID) %>% # Id_gcs
-  st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), crs = 4326) # %>%
+  st_as_sf(coords = c("Longitud_decimal", "Latitud"), crs = 4326) # %>%
 # st_write(driver='kml', dsn="/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Field_Work/Resurvey_2024_2025/Sampling plan/Eje_resurvey_sites_PC_ID.kml", layer = "Eje_resurvey_sites")
 
 # Consider pairing points that were surveyed near each other #
@@ -120,9 +120,9 @@ resurvey_pts %>%
 # UPDATE: Visited points in the field & decided against doing this
 Rep_diff_loc <- Bird_pcs %>%
   filter(Departamento == "Quindio" & str_detect(Id_muestreo, "EC_")) %>%
-  distinct(Id_muestreo, Id_gcs, Latitud_decimal, Longitud_decimal, Ano) %>%
+  distinct(Id_muestreo, Id_gcs, Latitud, Longitud_decimal, Ano) %>%
   arrange(Id_muestreo) %>%
-  st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), crs = 4326)
+  st_as_sf(coords = c("Longitud_decimal", "Latitud"), crs = 4326)
 
 Rd1_2013 <- Rep_diff_loc %>% slice(1:6)
 Rd2_2017 <- Rep_diff_loc %>% slice(7:12)
@@ -147,19 +147,19 @@ PCs_GMB_M <- Bird_pcs %>%
 
 # Generate KML
 PCs_GMB_M %>%
-  distinct(Id_gcs, Id_group, Id_muestreo, Latitud_decimal, Longitud_decimal, Habitat_og) %>%
-  st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), crs = 4326, remove = T) %>%
+  distinct(Id_gcs, Id_group, Id_muestreo, Latitud, Longitud_decimal, Habitat_og) %>%
+  st_as_sf(coords = c("Longitud_decimal", "Latitud"), crs = 4326, remove = T) %>%
   mutate(muestrear_aves = ifelse(Id_muestreo %in% gaica_PC_ids, "Y", "N")) %>%
   select(-Id_group) %>%
   rename(name = Id_muestreo) # %>%
-# st_write(driver='kml', dsn = paste0("Intermediate_products_geospatial/kml/Rep_all_pts_GAICA_", format(Sys.Date(), "%m.%d.%y"), ".kml"))
+# st_write(driver='kml', dsn = paste0("Derived_geospatial/kml/Rep_all_pts_GAICA_", format(Sys.Date(), "%m.%d.%y"), ".kml"))
 
 # Generate Excel for changing habitats
 PCs_GMB_M %>%
   distinct(Id_gcs, Nombre_finca, Ano, Id_muestreo, Habitat_og, Habitat_ut) %>%
   mutate(Habitat_ajustado = "", Observacion = "") %>%
   arrange(Nombre_finca, Id_muestreo, Ano) #%>%
-  #write.xlsx(file = "Intermediate_products/Excels/Habitats_Meta.xlsx", row.names = F, showNA = F)
+  #write.xlsx(file = "Derived/Excels/Habitats_Meta.xlsx", row.names = F, showNA = F)
 
 # 54 pts land use gradient ------------------------------------------------
 # 18 effective days of field work
@@ -174,8 +174,8 @@ Bird_pcs %>% filter(Uniq_db == "UNILLANOS MBD") %>%
 # Identify how many distinct sampling periods each point count location has #
 # Combine separate months that are really in the same sampling period into a single row.
 conflicts_prefer(dplyr::lag)
-Mes_mod <- Pc_date4 %>%
-  mutate(date.num = as.numeric(Pc_date4$Fecha)) %>%
+Mes_mod <- Pc_date8 %>%
+  mutate(date.num = as.numeric(Pc_date8$Fecha)) %>%
   group_by(Id_muestreo, Ecoregion, Ano, Mes) %>%
   # Create the mean, min, and max date number (DN) within a month
   summarize(meanDN = mean(date.num), minDN = mean(date.num) - 225, maxDN = mean(date.num) + 225) %>%
@@ -208,8 +208,8 @@ Dist_samp_periods <- Mes_mod %>%
 Dist_samp_periods2 <- merge(Mes_mod[, c("Id_muestreo", "Mes_mod", "GrpTemp", "Mes", "Ano")], Dist_samp_periods, by = c("Id_muestreo", "Mes_mod"))
 nrow(Dist_samp_periods2)
 
-# Merge with Pc_date4
-PC_date3 <- merge(Pc_date4, select(Dist_samp_periods2, -Ano), by = c("Id_muestreo", "Mes")) %>%
+# Merge with Pc_date8
+PC_date3 <- merge(Pc_date8, select(Dist_samp_periods2, -Ano), by = c("Id_muestreo", "Mes")) %>%
   arrange(Id_muestreo, Ano, Mes)
 
 # Manually adjust a single case where Mes_mod coincidentally happened to average out to the same Mes_mod value (within a single point count ID)
@@ -219,7 +219,7 @@ PC_date4 <- PC_date3 %>%
 
 # Compare the code in DW_Bird_pcs to the approach here. We get the same answer!
 PC_date4 %>%
-  left_join(Pc_date4[, c("Id_muestreo", "N_samp_periods")]) %>%
+  left_join(Pc_date8[, c("Id_muestreo", "N_samp_periods")]) %>%
   distinct(Id_muestreo, Samp_Periods_n, N_samp_periods) %>%
   mutate(TF = Samp_Periods_n == N_samp_periods) %>%
   pull(TF) %>%

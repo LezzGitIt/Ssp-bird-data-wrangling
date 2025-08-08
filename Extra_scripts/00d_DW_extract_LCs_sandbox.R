@@ -159,9 +159,12 @@ LCs_comb <- pmap(
 )
 sum(sapply(shp.lc.L[2:4], nrow))
 
-# Inconsistencies habitat: continuous & binary -------------------------------
+# Inconsistencies habitat: continuous & binary---------------------------
 # >Continuous --------------------------------------------------------------
 ## Our working assumption has been that data collectors used the predominant landcover within the point count to classify the landcover type (except when LC == Ssp, e.g. live fence). Thus, we'd expect that >50% of the manually digitized landcover within the 50m radius should be in agreement with the data collector's assigned habitat type
+
+# Read in minimum distance to forest files
+Min_dist_forest <- read_excel(path = "Derived/Excels/Lsm/Min_dist_forest.xlsx")
 
 # Select landcovers within 25m if CIPAV & 50m otherwise, ie the appropriate buffer size
 Lsm_long_buf <- Lsm_long %>% 
@@ -172,8 +175,9 @@ Lsm_long_buf <- Lsm_long %>%
 
 # Plot the digitized landcover within 25m (CIPAV) or 50m (all others) for each categorical landcover assigned by the data collectors
 Lsm_long_buf %>% 
-  ggplot(aes(x = Habitat_cons, y = Percent_cover, color = Lc_manual)) +
-  geom_hline(yintercept = 50, linetype = "dashed") +
+  ggplot(aes(
+    x = Habitat_cons, y = Percent_cover, color = Lc_manual_per_cover)
+    ) + geom_hline(yintercept = 50, linetype = "dashed") +
   geom_boxplot() + 
   geom_point(position = position_jitterdodge(jitter.width = .05), 
              alpha = .3) + 
@@ -182,14 +186,14 @@ Lsm_long_buf %>%
   labs(title = "Landcover within 25/50m of point count")
 
 # Create tibble of continuous inconsistencies (generate & filter on 'Investigate' column)
-Inconsistencies_cont <- Lsm_long_buf %>% mutate(Investigate = case_when(
-  Habitat_cons %in% c("Bosque", "Bosque ripario") & Lc_manual == "forest" & Percent_cover < 50 ~ "Y", 
-  Habitat_cons %in% "Pastizales" & Lc_manual == "intpast" & Percent_cover < 50 ~ "Y",
-  Habitat_cons %in% "Ssp" & Lc_manual == "ssp" & Percent_cover < 10 ~ "Y", 
-  .default = NA
+Inconsistencies_cont <- Lsm_long_buf %>% 
+  mutate(Investigate = case_when(
+           Habitat_cons %in% c("Bosque", "Bosque ripario") & Lc_manual_per_cover == "forest" & Percent_cover < 50 ~ "Y", 
+           Habitat_cons == "Pastizales" & Lc_manual_per_cover == "intpast" & Percent_cover < 50 ~ "Y",
+           Habitat_cons == "Ssp" & Lc_manual_per_cover == "ssp" & Percent_cover < 10 ~ "Y", .default = NA
 )) %>% filter(Investigate == "Y") %>% 
   left_join(Min_dist_forest) %>%
-  arrange(lc_file, Habitat_cons, Lc_manual, Id_muestreo)
+  arrange(lc_file, Habitat_cons, Lc_manual_per_cover, Id_muestreo)
 Inconsistencies_cont 
 
 # >Binary -----------------------------------------------------------------
@@ -201,7 +205,7 @@ Inconsistencies_bin <- Pc_hab %>% distinct(Id_muestreo, Habitat_cons) %>%
   mutate(lc_file = "middle") %>%
   filter(Habitat_cons %in% c("Bosque", "Bosque ripario") & In_forest == 0 | !Habitat_cons %in% c("Bosque", "Bosque ripario") & In_forest == 1) %>% 
   filter(!is.na(Habitat_cons)) %>% 
-  arrange(desc(In_forest), desc(Dist_to_edge)) 
+  arrange(desc(In_forest), desc(Dist_to_edge))  
 Inconsistencies_bin
 
 # Create file to export
@@ -216,6 +220,8 @@ Inconsistencies_exp <- Inconsistencies_cont %>%
   mutate(Forest_type_reviewer = NA, Revision_made = NA, Comments = NA) %>%
   select(-Investigate) %>% 
   rename(Habitat_reported = Habitat_cons)
+
+#Inconsistencies_exp %>% view()
 
 # NOTE:: These are points that passed the 'continuous' check, but not the binary check
 Inconsistencies_exp %>% filter(is.na(Percent_cover))
