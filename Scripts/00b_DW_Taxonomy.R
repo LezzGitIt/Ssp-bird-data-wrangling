@@ -16,7 +16,8 @@
 # "Accipiter bicolor" (didn't have all files), "Crypturellus soui_1", "Parkesia noveboracensis_M" Picumnus olivaceus_M",  "Scytalopus latrans_M", "Nyctibius_grandis"
 
 # Libraries ---------------------------------------------------------------
-load("Rdata/the_basics_12.27.24.Rdata")
+#load("Rdata/Taxonomy_12.29.24.Rdata")
+load("Rdata/the_basics_05.10.25.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 library(tidyverse)
@@ -35,7 +36,7 @@ conflicts_prefer(dplyr::filter)
 
 # Og_name & Ayerbe ---------------------------------------------------------
 # Data frame with distinct combinations of Og_name & Ayerbe.
-Tax_OG_Ay <- Birds_all4 %>% # Taxonomy Og_name + Ayerbe
+Tax_OG_Ay <- Birds_all3 %>% # Taxonomy Og_name + Ayerbe
   distinct(Nombre_cientifico_original, Nombre_ayerbe) %>%
   rename(Og_name = Nombre_cientifico_original)
 
@@ -59,7 +60,7 @@ Ayerbe_all_spp <- list.files(path = "../Geospatial_data/Ayerbe_shapefiles_1890sp
 Ayerbe_all_spp <- substr(Ayerbe_all_spp, 1, nchar(Ayerbe_all_spp) - 4) # Remove the .dbf extension
 
 # CHECK:: any individual species that we're having difficulty with 
-TF <- str_detect(Ayerbe_all_spp, "Thripadectes") #"tyrannina"
+TF <- str_detect(Ayerbe_all_spp, "hemichrysus") #"tyrannina"
 Ayerbe_all_spp[TF]
 
 # CHECK:: Species that are listed in SCR databases and are not in Ayerbe's files.
@@ -94,25 +95,34 @@ Ayerbe_sf2 <- Ayerbe_sf %>%
 # Taxonomy ---------------------------------------------------
 # >GBIF ------------------------------------------------
 # Use Gbif to pull in additional synonyms, and to standardize the family, order, and species. GBIF is the only source that has information for all input species
-#gbif_list <- get_gbifid_(sciNames, method = "backbone", rows = 1)
+if(FALSE){ # Very slow
+  gbif_list <- get_gbifid_(sciNames, method = "backbone", rows = 1)
+  
+  gbif_names <- bind_rows(gbif_list, .id = "input_name")
+  # Importantly, notice that gbif provides something for every single input
+  nrow(gbif_names)
+  
+  # Update autoria column
+  gbif_names$autoria <- str_remove(gbif_names$scientificname, pattern = gbif_names$canonicalname)
+  
+  #write.xlsx(gbif_names, "Derived/Excels/gbif_names.xlsx")
+}
 
-gbif_names <- bind_rows(gbif_list, .id = "input_name")
-# Importantly, notice that gbif provides something for every single input
-nrow(gbif_names)
-
-# Update autoria column
-gbif_names$autoria <- str_remove(gbif_names$scientificname, pattern = gbif_names$canonicalname)
+# Bring in gbif data frame to avoid slow get_gbifid_() 
+gbif_names <- read.xlsx("Derived/Excels/gbif_names.xlsx", sheetIndex = 1)
 
 # >Avonet list -----------------------------------
 # See metadata tab in Excel for information on what each column contains
 # Bring in here as this is used to create Tax_df
-filesAvo <- list.files(path = "../../Datasets_external/Avonet_Data/TraitData", pattern = ".xlsx")
+Traits_path <- "../Datasets_external/Avonet_Data/TraitData/"
+filesAvo <- list.files(path = Traits_path, pattern = ".xlsx")
 sheetsAvo <- str_split_i(filesAvo, ".x", 1)
 dfsAvo <- list() # dfs Ecotropico
 for (i in 1:length(filesAvo)) {
   print(i)
-  dfsAvo[[i]] <- read_excel(path = paste0("../../Datasets_external/Avonet_Data/TraitData/", 
-                                          filesAvo[i]), sheet = sheetsAvo[i]) #%>% 
+  dfsAvo[[i]] <- read_excel(
+    path = paste0(Traits_path, filesAvo[i]), sheet = sheetsAvo[i]
+    ) #%>% 
     #clean_names()
 }
 names(dfsAvo) <- c("BirdLife", "eBird", "BirdTree")
@@ -131,10 +141,10 @@ Avo_traits_l <- lapply(dfsAvo, function(x) {
 
 # >Tax_df -------------------------------------------------------------------
 ## Use the crosswalk file to create a data frame of true taxonomic equivalents (at least for BL & BT)
-Crosswalk <- read.csv("../../Datasets_external/Avonet_Data/PhylogeneticData/BirdLife-BirdTree crosswalk.csv") %>%
+Crosswalk <- read.csv("../Datasets_external/Avonet_Data/PhylogeneticData/BirdLife-BirdTree crosswalk.csv") %>%
   rename(Species_bl = Species1, Species_bt = Species3) %>%
   select(1:4)
-HBW <- data.frame(read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Taxonomy/Handbook of the Birds of the World and BirdLife International Digital Checklist of the Birds of the World_Version_7.xlsx", sheet = "HBW-BirdLife v7 ", skip = 3)) %>%
+HBW <- data.frame(read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Datasets_external/Handbook of the Birds of the World and BirdLife International Digital Checklist of the Birds of the World_Version_7.xlsx", sheet = "HBW-BirdLife v7 ", skip = 3)) %>%
   filter(!is.na(Common.name))
 head(HBW)
 
@@ -205,15 +215,19 @@ Tax_df2 %>%
 Tax_df2 %>% filter(is.na(Species_bt) | is.na(Species_bl))
 
 # Save & export -----------------------------------------------------------
+stop()
 ## Export relevant files to Excel
 #Tax_df2 %>% write.xlsx("../Taxonomy/Taxonomy.xlsx", sheetName = "Taxonomic_equivalents", row.names = F, showNA = FALSE)
 
 # NOTE:: B/c 'GAICA UBC' didn't have a Species_original it was adding hundreds of rows to the dataframe for every combo of Species_ayerbe , & Species_original == NA
 Tax_df3 <- Tax_df2 %>% select(-Species_original) %>% 
-  distinct() 
+  distinct() %>% 
+  tibble()
 
 rm(list = ls()[!(ls() %in% c("Ayerbe_all_spp", "Ayerbe_sf2", "Tax_df3", "Avo_traits_l", "gbif_list"))])
 #save.image(paste0("Rdata/Taxonomy_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
+# Manual
+#save.image("Rdata/Taxonomy_12.29.24.Rdata")
 
 # EXTRAS -----------------------------------------------------------
 # These 'EXTRAS' are no longer critical given that the 40 species' names that had no match according to Ayerbe's taxonomy were updated manually and incorporated into the primary workflow. I left this code as these were previously important steps in the workflow. The three components are
@@ -223,11 +237,10 @@ rm(list = ls()[!(ls() %in% c("Ayerbe_all_spp", "Ayerbe_sf2", "Tax_df3", "Avo_tra
 # 4) Ecotropico Extras -- Providing updated taxonomy in the format that Ecotropico requested
 # 5) Order & Family -- If I remember correctly, there was an issue with the orders and families being scrambled relative to the species names?
 
-
 # >YEWA example -----------------------------------------------------------
 ## I recommend using Ayerbe (2018) as final bird species list as these have been vetted and all species accounted for / clarified. Other taxonomies may have other types of errors, for example the Yellow warbler. See Final report (6.30.23) to TNC for more information
 ## EXAMPLE: Yellow warbler & locations
-Birds_all4 %>%
+Birds_all3 %>%
   filter(Nombre_cientifico_original == "Setophaga aestiva" | Nombre_cientifico_original == "Setophaga petechia") %>%
   select(Nombre_cientifico_original, Nombre_ayerbe, Departamento) %>%
   arrange(Nombre_cientifico_original) %>%

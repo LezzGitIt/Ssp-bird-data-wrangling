@@ -64,7 +64,7 @@ Birds_analysis2 %>% filter(is.na(Distancia_bird)) %>%
   distinct(Uniq_db, Departamento, Id_muestreo, Familia, Nombre_ayerbe) %>% 
   distinct(Familia, Nombre_ayerbe) #%>% view()
 
-# There are a few species (e.g. hummingbirds) that would be nearly impossible to identify at >50m. Change the distance of these species to <50m so they are maintained
+# Within species that have NA for Distancia, there are a few species (e.g. hummingbirds) that would be nearly impossible to identify at >50m. Change the distance of these species to <50m so they are maintained
 Birds_analysis3 <- Birds_analysis2 %>%
   mutate(Distancia_bird = if_else(is.na(Distancia_bird) & Familia %in% c("Trochilidae", "Pipridae"), "<50", Distancia_bird))
 
@@ -94,12 +94,14 @@ Birds_analysis6 <- Birds_analysis5 %>% left_join(date_join_spp_obs)
 
 # Summarize so each species is listed only once in each point count 
 Birds_analysis6 %>% filter(if_any(everything(), is.na)) # No NAs in any rows
-Birds_analysis <- Birds_analysis6 %>% 
-  summarize(Count = sum(Count), .by = -Count) %>% 
-  # Lessen the magnitude of 4 outliers 
+Birds_analysis7 <- Birds_analysis6 %>% 
+  summarize(Count = sum(Count), .by = -Count)
+
+# Lessen the magnitude of 4 outliers 
+Birds_analysis <- Birds_analysis %>% 
   mutate(Count = ifelse(Count > 50, 50, Count)) 
 
-## Simplify this exercise by using only most abundant species 
+## Simplify this exercise by using only the most abundant species 
 Spp_counts <- Birds_analysis %>%
   summarize(Count = sum(Count), .by = c(Nombre_ayerbe, Nombre_ayerbe_)) %>%
   arrange(desc(Count))
@@ -381,7 +383,7 @@ umf_occ_l <- pmap(.l = list(Occ_nas, Site_covs, Obs_covs2),
                     unmarkedFrameOccu(y = abund, siteCovs = sc, obsCovs = oc)
                   })
 
-# spOccupancy -------------------------------------------------------------
+# spOccupancy frame --------------------------------------------------------
 ## Prep the data structure for spOccupancy package
 # One benefit is that spOccupancy can account for spatial autocorrelation. 
 # NOTE:: This is currently failing when fitting using spOccupancy because you cannot have multiple sites with the same coordinates. Quick solution would be to jitter coordinates a bit 
@@ -409,44 +411,67 @@ if(any(str_detect(Row_identifier, "Ano_grp"))){
   Row_identifier <- str_replace_all(Row_identifier, "_grp", "1")
 }
 
+# Random effects have to be specified as numeric in spOccupancy
+Site_covs <- map(Site_covs, \(sc){
+  sc %>% mutate(Id_group_fac = as.numeric(Id_group))
+})
+
 # NOTE:: Different names required in the spOccupancy list, occ.covs = occurrence (or occupancy) covariates
-spOcc_ll <- pmap(
-  list(Occ_nas, Site_covs, Obs_covs2, Ids_in_range_l),
-  \(occ, sc, oc, ids){
+spAbu_ll <- pmap(
+  list(Abund_nas, Site_covs, Obs_covs2, Ids_in_range_l),
+  \(abu, sc, oc, ids){
     # Create tbl with Ids & Ano1 to remove the habitats with NA
     rm_tbl <- sc %>% bind_cols(Id_muestreo = ids) %>% 
       filter(is.na(Habitat_cons)) %>% 
       distinct(across(all_of(Row_identifier)))
     
-    ## Add in coordinates
-    # Would be good to add coordinates in at some point, but first need to understand what the end goal is. How do we handle when it's the same coordinates across multiple years? 
-    if(FALSE){
-      rm_ids <- rm_tbl %>% distinct(Id_muestreo)
-      coords <- Pc_locs_sf %>% distinct(Id_muestreo, geometry) %>% 
-        anti_join(rm_ids) %>% 
-        st_transform(crs = st_crs("EPSG:32618")) %>% 
-        st_coordinates() 
-    }
-    
     # Create list 
-    spOcc_l <- list(y = occ, occ.covs = sc, det.covs = oc) #, coords = coords
+    spAbu_l <- list(y = abu, abu.covs = sc, det.covs = oc) 
     
     # Use rm_tbl to remove the necessary rows across all dataframes
     # modify_depth handles that det.covs is already a list 
-    modify_depth(spOcc_l, 1, \(x){
+    spAbu_l <- modify_depth(spAbu_l, 1, \(x){
       if (is.list(x) && all(map_lgl(x, is.data.frame))) {
-        map(x, \(df) df %>% bind_cols(Id_muestreo = ids) %>% 
-              anti_join(rm_tbl) %>% 
-              select(-Id_muestreo)) 
+       map(x, \(df){
+          df %>% bind_cols(Id_muestreo = ids) %>% 
+            anti_join(rm_tbl) %>% 
+            select(-Id_muestreo) 
+        })
       } else if (is.data.frame(x)) {
-        x %>% bind_cols(Id_muestreo = ids) %>% 
+       x %>% bind_cols(Id_muestreo = ids) %>% 
           anti_join(rm_tbl) %>% 
           select(-Id_muestreo)
       } 
     })
+    
+    ## Add in coordinates
+    add_year_join <- sc %>% bind_cols(Id_muestreo = ids) %>%
+      distinct(Id_muestreo, Ano1)
+    
+    coords <- Pc_locs_sf %>% 
+      # Remove Ids out of range
+      filter(Id_muestreo %in% unique(ids)) %>%
+      distinct(Id_muestreo, geometry) %>%
+      # Add year to allow for anti_join
+      left_join(add_year_join) %>%
+      # Remove points with no LC
+      anti_join(rm_tbl) %>% 
+      # Order according to 'ids'
+      arrange(factor(Id_muestreo, levels = tibble(ids))) %>%
+      st_transform(crs = st_crs("EPSG:32618")) #%>% 
+      #st_coordinates() 
+    # Add coords in 4th slot
+    list_assign(spAbu_l, coords = coords)
 })
 
-spOcc_ll$Amazona_ochrocephala$det.covs #%>% count(Id_muestreo, Ano1, sort = T)
+# Convert abundance to occupancy
+spOcc_ll <- map(spAbu_ll, \(abu_l) {
+  abu_l[[1]] <- abu_l[[1]] %>%
+    mutate(across(.cols = everything(), .fns = ~ ifelse(. > 0, 1, 0)))
+  abu_l
+})
+
+spAbu_ll$Amazona_ochrocephala
 
 # Top_abu_df --------------------------------------------------------------
 Top_abu_df2 <- Top_abu_df %>% 
@@ -462,9 +487,16 @@ rm(list = ls()[!(ls() %in% c("Birds_analysis", "umf_abu_l", "umf_occ_l", "spOcc_
 
 # Export Birds_analysis dataframe
 if(FALSE){
-  Birds_analysis %>% as.data.frame() %>%
-    write.xlsx(file = paste0("Derived/Excels/Birds_analysis.xlsx"), 
+  # Final data set I will analyze  w/ outliers reduced (max of 50 individuals) 
+  Birds_analysis %>% 
+    as.data.frame() %>%
+    write.xlsx(file = "Derived/Excels/Birds_analysis.xlsx", 
                showNA = FALSE, row.names = FALSE)
+  
+  # Final dataset in csv format for data paper
+  Birds_analysis7 %>% 
+    write.csv(file = "Derived/Excels/Birds_analysis.csv", 
+              row.names = FALSE)
 }
 
 # Export R data object for BIOL314

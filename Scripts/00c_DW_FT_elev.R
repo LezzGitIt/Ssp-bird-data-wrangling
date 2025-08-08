@@ -6,9 +6,9 @@
 # 1) Functional traits database -- Use Tax_df & the Avonet files to create FT database using a for loop & the Match.type (e.g., "1BL to 1BT") column to ensure that species are matched appropriately with their FT. Each species has a single row. 
 # 2) Elevational ranges -- Use 3 databases to pull elevational ranges for each species 
 # 3) Join dfs -- Join the dfs to create a single df (Elev_ranges) where each species has a single row with relevant elevational information, including the elevational range (a functional trait) for each species
-# 4) Understand Elevational ranges -- Additional information regarding the elevational range information 
-# 4) Add elev range to FT df
-# 5) Save & export 
+# 4) Understand Elevational ranges -- Additional information regarding the elevational range information
+# 5) Add elev range to FT df
+# 6) Save & export 
 
 # Libraries ---------------------------------------------------------------
 library(readxl)
@@ -23,8 +23,8 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 #Load data
-load("Rdata/the_basics_12.27.24.Rdata")
-load("Rdata/Taxonomy_12.27.24.Rdata")
+load("Rdata/the_basics_05.10.25.Rdata")
+load("Rdata/Taxonomy_12.29.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 # Functional traits database ----------------------------------------------
@@ -94,14 +94,14 @@ lapply(Avo_traits_form[17:21], table)
 # Elevational ranges will be used for 2 things, to: 1) look for possible species misidentifications or other errors in the data, 2) to use as a trait representing environmental niche breadth. For #2 having a standardized source for elevations would be ideal (QJ has fewest NAs). One possibility would be to apply a correction across different sources (see below in EXTRAS, search 'correction'), another would be to use QJ estimates from across other countries
 
 # Pull elevational ranges of the species of Colombia from Quintero & Jetz 2018, 'Global elevational diversity and diversification of birds'
-elev_rangesQJ <- read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Datasets_external/Quintero_Jetz_Elevational_ranges_2018.xlsx") # QJ = Quintero Jetz
+elev_rangesQJ <- read_excel("../Datasets_external/Quintero_Jetz_Elevational_ranges_2018.xlsx") # QJ = Quintero Jetz
 head(elev_rangesQJ)
 # Traits (including global elevational ranges) from Bird et al. 2020
-bird20t <- read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0003-tables3.xlsx") %>% as.data.frame()
+bird20t <- read_excel("../Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0003-tables3.xlsx") %>% as.data.frame()
 
 # Ben Freeman's science paper using eBird to generate elevational ranges
-Free22 <- read.csv("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Datasets_external/Freeman_Code_MSM_Elev_2022/Part1/output/elevational-ranges.csv")
-eB_Tax <- read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Vignettes/ebird_vignettes/eBird-Clements-v2023-integrated-checklist-October-2023.xlsx") %>%
+Free22 <- read.csv("../Datasets_external/Freeman_Code_MSM_Elev_2022/Part1/output/elevational-ranges.csv")
+eB_Tax <- read_excel("../Vignettes/ebird_vignettes/eBird-Clements-v2023-integrated-checklist-October-2023.xlsx") %>%
   filter(category == "species") %>%
   rename_with(make.names)
 names(Free22)
@@ -240,11 +240,47 @@ table(Elev_ranges$Match.type)
 
 # >Add elev range to FT df -------------------------------------------------
 # Merge with functional traits database
-Avo_traits_final <- Avo_traits_form %>% full_join(Elev_ranges[, c("Species_ayerbe", "elev_range_comb")])
+Avo_traits_final <- Avo_traits_form %>% 
+  full_join(Elev_ranges[, c("Species_ayerbe", "elev_range_comb")]) %>% 
+  tibble()
 
 # Save & export -----------------------------------------------------------
+stop()
 # Export Avonet morphology table
-# write.xlsx(Avo_traits_final, "Intermediate_products/Excels/Avo_traits_final.xlsx", sheetName = "Traits", row.names = F, showNA = FALSE)
+Avo_traits_final %>% as.data.frame() %>% 
+  write.xlsx("Derived/Excels/Avo_traits_final.xlsx", sheetName = "Traits", row.names = F, showNA = FALSE)
 
-rm(list = ls()[!(ls() %in% c("Elev_ranges", "Avo_traits_final"))])
+#rm(list = ls()[!(ls() %in% c("Elev_ranges", "Avo_traits_final"))])
 #save.image(paste0("Rdata/Traits_elev_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
+# Manual
+#save.image("Rdata/Traits_elev_12.29.24.Rdata")
+
+# Extras ------------------------------------------------------------------
+# >Habitat preferences -----------------------------------------------------
+# Generate habitat preferences for 580 of 607 species observed in our point counts. Note some species are not able to be matched b/c of differences in taxonomy.. Would have to generate complete list of equivalents for Ayerbe -> Species_bl
+library(traits) # Traits data
+# traits::traitbank() #also see functions related to EOL
+
+load("Hab_types.Rdata")
+
+HBW <- data.frame(read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Taxonomy/Handbook of the Birds of the World and BirdLife International Digital Checklist of the Birds of the World_Version_7.xlsx", sheet = "HBW-BirdLife v7 ", skip = 3))
+HBWsp <- HBW %>% filter(`Subsp..Seq.` == 0) # Reduce file down just to recognized species
+head(HBWsp)
+# subset just relevant species of Colombia
+HBWco <- distinct(Tax_df[c("Species_bl")]) %>%
+  inner_join(HBWsp[c("Scientific name", "SISRecID")], join_by("Species_bl" == "Scientific name"))
+
+HBW_hab_pref <- list()
+for (i in 1:nrow(HBWco)) {
+  print(i)
+  HBW_hab_pref[[i]] <- birdlife_habitat(id = HBWco[i, 2])
+}
+Hab_types <- bind_rows(HBW_hab_pref) %>% inner_join(HBWco, join_by("id" == "SISRecID"))
+head(Hab_types)
+lapply(Hab_types[2:3], table)
+
+
+# save(Hab_types, file = "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/R_Files/PhD/Hab_types.Rdata")
+
+birdlife_threats(22689248)
+

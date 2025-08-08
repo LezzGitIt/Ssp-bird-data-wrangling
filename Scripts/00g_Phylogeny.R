@@ -1,3 +1,20 @@
+## PhD birds in silvopastoral landscapes ##
+## Data wrangling 00g -- Phylogeny & metrics of phylogenetic diversity
+## This script generates metrics of phylogenetic diversity and visualizes the phylogeny of all birds observed in the SCR project
+
+## Contents:
+# 1) Taxonomy: Use Taxonomy tbl to change to BirdTree names
+# 2) Phylogeny: Read in & prune phylogeny from BirdTree
+# 3) Order & family: Link Order & family information with species names (tips of phylogeny)
+# 4) Phylopic: Download silhouettes of the most common families (represent each order)
+# 5) MRCA: Identify most recent common ancestor for plotting
+# 6) Visualize phylogeny 
+# 7) Generates metrics of phylogenetic diversity
+# 8) Generate phylogenetic correlation matrix, as well as [PURPOSE OF cophenetic.phylo function]
+
+# TO DO: What was purpose of cophenetic.phylo function? 
+## Incorporate information from all 1000 trees... 
+# install.packages("phangorn") # maxCladeCred() http://blog.phytools.org/2016/04/average-trees-and-maximum-clade.html
 
 # Libraries ---------------------------------------------------------------
 ## Load libraries
@@ -12,16 +29,18 @@ conflicts_prefer(purrr::map)
 conflicts_prefer(dplyr::filter)
 
 # Load data ---------------------------------------------------------------
-load("Rdata/the_basics_02.27.25.Rdata")
+load("Rdata/the_basics_05.10.25.Rdata")
 load("Rdata/Taxonomy_12.29.24.Rdata")
 load("Rdata/Occ_abu_inputs_01.09.25.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 # BirdTree equivalents ----------------------------------------------------
-Spp_join_bt <- Tax_df3 %>% as_tibble() %>%
-  distinct(Species_ayerbe, Species_bt, order_gbif, family_gbif) 
+Spp_join_bt <- Tax_df3 %>% 
+  as_tibble() %>%
+  distinct(Species_ayerbe, Species_bt, order_gbif, family_gbif)
 ## Filter just the bird species observed in Birds_analysis, join with BirdTree taxonomy, and keep only the first BirdTree option for each species (according to Ayerbe). This way we only keep a single representative subspecies when there are multiple BirdTree subspecies
-Bt_equivalents <- Birds_analysis %>% distinct(Nombre_ayerbe) %>% 
+Bt_equivalents <- Birds_analysis %>% 
+  distinct(Nombre_ayerbe) %>% 
   left_join(Spp_join_bt, 
             by = join_by("Nombre_ayerbe" == "Species_ayerbe")) %>%
   reframe(Species_bt = first(Species_bt),
@@ -31,7 +50,6 @@ Bt_equivalents <- Birds_analysis %>% distinct(Nombre_ayerbe) %>%
 Spp_obs_bt <- Bt_equivalents %>% 
   mutate(Species_bt_ = str_replace(Species_bt, " ", "_")) %>% 
   pull(Species_bt_)
-
 
 # Read in tree ------------------------------------------------------------
 ## Bring in phylogenetic tree downloaded from BirdTree
@@ -62,42 +80,62 @@ Tax_join <- Spp_join_bt %>%
 # Take species from pruned tree, join with taxonomy, & add in node information
 Tax_tbl_nodes <- tibble(tip.label = phylo_obs$tip.label) %>% 
   left_join(Tax_join, by = join_by("tip.label" == "Species_bt")) %>% 
-  mutate(node = row_number()) # Not sure why this works. Seems like multiple species would share a single node? 
+  mutate(genus = str_split_i(string = tip.label, pattern = "_", i = 1)) %>%
+  mutate(node = row_number())# Not sure why this works. Seems like multiple species would share a single node? 
 
-# Phylopic & Mrca -----------------------------------------------------
-## Phylopic: Download silhouttes to use in plot of phylogeny
-## MRCA:: Identify the nodes for the most recent common ancestor (MRCA) for each Order (important for plotting)
+# Summary table -----------------------------------------------------------
+# Create summary table with number of families, genera, & spp per order
+Tax_summary <- Tax_tbl_nodes %>%
+  mutate(genus = str_split_i(tip.label, "_", 1)) %>%
+  summarise(
+    N_fam = n_distinct(family),
+    N_gen = n_distinct(genus),
+    N_spp = n_distinct(tip.label),
+    .by = order
+  ) %>% arrange(desc(N_fam), desc(N_gen), desc(N_spp)) %>% 
+  rename(Order = order)
 
-# We want to select the most representatitve icons for each order, so determine which families dominate each order 
-# NOTE:: Can use pic_n to select a different silhoutte as needed
-Family_dominant <- Tax_tbl_nodes %>% count(order, family) %>% 
-  slice_max(order_by = n, by = order, with_ties = TRUE) %>%
-  filter(family != "Aramidae") %>%
-  select(-n) %>% 
-  mutate(pic_n = 1)
 
-# Iterate over rows in tbl to identify MRCA & download the phylopic silhoutte
-Orders_tbl <- pmap(Family_dominant, function(order, family, pic_n){
-  nodes <- Tax_tbl_nodes %>% filter(order == {{ order }}) %>% 
+# MRCA --------------------------------------------------------------------
+## Identify the nodes for the most recent common ancestor (MRCA) for each Order (important for plotting)
+Mrca_nodes <- map(Tax_summary$Order, \(Order){
+  nodes <- Tax_tbl_nodes %>% filter(order == Order) %>% 
     pull(node)
   phy_otu <- groupOTU(phylo_obs, nodes)
-  # Phylopic - Get a single image uuid for a species
-  image <- pick_phylopic(name = {{ family }}, auto = 2) # n = pic_n
-  uuid <- get_uuid(img = image)
-  # Combine in tbl
-  tibble(Order = {{ order }}, Mrca_node = MRCA(phy_otu, nodes), 
-         Uuid = uuid, N_spp = length(nodes))
+  tibble(Order, Mrca_node = MRCA(phy_otu, nodes))
 }) %>% list_rbind()
 
-# Join Orders and dominant family tbls
-Orders_tbl2 <- Family_dominant %>% 
-  full_join(Orders_tbl, by = join_by("order" == "Order")) %>% 
-  rename(family_dom = family)
+# Phylopic -----------------------------------------------------
+## Phylopic: Download silhouttes to use in plot of phylogeny
 
-# Modify images (rotations & size adjustments) & save
+# We want to select the most representative icons for each order, so determine which families dominate each order 
+# NOTE:: Can use pic_n to select a different silhoutte as needed
+
+Family_dominant <- Tax_tbl_nodes %>% 
+  summarize(N_spp_fam = n_distinct(tip.label), 
+            .by = c(order, family)) %>%
+  slice_max(order_by = N_spp_fam, by = order, with_ties = TRUE) %>%
+  # We only want a single Gruiform and family == Rallidae is more representative than the limpkin (Aramus guarana). 
+  # NOTE:: This does not affect calculation of # spp, genera, or families per order
+  filter(family != "Aramidae") %>% 
+  select(-N_spp_fam) %>% 
+  mutate(pic_n = 1)
+
+## Download & adjust the phylopic silhouettes
+# NOTE:: Only need to download and adjust the images once, so skip this code if the folder already exists
 Phylopic_path <- "Figures/Phylogeny/Phylopic/Bird_orders/"
-if(FALSE){
-  uuid_labs <- setNames(Orders_tbl$Uuid, Orders_tbl$Order)
+if(!file.exists(Phylopic_path)){
+  # For each order download the phylopic silhouette
+  Phylopic_tbl <- pmap(Family_dominant, function(order, family, pic_n){
+    # Phylopic - Get a single image uuid for a species
+    image <- pick_phylopic(name = {{ family }}, auto = 2) # n = pic_n
+    uuid <- get_uuid(img = image)
+    # Combine in tbl
+    tibble(Order = {{ order }}, Uuid = uuid)
+  }) %>% list_rbind()
+  
+  # Modify images (rotations & size adjustments) & save
+  uuid_labs <- setNames(Phylopic_tbl$Uuid, Phylopic_tbl$Order)
   Make_larger <- c("Falconiformes", "Trogoniformes", "Cuculiformes", "Caprimulgiformes")
   imap(uuid_labs, \(uuid, order){
     img <- get_phylopic(uuid = uuid) 
@@ -121,21 +159,25 @@ if(FALSE){
 # NOTE:: Spent a lot of time trying to get clade labels on a circular tree
 # This function created from phytools guy could work? http://blog.phytools.org/2017/03/clade-labels-on-circular-fan-tree.html?m=1
 # What about some cheats, like removing some of the images in the really dense areas? 
-Orders_tbl %>% arrange(N_spp) 
-Orders_tbl2 <- Orders_tbl %>% filter(N_spp > 1 & Order != "Anseriformes") %>% 
+
+Orders_plot <- Mrca_nodes %>% 
+  full_join(Tax_summary) %>%
+  filter(N_spp > 1 & Order != "Anseriformes") %>% 
   rowwise() %>%
   mutate(
-    Image_path = paste0(Phylopic_path, Order, ".png")
-  ) %>% 
-  ungroup()
+    Image_path = paste0(Phylopic_path, Order, ".png"),
+    Label = paste0(Order, " (", N_spp, ")") # N_fam, ",",
+  ) %>% ungroup()
+
+Orders_plot$Label
 
 # Plot full phylogeny
 ggtree(phylo_obs, layout='circular', aes(color = family)) %<+%
   Tax_tbl_nodes + 
   #geom_tiplab(size = 3, aes(color = family_gbif, angle = angle)) +
   geom_cladelab(
-    data        = Orders_tbl2,
-    mapping     = aes(node = Mrca_node, label = Order, image = Image_path),
+    data        = Orders_plot,
+    mapping     = aes(node = Mrca_node, label = Label, image = Image_path),
     geom        = "image", # "phylopic"
     imagecolor  = "black",
     inherit.aes = FALSE,
@@ -143,35 +185,40 @@ ggtree(phylo_obs, layout='circular', aes(color = family)) %<+%
     barsize     = 0.3,  
     show.legend = FALSE
   ) + guides(color = "none") + 
-  geom_cladelab(data = Orders_tbl2,
-                mapping = aes(node = Mrca_node, label = Order), 
+  geom_cladelab(data = Orders_plot,
+                mapping = aes(node = Mrca_node, label = Label), 
                 fontsize = 3,
                 angle = "auto", 
                 offset = 10, 
-                barsize = 0) # auto-rotates text radially
-#geom_rootedge(5)#+ 
-#xlim(-10, NA)
-ggsave("Figures/Phylogeny/Phylogeny_equal_sizes.png")
+                barsize = 0) + # auto-rotates text radially
+  theme(plot.margin = margin(30, 30, 20, -40)) # Control
+ggsave("Data_paper/Figures/Phylogeny_equal_sizes.png")
 
-# Visualize each order that has more than 1 species
-plots_order <- pmap(Orders_tbl2[,c("order", "Mrca_node", "N_spp")], 
-                    function(order, Mrca_node, N_spp) {
+## Visualize each order that has more than 1 species
+plots_order <- pmap(Orders_plot[,c("Order", "Mrca_node", "N_spp")], 
+                    function(Order, Mrca_node, N_spp) {
   if(N_spp > 1){
     tree_sub <- tree_subset(phylo_obs, Mrca_node, levels_back = 0)
     ggtree(tree_sub) %<+%
       Tax_tbl_nodes + # Add family labs later if desired
       geom_tiplab() +
-      labs(title = order)
+      labs(title = Order)
   } 
 })
 # compact(plots_order) # Remove NULLs & visualize
 
-# Export tree -------------------------------------------------------------
-
+# Export  -------------------------------------------------------------
+stop()
 # Write a single tree for BIOL314 class
 write.tree(phylo_obs, file = "Derived/Single_tree.tre")
 
+# Export summary table
+write.csv(Tax_summary, row.names = FALSE, 
+          file = "Derived/Excels/Tax_summary.csv")
+
 # Phylogenetic diversity (PD) -----------------------------------------------
+# ALSO SEE BIOL314 SCRIPT
+
 ## Background: Multiple models of evolution...
 
 ## Brownian model of evolution
