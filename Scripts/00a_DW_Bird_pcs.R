@@ -32,7 +32,7 @@ library(sp)
 library(gtools)
 library(AICcmodavg)
 library(readxl)
-library(openxlsx)
+
 library(naniar)
 library(ggpubr)
 library(cowplot)
@@ -60,7 +60,7 @@ df_birds <- map(files, \(file){
   read_xlsx(
     path = file.path("Data/Aves", file),
     sheet = "Base_de_datos",
-    na = c("Sin informacion", "N/A")
+    na = c("Sin informacion", "N/A"), trim_ws = TRUE
   )
 })
 
@@ -68,7 +68,7 @@ df_metadata <- map(files, \(file){
   read_xlsx(
     path = file.path("Data/Aves", file),
     sheet = "Metadatos_puntos_conteo",
-    na = c("Sin informacion", "N/A")
+    na = c("Sin informacion", "N/A"), trim_ws = TRUE
   )
 })
 
@@ -227,9 +227,26 @@ Andrea <- read_xlsx("Derived/Excels/Habitat_match_unillanos.xlsx") %>%
     .default = habitat_unillanos
   )) %>%
   rename(Id_punto_muestreo_original = ID_punto_muestreo_ORIGINAL) %>%
-  filter(if_all(c(Habitat_cons, ID_punto_muestreo_FINAL), ~ !is.na(.))) %>%
-  distinct(Id_punto_muestreo_original, Habitat_cons)
-df_birds_red$Gaica_dist <- df_birds_red$Gaica_dist %>% left_join(Andrea)
+  filter(
+    if_all(c(Habitat_cons, ID_punto_muestreo_FINAL, habitat_unillanos), ~ !is.na(.))
+    ) %>% mutate(habitat_unillanos = case_when(
+      habitat_unillanos == "PA" ~ "Arboles dispersos",
+      habitat_unillanos == "CV" ~ "Cerca viva",
+      habitat_unillanos %in% c("Bosque", "Pastizales") ~ NA
+    )) %>%
+  distinct(Id_punto_muestreo_original, Habitat_cons, habitat_unillanos)
+
+df_birds_red$Gaica_dist <- df_birds_red$Gaica_dist %>% 
+  left_join(Andrea) %>% 
+  mutate(Habitat_sub_ut = NA_character_,
+         Habitat_sub_ut = coalesce(Habitat_sub_ut, habitat_unillanos)) %>% 
+  select(-habitat_unillanos)
+
+# Couldn't reach original point in 2017, so GAICA surveyed a different location (borde de bosque) 70 meters away in 2017. In 2024 they surveyed both original spot (2013) and the 2017 location.
+df_birds_red$Gaica_mbd <- df_birds_red$Gaica_mbd %>% 
+  mutate(Id_muestreo = if_else(
+    Id_muestreo == "G-MB-M-EPO1_03" & Ano == 2017, "G-MB-M-EPO1_03_(1)", Id_muestreo
+))
 
 # Remove UBC microhabitat columns
 df_birds_red$Ubc <- df_birds_red$Ubc %>% select(-c(Habitat1 | Habitat2))
@@ -242,7 +259,10 @@ df_birds_red[4:6] <- map(df_birds_red[4:6], \(df){
 # Remove practice day data
 df_birds_red$Ubc_gaica_Caf <- df_birds_red$Ubc_gaica_Caf %>%
   filter(!Fecha %in% as.Date(c("2024-05-27", "2024-05-28"))) %>% # Ensayo dates
-  filter(!Id_muestreo %in% c(paste0("G-MB-Q-LCA_0", 7:9), "OQ_Practica")) # PCs surveyed one time
+  filter(!Id_muestreo %in% c(paste0("G-MB-Q-LCA_0", 7:9))) # PCs surveyed one time
+
+df_birds_red$Ubc_gaica_OQ <- df_birds_red$Ubc_gaica_OQ %>% 
+  filter(Id_muestreo != "OQ_Practica")
 
 # Combine dfs -------------------------------------------------------------
 ## Combine all dfs & remove more irrelevant columns##
@@ -358,10 +378,10 @@ df %>% mutate(
   Hora = sapply(str_split(Hora, " "), function(x) {
     x[2]
   }),
-  Hora = as_hms(Hora)
-))
+  Hora = as_hms(Hora))
+)
 
-df_meta <- smartbind(list = df_metadata)
+df_meta <- smartbind(list = df_metadata) %>% tibble()
 rownames(df_meta) <- NULL
 
 # >Rep_dfs ------------------------------------------------------
@@ -372,7 +392,7 @@ Add_metadata <- map(df_birds_red, \(df){
   df %>% distinct(Ecoregion, Departamento, Nombre_institucion, Uniq_db, Id_muestreo, Ano, Ano_grp)
 })
 
-# PROBLEM:
+# PROBLEM: Unillanos did not record time or date when they observed no species? 
 df_metadata$UniLlanos %>%
   filter(Spp_obs == 0) %>%
   select(Id_muestreo, Fecha, Hora, Spp_obs)
@@ -417,7 +437,8 @@ Rep_dfs <- map2(df_birds_red, No_obs_l, \(df, No_obs){
 Pc_uniq <- Bird_pcs %>% distinct(Uniq_db, Nombre_institucion, Id_group, Ecoregion, Departamento, Id_muestreo, Id_muestreo_no_dc, Id_gcs)
 
 # NOTE: There are 540 unique point count x data collector combinations, but 16 points have multiple coordinates. 556 rows here
-Pc_locs_mult <- Bird_pcs %>% distinct(Uniq_db, Nombre_institucion, Id_group, Ecoregion, Departamento, Id_gcs, Id_muestreo, Id_muestreo_no_dc, Latitud, Longitud)
+Pc_locs_mult <- Bird_pcs %>% 
+  distinct(Uniq_db, Nombre_institucion, Id_group, Ecoregion, Departamento, Id_gcs, Id_muestreo, Id_muestreo_no_dc, Latitud, Longitud)
 nrow(Pc_locs_mult)
 
 # For now, take the average lats & longs of these 16 points.
@@ -430,26 +451,40 @@ Pc_locs <- Pc_locs_mult %>%
   full_join(Pc_uniq, by = "Id_muestreo")
 
 # Each point count has a single Habitat_ut except for Gaica distancia points
-Pc_hab <- Bird_pcs %>%
+Pc_hab_ano <- Bird_pcs %>%
   group_by(Id_muestreo) %>%
   fill(Habitat_ut) %>%
   ungroup() %>%
   mutate(Habitat_ut = case_when(
     Uniq_db == "Gaica distancia" ~ Habitat_cons,
-    TRUE ~ Habitat_ut
-  )) %>%
+    .default = Habitat_ut
+  ),
+  Habitat_sub_ut = case_when(
+    Id_group %in% c("OQ", "UBC-MB-M-LBR") ~ "Maduro", 
+    Habitat_ut == "Bosque ripario" ~ "Ripario",
+    Habitat_ut == "Bosque" & is.na(Habitat_sub_ut) ~ "Secundario",
+    Habitat_sub_ut == "Transitorio" ~ NA_character_,
+    .default = Habitat_sub_ut
+  )
+  ) %>%
   mutate(
-    Habitat_ut = if_else(str_detect(Id_muestreo, "OQ_"), "Bosque", Habitat_ut),
+    Habitat_ut = case_when(
+      str_detect(Id_muestreo, "OQ_") ~ "Bosque",
+      Habitat_ut == "Bosque ripario" ~ "Bosque",
+      .default = Habitat_ut
+      ),
     # Create Habitat_cons (consolidated) column, replacing multiple habitat types with NA
     Habitat_cons = if_else(Uniq_db == "Gaica distancia" & is.na(Habitat_cons),
-      NA, Habitat_ut
-    )
+      "Mosaic", Habitat_ut)
   ) %>%
   distinct(
     Id_muestreo, Id_group, Id_muestreo_no_dc, Id_gcs, Uniq_db, Ecoregion, 
-    Departamento, Latitud, Longitud,
-    Habitat_og, Habitat_ut, Habitat_cons # Habitat_sub_ut
+    Departamento, Latitud, Longitud, Ano, 
+    Habitat_og, Habitat_ut, Habitat_sub_ut, Habitat_cons 
   )
+
+# Remove year
+Pc_hab <- Pc_hab_ano %>% distinct(pick(-Ano))
 
 # NOTE:: 1 row for each Id_muestreo
 Pc_hab %>% #filter(Uniq_db == "Ubc gaica dom") %>%
@@ -465,8 +500,6 @@ Pc_locs_sf <- st_as_sf(Pc_locs,
   crs = 4326,
   remove = F
 )
-
-st_bbox(Pc_locs_sf)
 
 # Export reduced set of columns to kml
 Pc_locs_sf %>%
@@ -604,7 +637,8 @@ Pc_date8 <- Pc_date7 %>%
   select(-c(Days_since))
 
 # NOTE:: There are still some NAs in this dataframe, but I don't think it would be too hard to fill in in the future if necessary
-Pc_date8 %>% Na_rows_cols(cols_inc = c(Id_group, Ano_grp, Id_muestreo, Uniq_db, Fecha))
+Pc_date8 %>% 
+  Na_rows_cols(cols_inc = c(Id_group, Ano_grp, Id_muestreo, Uniq_db, Fecha))
 
 # Event covariates --------------------------------------------------------
 # Format the information that varies per visit (event) , e.g. weather
@@ -636,7 +670,8 @@ map(df_birds_red, \(df){
 })
 
 # For Gaica_dist
-df_birds_red$Gaica_dist <- df_birds_red$Gaica_dist %>% mutate(Clima = case_when(
+df_birds_red$Gaica_dist <- df_birds_red$Gaica_dist %>% 
+  mutate(Clima = case_when(
   Clima == "Nublado con llovizna" ~ "Llovizna",
   .default = Clima
 ))
@@ -665,6 +700,7 @@ Covs_ubc_gaica <- map(df_metadata[4:6], \(df) {
 Wc_col <- map(c("tavg", "prec"), \(var){
   worldclim_country(country = "COL", var = var, path = "../Geospatial_data/Environmental")
 })
+
 
 # To match the bioclim variables (1 & 12), take average of temperature & sum of rainfall
 avg.temp <- mean(Wc_col[[1]])
@@ -698,7 +734,10 @@ Envi_df <- cbind(
   Pc_locs_sf[, c("Id_muestreo", "Ecoregion", "Departamento", "Uniq_db", "Id_group")],
   sapply(envi.vars, terra::extract, Pc_locs_sf, ID = FALSE)
 ) %>%
-  rename(Elev = elev.dem.srtm_21_10, Avg_temp = avg.temp.mean, Tot.prec = tot.prec.sum)
+  rename(Elev = elev.dem.srtm_21_10, 
+         Avg_temp = avg.temp.mean, 
+         Tot_prec = tot.prec.sum) %>% 
+  mutate(Avg_temp = round(Avg_temp, 3))
 Envi_df2 <- Envi_df %>%
   st_drop_geometry() %>%
   slice_head(by = Id_muestreo) %>%
@@ -747,13 +786,34 @@ if (FALSE) { # This process is slow
 # ggplot() + geom_sf(data = mpio_sf)
 
 # Save & export -----------------------------------------------------------
-stop()
+stop() 
 rm(list = ls()[!(ls() %in% c("Birds_all", "Birds_all3", "Bird_pcs", "Pc_date8", "Pc_hab", "Pc_locs", "df_birds", "df_metadata", "df_meta", "df_birds_red", "Mes_mod", "Pc_locs_mult", "Pc_locs_sf", "Envi_df2", "Prec_df", "Prec_daily", "Rep_dfs"))])
 #save.image(paste0("Rdata/the_basics_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
-#save.image("Rdata/the_basics_05.10.25.Rdata") # Manual
+#save.image("Rdata/the_basics_07.18.25.Rdata") # Manual
 
 if(FALSE){
   openxlsx::write.xlsx(Bird_pcs, file = "Derived/Excels/Bird_pcs.xlsx", na.string = "", rowNames = FALSE)
+}
+
+## Export site covariates as csv
+# There are 497 unique locations, so all of these are stable irrespective of which data collector
+Birds_analysis %>% distinct(Id_muestreo, Id_muestreo_no_dc) %>% 
+  left_join(Envi_df2) %>% 
+  select(-c(Uniq_db, Id_group, Id_muestreo)) %>%
+  distinct() %>%
+  write_csv(file = "Derived/Excels/Site_covariates.csv")
+
+## Export Pc_hab to update points manually using Google Earth
+# NOTE: This is likely not necessary because can use Mathilde / Natalia digitized landcover & calculate distance to forest edge from point count location. 
+if(FALSE){
+  Join_year <- Bird_pcs %>% distinct(Id_muestreo, Ano, Habitat_og)
+  Pc_hab_ano %>% 
+    filter(str_detect(Habitat_cons, "Bosque")) %>% 
+    distinct(Id_muestreo, Uniq_db, Ecoregion, Ano, pick(starts_with("Habitat"))) %>% 
+    arrange(Id_muestreo) %>% 
+    data.frame() %>%
+    xlsx::write.xlsx("Derived/Excels/Hab_define_forest.xlsx", 
+                     showNA = FALSE, row.names = FALSE)
 }
 
 # Working data paper ------------------------------------------------------
@@ -812,14 +872,6 @@ df_birds_red$Gaica_dist %>%
   distinct(Id_muestreo, Fecha, Hora) %>%
   arrange(Fecha, Hora)
 
-# GAICA:: Hay una inconsistencia en 6/04, los metadatos y la base de datos principal no tienen la misma hora (7:38 vs 8:38)
-df_birds_red$Ubc_gaica_OQ %>%
-  filter(Id_muestreo == "OQ_03") %>%
-  distinct(Id_muestreo, Fecha, Hora)
-df_metadata$Ubc_gaica_OQ %>%
-  filter(Id_muestreo == "OQ_03") %>%
-  distinct(Id_muestreo, Fecha, Hora)
-
 Pc_date8 %>% filter(Spp_obs == 0)
 
 Rep_dfs %>%
@@ -836,7 +888,6 @@ Rep_dfs %>%
 df_metadata$Gaica_dist %>%
   filter(Id_muestreo == "G-AD-M-LCA2_04") %>%
   distinct(Id_muestreo, Fecha, Hora, Comentario)
-
 
 # TO DO: Generate dataframes of detection covariates,
 Pc_date8 %>% group_split(Uniq_db)
