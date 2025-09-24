@@ -30,8 +30,14 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-load("Rdata/the_basics_05.10.25.Rdata")
-load("Rdata/Taxonomy_12.29.24.Rdata")
+#load("Rdata/the_basics_09.15.25.Rdata") #Pc_locs_sf
+Pc_locs_sf <- st_read("Derived_geospatial/shp/Pc_locs.gpkg")
+
+Tax_df <- read_csv(file = "Derived/Excels/Taxonomy.csv")
+Bird_pcs <-  read_csv(file = "Derived/Excels/Bird_pcs.csv")
+Event_covs <- read_csv(file = "Derived/Excels/Event_covs.csv")
+Site_covs <- read_csv(file = "Derived/Excels/Site_covs.csv")
+
 load("Rdata/Lsm_l.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 # vignette("unmarked") # Used vignette to help understand how data should be formatted
@@ -42,31 +48,34 @@ Row_identifier <- c("Id_muestreo", "Ano_grp")
 
 # General formatting ---------------------------------------------------------
 # Format point count data for downstream analyses 
-Birds_analysis1 <- Bird_pcs  %>% 
-  mutate(Nombre_ayerbe_ = str_replace_all(Nombre_ayerbe, " ", "_")) %>%
-  filter(Nombre_ayerbe %in% Tax_df3$Species_ayerbe) %>% 
+Birds_analysis1 <- Bird_pcs %>% 
+  mutate(Species_ayerbe_ = str_replace_all(Species_ayerbe, " ", "_")) %>%
+  filter(Species_ayerbe %in% Tax_df$Species_ayerbe) %>% 
   filter(is.na(Grabacion) | Grabacion == "Cf") %>% # Remove birds identified only in recording
   mutate(Count = ifelse(is.na(Count), 1, Count)) #Add 1 individual when # individual = NA (6 rows)
   
 ## Remove flyovers (vuelos)
 #STILL TO DO: INVESTIGATE UNILLANOS, CIPAV, GAICA MBD
 Birds_analysis2 <- Birds_analysis1 %>% 
-  filter(Estrato_vertical != "Vuelo" | is.na(Estrato_vertical) & !(tolower(Distancia_bird) %in% c("sobrevuelo", "vuelo")))
+  filter(!(Tipo_registro %in% c("Sobrevuelo", "Vuelo")))
 
-## Remove distances > 50m
-# NOTE:: there are some rows that have NAs for distance. Nearly all are Gaica 2013 
-Birds_analysis2 %>% filter(is.na(Distancia_bird)) %>% 
-  pull(Nombre_institucion) %>% 
-  table()
-
-# GAICA reported birds > 50m that year, so we do not know if the birds with NA should be included or not.  
-Birds_analysis2 %>% filter(is.na(Distancia_bird)) %>% 
-  distinct(Uniq_db, Departamento, Id_muestreo, Familia, Nombre_ayerbe) %>% 
-  distinct(Familia, Nombre_ayerbe) #%>% view()
+if(FALSE){
+  ## Remove distances > 50m
+  # NOTE:: there are some rows that have NAs for distance. Nearly all are Gaica 2013 
+  Birds_analysis2 %>% filter(is.na(Distancia_bird)) %>% 
+    table()
+  
+  # GAICA reported birds > 50m that year, so we do not know if the birds with NA should be included or not.  
+  Birds_analysis2 %>% filter(is.na(Distancia_bird)) %>% 
+    distinct(Uniq_db, Departamento, Id_muestreo, Familia, Species_ayerbe) %>% 
+    distinct(Familia, Species_ayerbe) #%>% view()
+}
 
 # Within species that have NA for Distancia, there are a few species (e.g. hummingbirds) that would be nearly impossible to identify at >50m. Change the distance of these species to <50m so they are maintained
-Birds_analysis3 <- Birds_analysis2 %>%
-  mutate(Distancia_bird = if_else(is.na(Distancia_bird) & Familia %in% c("Trochilidae", "Pipridae"), "<50", Distancia_bird))
+Fam_join <- Tax_df %>% distinct(Species_ayerbe, Family_gbif)
+Birds_analysis3 <- Birds_analysis2 %>% 
+  left_join(Fam_join) %>%
+  mutate(Distancia_bird = if_else(is.na(Distancia_bird) & Family_gbif %in% c("Trochilidae", "Pipridae"), "<50", Distancia_bird))
 
 # Make distances numeric
 Birds_analysis4 <- Birds_analysis3 %>%
@@ -83,14 +92,18 @@ Birds_analysis4 <- Birds_analysis3 %>%
   mutate(Distancia_bird = as.numeric(Distancia_bird))
 
 # Remove records with distance unknown or > 50m
-Birds_analysis5 <- Birds_analysis4 %>% filter(Distancia_bird < 51) %>% 
+Birds_analysis5 <- Birds_analysis4 %>% 
+  filter(Distancia_bird < 51) %>% 
   # select only the columns necessary
-  select(Ecoregion, Departamento, Uniq_db, Id_group, Id_muestreo_no_dc, Id_muestreo, Ano_grp, Fecha, Ano, Mes, Dia, Pc_start, Pc_length, Orden, Familia, Nombre_ayerbe, Nombre_ayerbe_, Count, Nombre_institucion, Id_gcs)
+  select(-c(Grabacion, Family_gbif, Distancia_bird))
+  #select(Ecoregion, Departamento, Uniq_db, Id_group, Id_muestreo_no_dc, Id_muestreo, Ano_grp, Fecha, Ano, Mes, Dia, Pc_start, Pc_length, Orden, Familia, Species_ayerbe, Species_ayerbe_, Count, Nombre_institucion, Id_gcs)
 
-## Add Rep to dataframe -- Pc_start & Rep are equivalent in terms of grouping (when combined with Id_muestreo & Ano_grp), but since we are using Rep for formatting of analysis dataframes it makes sense to include Rep as well
-date_join_spp_obs <- Pc_date8 %>% filter(Spp_obs == 1) %>% # Only point counts with spp observed
-  distinct(Id_muestreo, Ano_grp, Fecha, Pc_start, Rep) 
-Birds_analysis6 <- Birds_analysis5 %>% left_join(date_join_spp_obs) 
+## Add Rep_ano_grp to dataframe -- Pc_start & Rep_ano_grp are equivalent in terms of grouping (when combined with Id_muestreo & Ano_grp), but since we are using Rep_ano_grp for formatting of analysis dataframes it makes sense to include Rep_ano_grp as well
+date_join_spp_obs <- Event_covs %>% 
+  filter(Spp_obs == 1) %>% # Only point counts with spp observed
+  select(Id_muestreo, Ano_grp, Fecha, Pc_start, Rep_ano_grp) 
+Birds_analysis6 <- Birds_analysis5 %>% 
+  left_join(date_join_spp_obs) 
 
 # Summarize so each species is listed only once in each point count 
 Birds_analysis6 %>% filter(if_any(everything(), is.na)) # No NAs in any rows
@@ -98,22 +111,22 @@ Birds_analysis7 <- Birds_analysis6 %>%
   summarize(Count = sum(Count), .by = -Count)
 
 # Lessen the magnitude of 4 outliers 
-Birds_analysis <- Birds_analysis %>% 
+Birds_analysis <- Birds_analysis7 %>% 
   mutate(Count = ifelse(Count > 50, 50, Count)) 
 
 ## Simplify this exercise by using only the most abundant species 
 Spp_counts <- Birds_analysis %>%
-  summarize(Count = sum(Count), .by = c(Nombre_ayerbe, Nombre_ayerbe_)) %>%
+  summarize(Count = sum(Count), .by = c(Species_ayerbe, Species_ayerbe_)) %>%
   arrange(desc(Count))
 
 # Select the 30 most abundant species (that have maps)
 No_maps <- c("Leptotila verreauxi", "Accipiter bicolor", "Sirystes sibilator", "Thripadectes virgaticeps")
 Top_abu_df <- Spp_counts %>% 
-  filter(!Nombre_ayerbe %in% No_maps) %>%
+  filter(!Species_ayerbe %in% No_maps) %>%
   slice_max(order_by = Count, n = 30) 
 Top_abu <- Top_abu_df %>% 
-  arrange(Nombre_ayerbe) %>%
-  pull(Nombre_ayerbe)
+  arrange(Species_ayerbe) %>%
+  pull(Species_ayerbe)
 
 # Biogeographic_clipping --------------------------------------------------
 ## Idea from Socolar's (2022) paper: Biogeographic multi-species occupancy models for large-scale survey data. We only want to include point count locations that are within the species range (+ some buffer), differentiating a true zero (possible but not observed) vs points that are simply out of range (more like an NA).
@@ -127,7 +140,7 @@ Ayerbe_mod_spp <- do.call(rbind, Ayerbe_mod_spp_l)
 
 # Calculate the shortest distance (km) from each point count location to the species range
 Dist_to_pcs <- Pc_locs_sf %>%
-  distinct(Id_muestreo, geometry) %>%
+  distinct(Id_muestreo, geom) %>%
   st_distance(Ayerbe_mod_spp) %>% 
   as_tibble() %>% 
   rename_with(~ Top_abu) %>%
@@ -137,7 +150,8 @@ Dist_to_pcs <- Pc_locs_sf %>%
   relocate(Id_muestreo, 1)
 
 # Add Pc_ids & their geometries back in
-Dist_pcs_sf <- Pc_locs_sf %>% distinct(Id_muestreo, geometry) %>% 
+Dist_pcs_sf <- Pc_locs_sf %>% 
+  distinct(Id_muestreo, geom) %>% 
   full_join(Dist_to_pcs)
 
 # Plot the rows with Pcs > 0 km
@@ -165,7 +179,7 @@ if(length(spp_rm) > 0){
   Pcs_in_range <- Pcs_in_range %>% discard_at(spp_rm)
   
   spp_rm <- str_replace(spp_rm, "_", " ")
-  Top_abu_df <- Top_abu_df %>% filter(!Nombre_ayerbe %in% spp_rm2)
+  Top_abu_df <- Top_abu_df %>% filter(!Species_ayerbe %in% spp_rm2)
   Top_abu <- Top_abu[!Top_abu %in% spp_rm2] 
 }
 
@@ -176,18 +190,18 @@ st_area(Ayerbe_mod_spp)
 # Generate Obs_covs_df where each row is a  unique ID [Id_muestreo, Ano_grp], each column is a site visit, and the 'Variable' column identifies which Observation covariate the row corresponds to  
 
 # Lengthen then widen dataframe
-Obs_covs_df <- Pc_date8 %>%
+Obs_covs_df <- Event_covs %>%
   mutate(across(everything(), as.character)) %>%
   pivot_longer(
-    cols = c(j_day, Pc_start, Pc_length),      
+    cols = c(Julian_day, Pc_start, Pc_length),      
     names_to = "Variable",          
     values_to = "Value"             
   ) %>%
-  arrange(Ano_grp, Rep) %>%
+  arrange(Ano_grp, Rep_ano_grp) %>%
   pivot_wider(
     id_cols = c(all_of(Row_identifier), Variable),
-    names_from = c(Rep),
-    names_glue = "Rep{Rep}",
+    names_from = c(Rep_ano_grp),
+    names_glue = "Rep_ano_grp{Rep_ano_grp}",
     values_from = c(Value)
   ) 
 Obs_covs_df
@@ -206,7 +220,7 @@ Obs_covs_spp <- map(Pcs_in_range, \(in_range){
 
 # Convert back to dates and times, respectively, and scale
 # Define functions to convert type back to date & time
-convert_type <- list(as_hms, as_hms, as.numeric)
+convert_type <- list(as.numeric, as_hms, as_hms)
 
 Obs_covs <- map(Obs_covs_spp, \(Obs_covs) {
   # Apply transformations on the first 3 elements
@@ -220,8 +234,9 @@ Obs_covs <- map(Obs_covs_spp, \(Obs_covs) {
 
 # Site covariates ---------------------------------------------------------
 # Covariates that are fixed for a given point count
-date_join_ano <- Pc_date8 %>% distinct(Id_group, across(all_of(Row_identifier)))
-Site_covs_df <- Envi_df2 %>%
+date_join_ano <- Event_covs %>% 
+  distinct(Id_muestreo_no_dc, Id_group, Uniq_db, across(all_of(Row_identifier)))
+Site_covs_df <- Site_covs %>%
   full_join(date_join_ano) %>% 
   mutate(
     Habitat_cons = if_else(Habitat_cons == "Cultivos", NA, Habitat_cons)
@@ -230,10 +245,10 @@ Site_covs_df <- Envi_df2 %>%
     # Take the earlier of the two years so it is numeric
     Ano1 = as.numeric(str_split_i(Ano_grp, "-", 1)),
     across(where(is.character), as.factor),
-    Habitat_cons = fct_relevel(Habitat_cons, c("Pastizales", "Ssp", "Bosque ripario", "Bosque")),
+    Habitat_cons = fct_relevel(Habitat_cons, c("Pastizales", "Mosaic", "Ssp", "Bosque")), #"Bosque ripario"
     Ecoregion = relevel(Ecoregion, ref = "Piedemonte")
   ) %>% arrange(across(all_of(Row_identifier))) %>%
-  select(Id_muestreo, Id_group, Uniq_db, Ecoregion, Elev, Avg_temp, Tot.prec, Habitat_cons, Ano1)
+  select(Id_muestreo, Id_group, Uniq_db, Ecoregion, Elev, Avg_temp, Tot_prec, Habitat_cons, Ano1)
 
 # >Lsm_files --------------------------------------------------------------
 # FOR NOW, just keep the 300m buffer.
@@ -279,27 +294,28 @@ Site_covs <- map(Site_covs_in_range, \(sc_in_range){
 # Abundance formatting  -----------------------------------------------------
 # Include point counts with no spp observed 
 add_pc_no_obs <- function(row_id, add_cols = NULL){ # additional columns
-  Pc_date8 %>% 
+  Event_covs %>% 
     filter(Spp_obs == 0) %>% 
     distinct(across(all_of(c(row_id, add_cols)))) %>% 
-    mutate(Nombre_ayerbe = NA, Count = NA)
+    mutate(Species_ayerbe = NA, Count = NA)
 }
 
-No_obs_occ <- add_pc_no_obs(row_id = Row_identifier, add_cols = "Rep")
+No_obs_occ <- add_pc_no_obs(row_id = Row_identifier, add_cols = "Rep_ano_grp")
 
 # Abundances -- Use rbind with date_bind_no_obs to add counts where no species were observed
 Abund_no_obs <- Birds_analysis %>%
-  distinct(across(all_of(Row_identifier)), Rep, Nombre_ayerbe, Count) %>% 
+  distinct(across(all_of(Row_identifier)), Rep_ano_grp, Species_ayerbe, Count) %>% 
   rbind(No_obs_occ) 
  
 # Create abundance list with just most abundant species 
-Abund_l <- Abund_no_obs %>% filter(Nombre_ayerbe %in% Top_abu) %>% 
-  group_split(Nombre_ayerbe, .keep = FALSE)
+Abund_l <- Abund_no_obs %>% 
+  filter(Species_ayerbe %in% Top_abu) %>% 
+  group_split(Species_ayerbe, .keep = FALSE)
 names(Abund_l) <- names(Pcs_in_range)
 
 # Join abundance data (just containing points where species was observed) with all the point counts that the species could have been observed with. 
-date_join_rep <- Pc_date8 %>% distinct(across(all_of(Row_identifier)), Rep)
-# Add Rep & Ano_grp to the IDs in range to allow for a successful join with Abund_l
+date_join_rep <- Event_covs %>% distinct(across(all_of(Row_identifier)), Rep_ano_grp)
+# Add Rep_ano_grp & Ano_grp to the IDs in range to allow for a successful join with Abund_l
 Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
   Date_in_range <- tibble(Id_muestreo = in_range) %>% left_join(date_join_rep)
 #NOTE:: right_join effectively adds NAs for Count where species could have been observed but weren't (greatly lengthening the dataframe), and also does a clip, ensuring that there are not observations outside of buffer
@@ -311,10 +327,10 @@ Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
 # Pivot_wider and fill in with zeros 
 # TO DO: Make a function here? Depending on iNEXT needs
 Abund_zeros <- map(Abund_in_range, \(abund){
-  abund %>% arrange(across(all_of(Row_identifier)), Rep) %>%
+  abund %>% arrange(across(all_of(Row_identifier)), Rep_ano_grp) %>%
     pivot_wider(id_cols = all_of(Row_identifier),
-                names_from = c(Rep),
-                names_glue = "Rep{Rep}",
+                names_from = c(Rep_ano_grp),
+                names_glue = "Rep_ano_grp{Rep_ano_grp}",
                 values_from = Count, 
                 values_fill = 0) %>% 
     arrange(across(all_of(Row_identifier))) %>% 
@@ -390,7 +406,7 @@ umf_occ_l <- pmap(.l = list(Occ_nas, Site_covs, Obs_covs2),
 
 # Project coordinates for Colombia and filter by relevant PCs for each species
 Coords <- map(Pcs_in_range,  \(in_range){
-  Pc_locs_sf %>% distinct(Id_muestreo, geometry) %>% 
+  Pc_locs_sf %>% distinct(Id_muestreo, geom) %>% 
     filter(Id_muestreo %in% in_range) %>% 
     st_transform(crs = st_crs("EPSG:32618")) %>% 
     st_coordinates() # Remove as needed for plotting 
@@ -451,7 +467,7 @@ spAbu_ll <- pmap(
     coords <- Pc_locs_sf %>% 
       # Remove Ids out of range
       filter(Id_muestreo %in% unique(ids)) %>%
-      distinct(Id_muestreo, geometry) %>%
+      distinct(Id_muestreo, geom) %>%
       # Add year to allow for anti_join
       left_join(add_year_join) %>%
       # Remove points with no LC
@@ -470,8 +486,6 @@ spOcc_ll <- map(spAbu_ll, \(abu_l) {
     mutate(across(.cols = everything(), .fns = ~ ifelse(. > 0, 1, 0)))
   abu_l
 })
-
-spAbu_ll$Amazona_ochrocephala
 
 # Top_abu_df --------------------------------------------------------------
 Top_abu_df2 <- Top_abu_df %>% 
@@ -494,9 +508,11 @@ if(FALSE){
                showNA = FALSE, row.names = FALSE)
   
   # Final dataset in csv format for data paper
-  Birds_analysis7 %>% 
-    write.csv(file = "Derived/Excels/Birds_analysis.csv", 
-              row.names = FALSE)
+Birds_export <- Birds_analysis %>% # Before manipulating magnitude of 4 outliers 
+  arrange(Id_muestreo, Id_muestreo_no_dc, Fecha, Pc_start) %>%
+  select(-c(Species_ayerbe_, Ano_grp, Rep_ano_grp))
+   #select(Id_muestreo, Id_muestreo_no_dc, Fecha, Pc_start, Species_ayerbe, Count) 
+Birds_export %>% write_csv(file = "Derived/Excels/Birds_analysis.csv")
 }
 
 # Export R data object for BIOL314
@@ -516,11 +532,11 @@ unmarkedFramePCount(Abund_nas$Amazona_ochrocephala, Site_covs$Amazona_ochrocepha
 
 
 # There should be no NAs in the relevant columns at this point 
-Pc_date8 %>% select(Uniq_db, Fecha, Pc_length, Pc_start) %>% 
+Event_covs %>% select(Uniq_db, Fecha, Pc_length, Pc_start) %>% 
   Na_rows_cols(distinct = TRUE)
 
 # Visualize Pc_lengths by Uniq_db
-Pc_date8 %>% distinct(Uniq_db, Pc_length) %>% 
+Event_covs %>% distinct(Uniq_db, Pc_length) %>% 
   filter(!Uniq_db %in% c("Cipav mbd", "Gaica distancia"))
 
 # Using the nested list Obs_covs 

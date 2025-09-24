@@ -16,8 +16,7 @@
 # "Accipiter bicolor" (didn't have all files), "Crypturellus soui_1", "Parkesia noveboracensis_M" Picumnus olivaceus_M",  "Scytalopus latrans_M", "Nyctibius_grandis"
 
 # Libraries ---------------------------------------------------------------
-#load("Rdata/Taxonomy_12.29.24.Rdata")
-load("Rdata/the_basics_05.10.25.Rdata")
+load("Rdata/the_basics_09.15.25.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 library(tidyverse)
@@ -37,7 +36,7 @@ conflicts_prefer(dplyr::filter)
 # Og_name & Ayerbe ---------------------------------------------------------
 # Data frame with distinct combinations of Og_name & Ayerbe.
 Tax_OG_Ay <- Birds_all3 %>% # Taxonomy Og_name + Ayerbe
-  distinct(Nombre_cientifico_original, Nombre_ayerbe) %>%
+  distinct(Nombre_cientifico_original, Species_ayerbe) %>%
   rename(Og_name = Nombre_cientifico_original)
 
 # Create rm object of non-species names
@@ -46,11 +45,11 @@ rm <- map(Tax_OG_Ay, \(col){
 })
 rm$Og_name <- rm$Og_name[!is.na(rm$Og_name)]
 
-# Remove non-species names from both Og_name & Nombre_ayerbe
+# Remove non-species names from both Og_name & Species_ayerbe
 Tax_OG_Ay2 <- Tax_OG_Ay %>%
   filter(!Og_name %in% rm$Og_name) %>%
-  filter(!Nombre_ayerbe %in% rm$Nombre_ayerbe)
-sciNames <- unique(Tax_OG_Ay2$Nombre_ayerbe)
+  filter(!Species_ayerbe %in% rm$Species_ayerbe)
+sciNames <- unique(Tax_OG_Ay2$Species_ayerbe)
 length(sciNames) # 592 vs 617
 
 # Ayerbe 2019 shapefiles ---------------------------------------
@@ -79,22 +78,23 @@ for (i in 1:length(sciNames)) {
 }
 names(Ayerbe_sf_l) <- sciNames
 Ayerbe_sf <- do.call(rbind, Ayerbe_sf_l)
-names(Ayerbe_sf)[1] <- "Nombre_ayerbe"
+names(Ayerbe_sf)[1] <- "Species_ayerbe"
 
 ## NOTE:: Certain species were actually in the original Ayerbe files but named differently.. I updated these manually. I never received clarification why some of these have "_M" or "_1" at the end of the file names.
 # "Accipiter bicolor" (didn't have all files), "Crypturellus soui_1", "Parkesia noveboracensis_M" Picumnus olivaceus_M",  "Scytalopus latrans_M", "Nyctibius_grandis"
 # Remove the letters and numbers after the "_" in species names
-Ayerbe_sf$Nombre_ayerbe <- sapply(str_split(Ayerbe_sf$Nombre_ayerbe, "_"), function(x) {
+Ayerbe_sf$Species_ayerbe <- sapply(str_split(Ayerbe_sf$Species_ayerbe, "_"), function(x) {
   x[1]
 })
 
 # Add in the original name (Og_name) before updating taxonomy
 Ayerbe_sf2 <- Ayerbe_sf %>%
-  left_join(Tax_OG_Ay2, by = "Nombre_ayerbe")
+  left_join(Tax_OG_Ay2, by = "Species_ayerbe")
 
 # Taxonomy ---------------------------------------------------
 # >GBIF ------------------------------------------------
 # Use Gbif to pull in additional synonyms, and to standardize the family, order, and species. GBIF is the only source that has information for all input species
+
 if(FALSE){ # Very slow
   gbif_list <- get_gbifid_(sciNames, method = "backbone", rows = 1)
   
@@ -105,11 +105,28 @@ if(FALSE){ # Very slow
   # Update autoria column
   gbif_names$autoria <- str_remove(gbif_names$scientificname, pattern = gbif_names$canonicalname)
   
-  #write.xlsx(gbif_names, "Derived/Excels/gbif_names.xlsx")
+  gbif_names %>% mutate(across(phylum:genus, ifelse(is.na, fill, .)))
+  
+  # Fill in information for Ortalis guttata
+  gbif_names <- gbif_names %>%
+    mutate(across(phylum:species, 
+                  ~ if_else(str_detect(input_name, "Ortalis") & is.na(.),
+                            case_when(
+                              cur_column() == "phylum" ~ "Chordata",
+                              cur_column() == "order"  ~ "Galliformes",
+                              cur_column() == "family" ~ "Cracidae",
+                              cur_column() == "genus"  ~ "Ortalis",
+                              cur_column() == "species"  ~ "Ortalis guttata",
+                              TRUE ~ .
+                            ),
+                            .)))
+  
+  #write_csv(gbif_names, file = "../Taxonomy/gbif_names.csv")
 }
 
 # Bring in gbif data frame to avoid slow get_gbifid_() 
-gbif_names <- read.xlsx("Derived/Excels/gbif_names.xlsx", sheetIndex = 1)
+gbif_names <- read_csv("../Taxonomy/gbif_names.csv") %>% 
+  filter(!is.na(order)) 
 
 # >Avonet list -----------------------------------
 # See metadata tab in Excel for information on what each column contains
@@ -144,37 +161,38 @@ Avo_traits_l <- lapply(dfsAvo, function(x) {
 Crosswalk <- read.csv("../Datasets_external/Avonet_Data/PhylogeneticData/BirdLife-BirdTree crosswalk.csv") %>%
   rename(Species_bl = Species1, Species_bt = Species3) %>%
   select(1:4)
+unique(Crosswalk$Match.notes) # Very few notes 
 HBW <- data.frame(read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Datasets_external/Handbook of the Birds of the World and BirdLife International Digital Checklist of the Birds of the World_Version_7.xlsx", sheet = "HBW-BirdLife v7 ", skip = 3)) %>%
-  filter(!is.na(Common.name))
+  filter(!is.na(Common.name)) %>% 
+  rename(Common_name = Common.name)
 head(HBW)
 
-Tax_OG_Ay2 %>% filter(str_detect(Nombre_ayerbe, "Ortalis"))
-
 Tax_df <- Tax_OG_Ay2 %>%
+  distinct(Species_ayerbe) %>% 
   left_join(gbif_names[, c("input_name", "order", "family", "species", "autoria")],
-    by = join_by("Nombre_ayerbe" == "input_name")
+    by = join_by("Species_ayerbe" == "input_name")
   ) %>%
-  left_join(Crosswalk, join_by("Nombre_ayerbe" == "Species_bt")) %>%
+  left_join(Crosswalk, join_by("Species_ayerbe" == "Species_bt")) %>%
   ## Manual changes (using Avibase & Crosswalk file) of species that don't match w/ BL, BT, or eBird
   mutate(Species_bl = case_when(
-    Nombre_ayerbe == "Thectocercus acuticaudatus" ~ "Psittacara acuticaudatus",
-    Nombre_ayerbe == "Ixothraupis guttata" ~ "Tangara guttata",
+    Species_ayerbe == "Thectocercus acuticaudatus" ~ "Psittacara acuticaudatus",
+    Species_ayerbe == "Ixothraupis guttata" ~ "Tangara guttata",
     TRUE ~ Species_bl
   )) %>%
-  left_join(Crosswalk, join_by("Nombre_ayerbe" == "Species_bl")) %>%
-  left_join(dfsAvo$eBird[, c("Species")], by = join_by("Nombre_ayerbe" == "Species"), keep = T) %>%
+  left_join(Crosswalk, join_by("Species_ayerbe" == "Species_bl")) %>%
+  left_join(dfsAvo$eBird[, c("Species")], by = join_by("Species_ayerbe" == "Species"), keep = T) %>%
   mutate(
     Match.type = coalesce(Match.type.x, Match.type.y),
     Match.notes = coalesce(Match.notes.x, Match.notes.y)
   ) %>%
   select(-ends_with(c(".x", ".y"))) %>%
-  rename_with(.fn = ~ paste0(., "_gbif"), .cols = 3:6) %>%
-  rename(Species_original = Og_name, Species_ayerbe = Nombre_ayerbe, Species_eb = Species) %>%
-  select(3, 4, 2, 1, 5, 7:11, 6)
+  rename_with(.fn = ~ paste0(., "_gbif"), .cols = 2:5) %>%
+  rename(Species_ayerbe = Species_ayerbe, Species_eb = Species) %>%
+  select(2, 3, 1, 4, 6:10, 5)
 nrow(Tax_df)
 head(Tax_df)
 
-# Note there are still some species that have NAs in either BL or BT b/c it was always joining "Nombre_ayerbe" with something. Let's fill in these missing species names by matching back up with the Crosswalk df and creating the 'Missing_' data frames.
+# Note there are still some species that have NAs in either BL or BT b/c it was always joining "Species_ayerbe" with something. Let's fill in these missing species names by matching back up with the Crosswalk df and creating the 'Missing_' data frames.
 Missing_BL <- Tax_df %>%
   select(-c(Match.type, Match.notes)) %>%
   filter(is.na(Species_bl) & !is.na(Species_bt)) %>%
@@ -196,21 +214,24 @@ anti_j <- Tax_df %>% filter(!is.na(Species_bl) & is.na(Species_bt) | is.na(Speci
 # Update the Tax_df dataframe by removing rows present in anti_j and appending Missing data
 Tax_df2 <- Tax_df %>%
   anti_join(anti_j) %>%
-  smartbind(Missing) %>%
+  bind_rows(Missing) %>%
   # Add in common names from the HBW
   left_join(
-    HBW[, c("Common.name", "Scientific.name")],
+    HBW[, c("Common_name", "Scientific.name")],
     join_by("Species_bl" == "Scientific.name")
-  )
+  ) %>% Cap_snake()
 
 rownames(Tax_df2) <- NULL
 nrow(Tax_df2)
 
-# NOTE:there are no NAs in any of the gbif columns, so it makes sense to use these for order & family for repeatability and so all are from a single source
+# NOTE:there are no NAs in the gbif columns order or family, so it makes sense to use these for repeatability and so all are from a single source
 Tax_df2 %>%
-  select(ends_with("gbif")) %>%
+  select(Species_ayerbe, ends_with("gbif"), -Autoria_gbif) %>%
+  #naniar::where_na()
   drop_na() %>%
   nrow()
+# 2 NAs in species_gbif
+Tax_df2 %>% filter(Species_ayerbe == "Tangara cyanoptera") 
 # NOTE: Same with BT & BL
 Tax_df2 %>% filter(is.na(Species_bt) | is.na(Species_bl))
 
@@ -219,15 +240,28 @@ stop()
 ## Export relevant files to Excel
 #Tax_df2 %>% write.xlsx("../Taxonomy/Taxonomy.xlsx", sheetName = "Taxonomic_equivalents", row.names = F, showNA = FALSE)
 
-# NOTE:: B/c 'GAICA UBC' didn't have a Species_original it was adding hundreds of rows to the dataframe for every combo of Species_ayerbe , & Species_original == NA
-Tax_df3 <- Tax_df2 %>% select(-Species_original) %>% 
-  distinct() %>% 
-  tibble()
+# All species observed in the project, irrespective of methodology
+Tax_df2 %>% write_csv(file = "Derived/Excels/Taxonomy_all.csv")
 
-rm(list = ls()[!(ls() %in% c("Ayerbe_all_spp", "Ayerbe_sf2", "Tax_df3", "Avo_traits_l", "gbif_list"))])
+## For data paper only export species taxonomy that were observed during point counts
+Spp_pc <- Bird_pcs %>% 
+  pull(Species_ayerbe) %>% 
+  unique()
+
+# Subset just point count species, final formatting
+Tax_pcs <- Tax_df2 %>% 
+  filter(Species_ayerbe %in% Spp_pc) %>%
+  select(-c(Match_notes)) %>% 
+  distinct() 
+
+# Export Taxonomy as csv 
+Tax_pcs %>% select(-c(Common_name)) %>% 
+  write_csv(file = "Derived/Excels/Taxonomy.csv")
+
+rm(list = ls()[!(ls() %in% c("Ayerbe_all_spp", "Ayerbe_sf2", "Tax_df2", "Tax_pcs", "Avo_traits_l"))])
 #save.image(paste0("Rdata/Taxonomy_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 # Manual
-#save.image("Rdata/Taxonomy_12.29.24.Rdata")
+#save.image("Rdata/Taxonomy_09.15.25.Rdata")
 
 # EXTRAS -----------------------------------------------------------
 # These 'EXTRAS' are no longer critical given that the 40 species' names that had no match according to Ayerbe's taxonomy were updated manually and incorporated into the primary workflow. I left this code as these were previously important steps in the workflow. The three components are
@@ -242,7 +276,7 @@ rm(list = ls()[!(ls() %in% c("Ayerbe_all_spp", "Ayerbe_sf2", "Tax_df3", "Avo_tra
 ## EXAMPLE: Yellow warbler & locations
 Birds_all3 %>%
   filter(Nombre_cientifico_original == "Setophaga aestiva" | Nombre_cientifico_original == "Setophaga petechia") %>%
-  select(Nombre_cientifico_original, Nombre_ayerbe, Departamento) %>%
+  select(Nombre_cientifico_original, Species_ayerbe, Departamento) %>%
   arrange(Nombre_cientifico_original) %>%
   rename(Species_original = Nombre_cientifico_original) %>%
   distinct() # %>% write.xlsx("Yellow_warbler_example.xlsx")
@@ -255,31 +289,31 @@ Gaica_Tax <- read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/G
 CIPAV_Tax <- read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Taxonomy/Ayerbe_missing_CIPAV_Response.xls")
 TaxUpManG <- select(Tax_OG_Ay2, Og_name) %>% # Manual taxonomic update GAICA
   inner_join(
-    y = Gaica_Tax[, c("Nombre_GAICA", "Nombre_ayerbe")],
+    y = Gaica_Tax[, c("Nombre_GAICA", "Species_ayerbe")],
     join_by("Og_name" == "Nombre_GAICA")
   ) %>%
   mutate(Source = "GAICA")
 TaxUpManC <- select(Tax_OG_Ay2, Og_name) %>% # Manual taxonomic update CIPAV
   inner_join(
-    CIPAV_Tax[, c("Nombre_CIPAV", "Nombre_ayerbe")],
+    CIPAV_Tax[, c("Nombre_CIPAV", "Species_ayerbe")],
     join_by("Og_name" == "Nombre_CIPAV")
   ) %>%
   mutate(Source = "CIPAV")
 TaxUpMan <- bind_rows(TaxUpManG, TaxUpManC)
 
 # Append to the Taxonomy Excel
-# TaxUpMan %>% rename(Species_original = Og_name,	Species_ayerbe = Nombre_ayerbe) %>%
+# TaxUpMan %>% rename(Species_original = Og_name,	Species_ayerbe = Species_ayerbe) %>%
 # as.data.frame() %>%
 # write.xlsx("../Taxonomy/Taxonomy.xlsx", sheetName = "Updated_spp_names", row.names = F, append = T)
 
 # When you updated the taxonomy some species are a one to one switch, while others end up with multiple rows b/c they had multiple Og_names for the one new name. So that is why there are only 22 additional rows when you do distinct() on Birds_all (21 rows where count = 2, + 1 additional for Spinus psaltria where count = 3).
 Tax_rows <- Tax_OG_Ay %>%
-  count(Nombre_ayerbe, sort = T) %>%
-  filter(Nombre_ayerbe %in% TaxUpMan$Nombre_ayerbe)
-Tax_OG_Ay %>% filter(Nombre_ayerbe == "Spinus psaltria")
+  count(Species_ayerbe, sort = T) %>%
+  filter(Species_ayerbe %in% TaxUpMan$Species_ayerbe)
+Tax_OG_Ay %>% filter(Species_ayerbe == "Spinus psaltria")
 ## Add this info as sheet to the Excel
 # Tax_rows %>% mutate(Number_of_rows_in_final_db = 1) %>%
-# rename(Species_ayerbe = Nombre_ayerbe, Number_of_rows_in_original_db = n) %>%
+# rename(Species_ayerbe = Species_ayerbe, Number_of_rows_in_original_db = n) %>%
 # write.xlsx("../Taxonomy/Taxonomy.xlsx", sheetName = "Accounting_spp_changes", row.names = F, append = T)
 
 
@@ -290,7 +324,7 @@ Tax_OG_Ay %>% filter(Nombre_ayerbe == "Spinus psaltria")
 # vignette(package = taxize) #None, but can access online here: https://mran.microsoft.com/snapshot/2015-10-23/web/packages/taxize/vignettes/taxize_vignette.html
 
 # Get list of spp. ranges still missing
-TFa <- Tax_OG_Ay2$Og_name %in% Ayerbe_sf$Nombre_ayerbe
+TFa <- Tax_OG_Ay2$Og_name %in% Ayerbe_sf$Species_ayerbe
 table(TFa) # 3 spp. not found in Ayerbe
 Ayerb_miss <- sciNames[!TFa]
 
@@ -332,12 +366,12 @@ setwd("..")
 
 
 Ayerbe_sf2 <- do.call(rbind, Ayerbe_sf2) # 3 additional spp. found
-names(Ayerbe_sf2)[1] <- "Nombre_ayerbe"
-Ayerbe_sf2 <- merge(Ayerbe_sf2, synon3, by.x = "Nombre_ayerbe", by.y = "synonym")
+names(Ayerbe_sf2)[1] <- "Species_ayerbe"
+Ayerbe_sf2 <- merge(Ayerbe_sf2, synon3, by.x = "Species_ayerbe", by.y = "synonym")
 Ayerbe_sf2 <- Ayerbe_sf2 %>% filter(synonym != "Ortalis guttata") # Ortalis columbiana is a separate species w/ a different range, so don't make this change
 TFa2 <- Ayerbe_sf2$synonym %in% sciNames ## Notice 5 spp. were already in original data base (i.e. the same spp. with multiple scientific names)
 Ayerbe_sf2 <- rbind(Ayerbe_sf, Ayerbe_sf2)
-TF2 <- sciNames %in% Ayerbe_sf2$Nombre_ayerbe
+TF2 <- sciNames %in% Ayerbe_sf2$Species_ayerbe
 Ayerb_miss2 <- sciNames[!TF2]
 
 # Create a list of all spp. that have either same genus or species as the missing species. These could be good species to look into as they may be close relatives
@@ -356,8 +390,8 @@ dfEcoUp %>% filter(!is.na(genusUp)) # CHECK::Confirm that it worked
 ## Export table of updated & or missing spp. for GAICA / CIPAV  to check##
 Ayerb_miss3 <- str_replace(Ayerb_miss2, c("Crypturellus soui|Parkesia noveboracensis|Picumnus olivaceus|Scytalopus latrans"), replacement = NA_character_)
 Ayerb_miss3 <- sort(Ayerb_miss3[!is.na(Ayerb_miss3)])
-Ayerb_miss3 <- data.frame(Nombre_CIPAV = Ayerb_miss3, Nombre_ayerbe = rep(NA, length(Ayerb_miss3)))
-Ayerb_miss3 <- rbind(Ayerb_miss3, data.frame(Nombre_CIPAV = Ayerbe_sf2$Og_name, Nombre_ayerbe = Ayerbe_sf2$synonym))
+Ayerb_miss3 <- data.frame(Nombre_CIPAV = Ayerb_miss3, Species_ayerbe = rep(NA, length(Ayerb_miss3)))
+Ayerb_miss3 <- rbind(Ayerb_miss3, data.frame(Nombre_CIPAV = Ayerbe_sf2$Og_name, Species_ayerbe = Ayerbe_sf2$synonym))
 View(TaxUpMan)
 
 # Update to include the source data frame where records come from
@@ -369,7 +403,7 @@ missingSource <- dfEco %>%
   mutate(Present = "Y") %>%
   pivot_wider(names_from = Source, values_from = Present, values_fill = "N")
 
-Ayerb_miss3_Source <- merge(Ayerb_miss3, missingSource, by = "Nombre_CIPAV") %>% arrange(!is.na(Nombre_ayerbe))
+Ayerb_miss3_Source <- merge(Ayerb_miss3, missingSource, by = "Nombre_CIPAV") %>% arrange(!is.na(Species_ayerbe))
 Ayerb_miss3_Source <- Ayerb_miss3_Source %>% filter(Nombre_CIPAV != "Machaeropterus regulus" & Nombre_CIPAV != "Leptotila verreauxi") # Seems like leptotila verreauxi isn't in the Ayerbe data base
 Ayerb_miss3_Source %>%
   filter(GaicaPCs != "Y" & Distancia != "Y") %>%
@@ -410,9 +444,9 @@ Uniq_dbs <- unique(Birds_all$Uniq_db)
 i <- 1
 for (i in 1:length(Uniq_dbs)) {
   df <- Birds_all %>% filter(Uniq_db == Uniq_dbs[i])
-  df <- df %>% distinct(Departamento, Municipio, Og_name, Nombre_ayerbe)
+  df <- df %>% distinct(Departamento, Municipio, Og_name, Species_ayerbe)
   df <- df %>% left_join(Tax_df2[, c("Species_original", "order_gbif", "family_gbif", "autoria_gbif", "Changed_Spp", "Changed_OF")], by = join_by("Og_name" == "Species_original"))
-  df <- df %>% rename(Species_original = Og_name, Species_ayerbe = Nombre_ayerbe)
+  df <- df %>% rename(Species_original = Og_name, Species_ayerbe = Species_ayerbe)
   if (i == 1) {
     write.xlsx(df, file = "Taxonomy_Updates_Uniq_db2.xlsx", sheetName = Uniq_dbs[i], row.names = F)
   }
@@ -428,20 +462,20 @@ setwd("./../../..")
 nrow(gbif_names)
 head(gbif_names)
 Birds_all_OF <- Birds_all %>%
-  select(Uniq_db, Nombre_institucion, Nombre_ayerbe, Orden, Familia) %>%
+  select(Uniq_db, Nombre_institucion, Species_ayerbe, Orden, Familia) %>%
   left_join(
     y = gbif_names[, c("input_name", "order", "family")],
-    by = join_by("Nombre_ayerbe" == "input_name")
+    by = join_by("Species_ayerbe" == "input_name")
   ) %>%
   rename(order_gbif = order, family_gbif = family) # OF = Orden familia
 distinctOF <- Birds_all_OF %>%
   filter(!is.na(Orden)) %>%
-  distinct(Nombre_ayerbe, Orden, Familia, order_gbif, family_gbif)
+  distinct(Species_ayerbe, Orden, Familia, order_gbif, family_gbif)
 # These species have different orders / families in gbif relative to the original data collectors
 ProbOrdFamNames <- distinctOF %>%
-  count(Nombre_ayerbe, sort = T) %>%
+  count(Species_ayerbe, sort = T) %>%
   filter(n > 1) %>%
-  pull(Nombre_ayerbe)
+  pull(Species_ayerbe)
 Tax_df2 <- Tax_df2 %>% mutate(
   Changed_Spp = ifelse(Species_original == Species_ayerbe, "N", "Y"),
   Changed_OF = ifelse(Species_ayerbe %in% ProbOrdFamNames, "Y", "N")
@@ -450,9 +484,9 @@ Tax_df2 <- Tax_df2 %>% mutate(
 # Show the species where order / family differ between gbif & the original dataset
 head(Birds_all_OF)
 Birds_all_OF %>%
-  filter(Nombre_ayerbe %in% ProbOrdFamNames & Nombre_institucion != "UBC") %>%
-  distinct(Uniq_db, Nombre_institucion, Nombre_ayerbe, Orden, Familia, order_gbif, family_gbif) %>%
-  arrange(Nombre_ayerbe) %>%
+  filter(Species_ayerbe %in% ProbOrdFamNames & Nombre_institucion != "UBC") %>%
+  distinct(Uniq_db, Nombre_institucion, Species_ayerbe, Orden, Familia, order_gbif, family_gbif) %>%
+  arrange(Species_ayerbe) %>%
   filter(Familia != family_gbif | Orden != order_gbif)
 
 unique(Birds_all$Og_name) %in% gbif_names$input_name
@@ -467,4 +501,4 @@ CIPAV_Tax <- read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/G
   rename(Og_name = Nombre_CIPAV)
 
 TaxUpMan <- bind_rows(Gaica_Tax, CIPAV_Tax) %>%
-  select(Og_name, Nombre_ayerbe, Source)
+  select(Og_name, Species_ayerbe, Source)
