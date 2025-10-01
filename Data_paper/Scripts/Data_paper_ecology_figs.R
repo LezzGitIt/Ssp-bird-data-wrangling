@@ -18,6 +18,7 @@ library(terra)
 library(tidyterra)
 library(ggspatial)
 library(conflicted)
+library(patchwork)
 ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::lag)
 conflicts_prefer(hms::hms)
@@ -30,22 +31,16 @@ load("Rdata/NE_layers_Colombia.Rdata")
 Pc_locs_sf <- st_read("Derived_geospatial/shp/Pc_locs.gpkg")
 
 # Load in raw abundance data
-Bird_pcs <- read_csv("Data_paper/DataS1/Bird_pcs.csv")
-Birds_analysis <- read_csv("Data_paper/DataS1/Birds_analysis.csv")
+Bird_pcs_all <- read_csv("Data_paper/DataS1/Bird_pcs_all.csv")
+Bird_pcs_analysis <- read_csv("Data_paper/DataS1/Bird_pcs_analysis.csv")
 Taxonomy <- read_csv(file = "Data_paper/DataS1/Taxonomy.csv")
 Fn_traits <- read_csv(file = "Data_paper/DataS1/Functional_traits.csv") %>% 
   select(-Match_type)
 Site_covs <- read_csv(file = "Data_paper/DataS1/Site_covs.csv")
 Event_covs <- read_csv(file = "Data_paper/DataS1/Event_covs.csv")
+Prec_df <- read_csv(file = "Derived/Excels/Prec_df.csv")
 
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
-
-Site_covs %>% left_join(Event_covs) %>%
-  filter(Uniq_db == "Gaica mbd") %>%
-  distinct(Id_gcs, Id_muestreo) %>%
-  count(Id_gcs) %>% 
-  arrange(n)
-  #arrange(desc(Pc_length))
 
 # Fig1: Sampling map ------------------------------------------------------
 ### Create map showing point count locations on informative background (elevation)
@@ -386,8 +381,10 @@ Prec_depts <- Calc_mean_prec(df = Prec_df2, group_variable = Departamento)
 ggplot(Prec_ecor, aes(x = Mes, y = Prec, color = Ecoregion)) +
   stat_smooth(method = "gam", formula = y ~ s(x, bs = "cc", k = 12), se = FALSE) +
   scale_x_continuous(breaks = c(0, 2, 4, 6, 8, 10, 12)) +
-  labs(x = "Month", y = "Precipitation (mm)")
-ggsave("Data_paper/Figures/Rainfall/Prec_smoothed.png", bg = "white")
+  labs(x = "Month", y = "Precipitation (mm)") + 
+  theme(legend.position = "right")
+ggsave("Data_paper/Figures/Rainfall/Prec_smoothed.png", bg = "white", 
+       width = 8, height = 5)
 
 # Fig4b: Precipitation with sampling dates ---------------------------------
 # PCs_prec are the points that go on the rainfall seasonality plot
@@ -459,7 +456,84 @@ ggsave("Data_paper/Figures/Rainfall/Prec_sampling.png", bg = "white")
 Plot_prec_samp(regions = "All", dyn_occ = FALSE, facet = TRUE)
 ggsave("Data_paper/Figures/Rainfall/Prec_sampling_faceted.png", bg = "white")
 
-stop()
+# Fig 5 -------------------------------------------------------
+## Bar plots of species with the highest counts and observed at the greatest number of unique point count locations (i.e., localities)
+
+# Summarize counts and localities across Species & ecoregion
+Species_summary <- Data$Bird_pcs_all %>% 
+  left_join(Data$Site_covs) %>%
+  summarize(Count = sum(as.numeric(Count), na.rm = TRUE), 
+            Localities = n_distinct(Id_muestreo),
+            .by = c(Species_ayerbe, Ecoregion))
+
+# Custom function to generate the total number of counts or point count locations irrespective of Ecoregion 
+select_top_species <- function(df, Summary_var, slice_n) {
+  df %>%
+    summarize("Total_{{Summary_var}}" := sum({{ Summary_var }}), 
+              .by = Species_ayerbe) %>%
+    slice_max(across(starts_with("Total_")), n = slice_n, with_ties = FALSE)
+}
+
+# Generate tibbles of 30 species with highest total counts or localities to use in semi_join
+Sj_count <- Species_summary %>% 
+  select_top_species(Summary_var = Count, slice_n = 30) %>% 
+  arrange(Total_Count)
+Sj_local <- Species_summary %>% 
+  select_top_species(Summary_var = Localities, slice_n = 30)
+
+# Examine the overlap between highest counts and number of locations
+Loc_10 <- Sj_local %>% semi_join(Sj_count) %>% 
+  slice_max(order_by = Total_Localities, n = 10) %>% 
+  mutate(order = row_number())
+Count_10 <- Sj_count %>% semi_join(Sj_local) %>% 
+  slice_max(order_by = Total_Count, n = 10) %>% 
+  mutate(order = row_number())
+
+# Which  species are both high abundance and widespread? 
+full_join(Count_10, Loc_10, by = "Species_ayerbe") %>% 
+  mutate(Order_both = order.x + order.y) %>% 
+  arrange(Order_both) %>% 
+  filter(!is.na(Order_both)) %>% 
+  pull(Species_ayerbe)
+
+# left plot: Counts
+p1 <- Species_summary %>%
+  semi_join(Sj_count, by = "Species_ayerbe") %>%
+  mutate(Species_ayerbe = factor(
+    Species_ayerbe, levels = Sj_count$Species_ayerbe
+  )) %>%
+  ggplot(aes(x = Count, y = Species_ayerbe,
+             fill = Ecoregion)) +
+  geom_col(color = "black", width = .8) +
+  labs(x = "Total count", y = "Species") +
+  theme(legend.position = "none")
+
+# right plot: Unique point count locations (localities)
+p2 <- Species_summary %>%
+  semi_join(Sj_local, by = "Species_ayerbe") %>%
+  mutate(Species_ayerbe = factor(
+    Species_ayerbe, levels = Sj_local$Species_ayerbe
+  )) %>%
+  ggplot(aes(x = Localities, y = Species_ayerbe,
+             fill = Ecoregion)) +
+  geom_col(color = "black", width = .8) +
+  scale_x_reverse() +
+  scale_y_discrete(
+    labels = Sj_local$Species_ayerbe, # right-side species
+    position = "right"       # put them on the right
+  ) +
+  labs(x = "Localities", y = NULL) +
+  theme(axis.text.y.left  = element_blank(),
+        axis.ticks.y.left = element_blank(),
+        axis.title.y.left = element_blank())
+
+# Combine plots side by side and use a common legend
+(p1 + p2) + 
+  plot_layout(guides = "collect") & 
+  theme(legend.position = "top")
+
+ggsave("Data_paper/Figures/Species_counts_localities.png", 
+       bg = "white", width = 12, height = 10)
 
 # Supplementary figs ------------------------------------------------------
 ## Plot showing numer of point counts per farm, the number of farms each data collector surveyed, and the average number of times each point count was repeated within a season (< 80 days)
@@ -538,60 +612,22 @@ extract_metadata <- function(df){
 
 ### Create metadata tbls
 ## Primary abundance file 
-Bird_abu_defs <- c("Unique ID of each point count. Using the first initials of each word and separating with hyphens, the format is: Data collector --  Research question -- Department -- Farm _ Point count number", "Point count ID irrespective of the data collector", "Date", "Start time of point count", "Species name according to Fernando Ayerbe's 2018 field guide (AOS-SACC)", "The distance to the bird from the observer", "Whether species was identified in a recording", "Number of individuals observed")
-Bird_abu_meta <- Bird_pcs %>% 
-  extract_metadata() %>% 
-  mutate(Definition = Bird_abu_defs) %>% 
-  relocate(Definition, .after = Field_name)
+Bird_abu_meta <- Bird_pcs_all %>% extract_metadata() 
 
 ## Site covariates
-# DELETE Site_covs_defs <- c("Point count ID irrespective of the data collector", "Ecoregion where the survey was conducted", "Department where the survey was conducted", "Elevation in meters (90 meter resolution)", "Average temperature in °C", "Total precipitation in millimeters", "Predominant habitat within the 50 meter point count radius")
 Site_covs_meta <- extract_metadata(Site_covs)
 
 ## Taxonomy file
 Taxonomy_meta <- extract_metadata(Taxonomy)
 
-# Definitions for taxonomy 
-Name_equivalents <- tibble(Initials = c("gbif", "ayerbe", "bl", "bt", "eb"), 
-                           Full_name = c("the Global Biodiversity Information Facility", "Ayerbe-Quiñones (2018)", "bl" = "BirdLife", "BirdTree", "eBird"))
-Tax_lvl <- str_split_i(Taxonomy_meta[1:7,]$Field_name, pattern = "_", i = 1)
-Source <- str_split_i(Taxonomy_meta[1:7,]$Field_name, pattern = "_", i = 2)
-pattern_vector <- setNames(Name_equivalents$Full_name, Name_equivalents$Initials)
-Full_names <- str_replace_all(Source, pattern_vector)
-
-# Define Match_type and Autoria_gbif 
-Match_type_def <- "Taxonomic match level:
-\n --1BL to 1BT: Species equivalent between BirdLife & BirdTree
-\n --Many BL to 1BT: Multiple BirdLife species classified as a single BirdTree species
-\n --1BL to many BT: Multiple BirdTree species classified as a single BirdLife species
-\n --N/D: If species was not found in either BirdLife or BirdTree taxonomies"
-Autoria_gbif_def <- "Taxonomic authority according to the Global Biodiversity Information Facility"
-Defs_match_autoria <- Taxonomy_meta[8:9,] %>% 
-  mutate(Definition = c(Match_type_def, Autoria_gbif_def)) 
-
-# Paste it together to create Definition column and final formatting
-Taxonomy_meta2 <- Taxonomy_meta[1:7,] %>% 
-  mutate(Definition = paste(Tax_lvl, "according to", Full_names)) %>% 
-  bind_rows(Defs_match_autoria)
-
 ## Functional traits
 Fn_traits_meta <- Fn_traits %>% extract_metadata() 
 
-# Create definitions
-Definitions_ft_vec <- c("Species according to Ayerbe-Quiñones (2018)", 
-                        "Taxonomy used to match functional trait, where: BL = BirdLife, BT = BirdTree, eB = eBird", 
-                        rep("See Tobias et al (2022)", 24),
-                        "Elevational range specific to Colombia",
-                        "Source from which Elev_range was extracted")
-Definitions_ft_join <- tibble(Field_name = Fn_traits_meta$Field_name, 
-                         Definition = Definitions_ft_vec)
-Fn_traits_meta2 <- Definitions_ft_join %>% left_join(Fn_traits_meta)
-
-# Event covariates 
+## Event covariates 
 Event_covs_meta <- Event_covs %>% extract_metadata() 
 
 ## Create column metadata list
-Cols_metadata_l <- list(Bird_abu = Bird_abu_meta, Site_covs = Site_covs_meta, Event_covs = Event_covs_meta, Taxonomy = Taxonomy_meta2, Functional_traits = Fn_traits_meta2)
+Cols_metadata_l <- list(Bird_abu = Bird_abu_meta, Site_covs = Site_covs_meta, Event_covs = Event_covs_meta, Taxonomy = Taxonomy_meta, Functional_traits = Fn_traits_meta2)
 
 # >Export  ------------------------------------------------------
 
@@ -620,7 +656,7 @@ Cubarral <- st_as_sf(data.frame(lat = 3.794, long = -73.839),
 Cubarral_coords <- st_coordinates(Cubarral)
 
 Pc_locs_sf %>%
-  left_join(distinct(Bird_pcs, Id_muestreo, Id_gcs)) %>%
+  left_join(distinct(Bird_pcs_all, Id_muestreo, Id_gcs)) %>%
   filter(Uniq_db == "UNILLANOS MBD") %>%
   ggplot() +
   geom_sf(aes(color = Id_gcs)) + 
