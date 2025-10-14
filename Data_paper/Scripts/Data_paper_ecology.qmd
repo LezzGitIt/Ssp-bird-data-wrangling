@@ -314,6 +314,8 @@ Hab_sub_tbl <- Create_hab_tbl(col = Habitat_sub)
 
     -   Mature forest (n = `r Hab_sub_tbl$Maduro`): Taller, older, and larger contiguous forests. 10 of these points were in the Ecorregion Cafetera (9 in the ecological reserve Otún Quimbaya, 1 in Reserva El Hatico) and 2 were in a large intact forest in the Piedemonte.
 
+    -   \[COLLABORATORS\]: How do we want to define 'mature' forest? In the 'Habitat_sub' column I set everything to 'Secondary' unless it was specified in the data that it was a riparian forest or a mature forest. However, there may be other forests surveyed that could be considered mature.
+
 -   Silvopasture (Total n = `r Hab_tbl$Ssp`): Silvopastoral systems consist of a variety of practices and range across a spectrum regarding the diversity and intensity of practices implemented. For example, silvopastural systems can be tree (and grass) monocultures planted to be homogeneous in spacing and age, or, alternatively, they can be highly-productive, diverse polycultures composed of remnant vegetation and naturally recruited tree species [@cubbageComparingSilvopastoralSystems2012]. See @murgueitioNativeTreesShrubs2011, @calleStrategyScalingUpIntensive2013, and @cubbageComparingSilvopastoralSystems2012 to better understand the full extent of management practices that can be incorporated in silvopastoral systems. In our bird sampling efforts, the project differentiated between several types of silvopasture:
 
     -   Dispersed trees (n = `r Hab_sub_tbl$Arboles_dispersos`): Trees integrated directly into the pasture where cows graze, providing shade as well as direct forage in some cases
@@ -825,12 +827,13 @@ I am grateful to Camila Gómez, Nick Bayly, and several students at the Universi
 
 -   All co-authors:
 
-    -   It seems like 'Boyacá & Santander' isn't really an 'ecoregion' in the way that the others are (e.g. Bajo Magdalena refers to part of a river valley). To a lesser extent, the 'Ecoregion cafetera' seems similar given that this name comes from the predominant crop (agricultural) / cultural similarities.
+    -   The 5 'ecoregions'
+        -   It seems like 'Boyacá & Santander' isn't really an 'ecoregion' in the way that the others are. For example, Bajo Magdalena refers to part of a river valley, valle de rio cesar defines a river valley, whereas Boyacá & Santander are geopolitical departments. Should we change to something defined by topography? I think 'cordillera oriental' wouldn't be specific enough, but something along those lines?
+        -   To a lesser extent, the 'Ecoregion cafetera' seems similar given that this name comes from the predominant crop (agricultural) / cultural similarities. This ecoregion is also 3x larger than the next largest ecoregion and covers \~3100 m of altitude, including points in both the Cauca and Magdalena river valleys as well as the cordillera central. Consider breaking up into smaller ecoregions?
+        -   Should we change the 'Piedemonte' to 'Piedemonte llanero' to be more specific?
     -   Can folks provide their best guesses generally (I'm sure it varies by region) regarding the history of forest fragments and riparian forests in these landscapes? I remember there was a law implemented requiring a vegetative buffer to be left around waterways? Was this law national? When was it implemented? How big is the vegetative buffer ?
     -   I have elected to have multiple data sets with 'join keys' (i.e. the columns that are repeated in multiple data sets to allow joining of different data) to connect them, instead of 1-2 datasets with more columns and row repetition. I think this structure is helpful as it makes the data structure more explicit (e.g., there are 496 unique sites, there are 2,691 unique point count surveys). Was structuring the data this way intuitive for you?
-
--   Christina & Claire:
-
-    -   Should we hold off on publishing these data sets for a while? We cannot put an embargo on the data so once accepted the data will be made public immediately.
+    -   Column names: Decide whether English or Spanish
+    -   Are there additional columns that you feel are important to include in this dataset?
 
 # References {.unnumbered}
