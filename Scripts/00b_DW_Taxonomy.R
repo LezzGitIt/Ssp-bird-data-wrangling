@@ -16,7 +16,7 @@
 # "Accipiter bicolor" (didn't have all files), "Crypturellus soui_1", "Parkesia noveboracensis_M" Picumnus olivaceus_M",  "Scytalopus latrans_M", "Nyctibius_grandis"
 
 # Libraries ---------------------------------------------------------------
-load("Rdata/the_basics_09.15.25.Rdata")
+load("Rdata/the_basics_09.29.25.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 library(tidyverse)
@@ -33,9 +33,42 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
+Bird_pcs_all <- read_csv("Derived/Excels/Bird_pcs_all.csv")
+# Taxonmy from sacc
+Tax_sacc <- read_csv(
+  "../Datasets_external/Elev_ranges/Suarez_castro_AOH_birds_table_S3_V3.csv"
+) %>% clean_names() %>% 
+  select(1:3) %>% 
+  rename_with(~c("Species_sacc", "Species_bl", "Species_eB"))
+
+Avonet_raw <- read_csv("../Datasets_external/Avonet_Data/TraitData/AVONET_Raw_Data.csv")
+AviList <- read_xlsx("../Datasets_external/AviList-v2025-11Jun-short.xlsx")
+
+# AviList match -----------------------------------------------------------
+
+AviList_red <- AviList %>% 
+  filter(Taxon_rank %in% c("species", "subspecies")) %>% 
+  select(
+    AvibaseID, Taxon_rank, Order, Family, Scientific_name, English_name_AviList
+    ) %>% 
+  mutate(AvibaseID = str_split_i(AvibaseID, pattern = "-", i = 2)) %>% 
+  rename_with(~ paste0(.x, "_AviList"), .cols = -c(1, 6))
+
+# This has promise, use Avibase ID to match up taxonomic concepts!
+Avonet_red <- Avonet_raw %>% 
+  select(Avibase.ID, matches("BirdLife|eBird|BirdTree")) %>% 
+  distinct() %>% 
+  rename(AvibaseID = Avibase.ID) %>% 
+  mutate(AvibaseID = str_split_i(AvibaseID, pattern = "-", i = 2))
+
+# Almost no NAs
+Avonet_red %>% filter(is.na(AvibaseID))
+
+AviList %>% full_join(Avonet_red)
+
 # Og_name & Ayerbe ---------------------------------------------------------
 # Data frame with distinct combinations of Og_name & Ayerbe.
-Tax_OG_Ay <- Birds_all3 %>% # Taxonomy Og_name + Ayerbe
+Tax_OG_Ay <- Birds_comb4 %>% # Taxonomy Og_name + Ayerbe
   distinct(Nombre_cientifico_original, Species_ayerbe) %>%
   rename(Og_name = Nombre_cientifico_original)
 
@@ -59,7 +92,7 @@ Ayerbe_all_spp <- list.files(path = "../Geospatial_data/Ayerbe_shapefiles_1890sp
 Ayerbe_all_spp <- substr(Ayerbe_all_spp, 1, nchar(Ayerbe_all_spp) - 4) # Remove the .dbf extension
 
 # CHECK:: any individual species that we're having difficulty with 
-TF <- str_detect(Ayerbe_all_spp, "hemichrysus") #"tyrannina"
+TF <- str_detect(Ayerbe_all_spp, "souleyetti") #"tyrannina"
 Ayerbe_all_spp[TF]
 
 # CHECK:: Species that are listed in SCR databases and are not in Ayerbe's files.
@@ -244,7 +277,9 @@ stop()
 Tax_df2 %>% write_csv(file = "Derived/Excels/Taxonomy_all.csv")
 
 ## For data paper only export species taxonomy that were observed during point counts
-Spp_pc <- Bird_pcs %>% 
+# Use Tax_df2$Species_ayerbe to subset real species (e.g. not genus sp.)
+Spp_pc <- Bird_pcs_all %>% 
+  #filter(Species_ayerbe %in% Tax_df2$Species_ayerbe) %>%
   pull(Species_ayerbe) %>% 
   unique()
 
