@@ -1,18 +1,16 @@
 ## PhD birds in silvopastoral landscapes##
 # Data wrangling 00b -- Taxonomy
-## This script generates the data frame of taxonomic equivalents (Tax_df_final)
+## This script generates a data frame of taxonomic equivalents using Suarez Castro et al 2024 (providing a link between SACC, BirdLife, and eBird) and an Excel with taxonomic equivalents between SACC 2018 - Avilist 2025 (provided by Denis Lepage). 
+# Importantly, the final product (Tax_df_final) only contains species equivalents that are present in Colombia (instead of globally). 
 
 # Contents
 # 1) Og_name & Ayerbe -- Create dataframe with unique combinations of Og_name & Ayerbe and format. Remove 'sp' and '/' species
 ## Joins
-# 2) Suarez Castro et al, 2024 -- Join with Suarez Castro et al, 2024, which links SACC taxonomy with BirdLife and BirdTree. 
+# 2) Suarez Castro et al, 2024 -- Join with Suarez Castro et al, 2024, which links SACC taxonomy with BirdLife and eBird. 
 # 3) SACC Avilist -- Use SACC 2018 and Avilist 2025 crosswalk (provided by Denis Lepage), also obtaining Avibase IDs
 # 4) Note that Suarez Castro et al, 2024 does not include migratory species, so there are ~70 species that don't have a match from 
-# 5) Use Avonet crosswalk file to link the BirdLife & BirdTree taxonomies 
+# 5) Use Avonet crosswalk file to link BirdLife & BirdTree taxonomies 
 # 6) Save & export
-
-## Notes: Certain species were actually in the original Ayerbe files but named differently.. I updated these manually. I never received clarification why some of these have "_M" or "_1" at the end of the file names.
-# "Accipiter bicolor" (didn't have all files), "Crypturellus soui_1", "Parkesia noveboracensis_M" Picumnus olivaceus_M",  "Scytalopus latrans_M", "Nyctibius_grandis"
 
 # Libraries ---------------------------------------------------------------
 library(janitor)
@@ -33,7 +31,7 @@ conflicts_prefer(dplyr::filter)
 # Load data ---------------------------------------------------------------
 ## Bring in data 
 # NOTE: This is just point counts
-Bird_pcs_all <- read_csv("Derived/Excels/Bird_pcs_all.csv")
+Bird_pcs_all_spp <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_all_spp.csv")
 ## Use the crosswalk file to create a data frame of true taxonomic equivalents (at least for BL & BT)
 Crosswalk <- read.csv(
   "../Datasets_external/Avonet_Data/PhylogeneticData/BirdLife-BirdTree crosswalk.csv"
@@ -57,8 +55,19 @@ Sacc_avilist2 <- Sacc_avilist %>%
   select(starts_with("latin_name"), starts_with("common_name"), concept_id)
 
 # Og_name & Ayerbe ---------------------------------------------------------
+## Manual species changes
+# Sirystes sibilator and Machaeropterus regulus are not in Colombia. 
+# Sirystes sibilator - These CIPAV individuals were observed in La Guajira, so the only (maybe?) realistic option would be Sirystes albocinereus
+# Machaeropterus regulus is Brazilian and Machaeropterus striolatus is Colombian
+Bird_pcs_all_spp2 <- Bird_pcs_all_spp %>% 
+  mutate(Species_ayerbe = case_when(
+    Species_ayerbe == "Sirystes sibilator" ~ "Sirystes albocinereus",
+    Species_ayerbe == "Machaeropterus regulus" ~ "Machaeropterus striolatus",
+    .default = Species_ayerbe
+  ))
+
 # Data frame with distinct combinations of Og_name & Ayerbe.
-Tax_OG_Ay <- Bird_pcs_all %>% # Taxonomy Og_name + Ayerbe
+Tax_OG_Ay <- Bird_pcs_all_spp2 %>% # Taxonomy Og_name + Ayerbe
   distinct(Nombre_cientifico_original, Species_ayerbe) %>%
   rename(Og_name = Nombre_cientifico_original)
 
@@ -72,26 +81,13 @@ rm$Og_name <- rm$Og_name[!is.na(rm$Og_name)]
 Tax_OG_Ay2 <- Tax_OG_Ay %>%
   filter(!Og_name %in% rm$Og_name) %>%
   filter(!Species_ayerbe %in% rm$Species_ayerbe)
-sciNames <- unique(Tax_OG_Ay2$Species_ayerbe)
-length(sciNames) # 592 vs 617
-
-## Manual species changes
-# Sirystes sibilator and Machaeropterus regulus are not in Colombia. 
-# Sirystes sibilator - These CIPAV individuals were observed in La Guajira, so the only (maybe?) realistic option would be Sirystes albocinereus
-# Machaeropterus regulus is Brazilian and Machaeropterus striolatus is Colombian
-Tax_OG_Ay3 <- Tax_OG_Ay2 %>% 
-  mutate(Species_ayerbe = case_when(
-    Species_ayerbe == "Sirystes sibilator" ~ "Sirystes albocinereus",
-    Species_ayerbe == "Machaeropterus regulus" ~ "Machaeropterus striolatus",
-    .default = Species_ayerbe
-  ))
 
 # Joins --------------------------------------------------------
 # >SACC-Avilist ------------------------------------------------------------
 # Join the species observed in the project with SACC Avilist 
-Tax_df <- Tax_OG_Ay3 %>% 
-  distinct(Species_ayerbe) %>%
-  rename(latin_name_sacc = Species_ayerbe) %>% 
+Tax_df <- Tax_OG_Ay2 %>%
+  mutate(latin_name_sacc = Species_ayerbe) %>%
+  distinct(latin_name_sacc, Species_ayerbe) %>% 
   left_join(Sacc_avilist2) %>% 
   rename(concept_id_sacc = concept_id)
 
@@ -114,7 +110,8 @@ Sacc_avilist3 <- Sacc %>%
             keep = TRUE) %>%
   rename(concept_id_sacc = concept_id.x,
          concept_id_avilist = concept_id.y)
-Spp_same_name <- Sacc_avilist3 %>% filter(latin_name_sacc %in% Missing)
+Spp_same_name <- Sacc_avilist3 %>% filter(latin_name_sacc %in% Missing) %>% 
+  left_join(Missing_df[, c('latin_name_sacc', 'Species_ayerbe')])
 
 # Remove Missing species and join 
 Tax_df2 <- Tax_df %>% filter(!latin_name_sacc %in% Missing) %>% 
@@ -133,11 +130,11 @@ Manual_adjust_comb
 ## Export and fill out manually 
 Manual_adjust_comb %>% 
   data.frame() #%>% 
-#write.xlsx("Derived/Excels/Tax_to_fill.xlsx", showNA = FALSE, row.names = FALSE)
+#write.xlsx("Derived/Excels/Taxonomy/Tax_to_fill.xlsx", showNA = FALSE, row.names = FALSE)
 
 ## Bring back in and add to final taxonomy list
 # NOTE: Xenops genibarbis is in Meta while Xenops mexicanus is in the other ecoregions we observed, thus Xenops minutus has two rows 
-Tax_manual_match <- read.xlsx("Derived/Excels/Tax_manual_match.xlsx", sheetIndex = 1)
+Tax_manual_match <- read.xlsx("Derived/Excels/Taxonomy/Tax_manual_match.xlsx", sheetIndex = 1)
 Spp_rm <- Manual_adjust_comb %>% pull(latin_name_sacc)
 
 # Add manual updates
@@ -234,13 +231,18 @@ Tax_df_final %>% count(Species_sacc_18, sort = T)
 df <- Tax_df_final %>% drop_na()
 anti_join(Tax_df_final, df)
 
-# All other columns have no NAs except for Setophaga pinus (concept_id_sacc)
+# All other columns have no NAs except for Setophaga pinus. Setophaga pinus is not present in SACC because it is very rarely recorded in South America and may not have had verifiable records that met SACC inclusion criteria at the time of the 2018 checklist
 Tax_df_final %>% select(-Species_eB) %>%
   filter(if_any(everything(), is.na))
 
+# Difference between Species_sacc_18 and Species_ayerbe is pine warbler
+Tax_df_final %>% filter(Species_sacc_18 != Species_ayerbe | is.na(Species_sacc_18))
+
 # Export ------------------------------------------------------------------
 stop()
-Tax_df_final %>% write_csv("Derived/Excels/Taxonomy_all.csv")
+Tax_df_final %>% write_csv("Derived/Excels/Taxonomy/Taxonomy_all.csv")
+Bird_pcs_all_spp2 %>% filter(Species_ayerbe %in% Tax_df_final$Species_ayerbe) %>% 
+  write_csv("Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
 
 # EXTRAS ------------------------------------------------------------------
 # >Names Ayerbe 2019 ------------------------------------------------------
@@ -253,6 +255,6 @@ Ayerbe_all_spp <- substr(Ayerbe_all_spp, 1, nchar(Ayerbe_all_spp) - 4) # Remove 
 TF <- str_detect(Ayerbe_all_spp, "Thripadectes") #"tyrannina"
 Ayerbe_all_spp[TF]
 
-Spp_obs_sacc <- Tax_df_final %>% pull(Species_sacc_18) %>% unique()
+Spp_obs_sacc <- Tax_df_final %>% pull(Species_ayerbe) %>% unique()
 TF <- Spp_obs_sacc %in% Ayerbe_all_spp
 Spp_obs_sacc[!TF]
