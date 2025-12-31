@@ -32,6 +32,8 @@ conflicts_prefer(dplyr::filter)
 ## Bring in data 
 # NOTE: This is just point counts
 Bird_pcs_all_spp <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_all_spp.csv")
+Site_covs <- read_csv("Derived/Excels/Site_covs.csv")
+
 ## Use the crosswalk file to create a data frame of true taxonomic equivalents (at least for BL & BT)
 Crosswalk <- read.csv(
   "../Datasets_external/Avonet_Data/PhylogeneticData/BirdLife-BirdTree crosswalk.csv"
@@ -54,22 +56,27 @@ Sacc_avilist <- read.xlsx("../Datasets_external/sacc18 vs avilist Colombia.xlsx"
 Sacc_avilist2 <- Sacc_avilist %>% 
   select(starts_with("latin_name"), starts_with("common_name"), concept_id)
 
-# Og_name & Ayerbe ---------------------------------------------------------
-## Manual species changes
-# Sirystes sibilator and Machaeropterus regulus are not in Colombia. 
-# Sirystes sibilator - These CIPAV individuals were observed in La Guajira, so the only (maybe?) realistic option would be Sirystes albocinereus
-# Machaeropterus regulus is Brazilian and Machaeropterus striolatus is Colombian
-Bird_pcs_all_spp2 <- Bird_pcs_all_spp %>% 
+# Taxonomic / transcription changes ---------------------------------------
+# Bring in taxonomic equivalents from manual review of species observed with Nick and data collectors (GAICA and CIPAV)
+Tax_equivalents <- read_csv("Data/Taxonomic_changes.csv") %>% 
+  select(starts_with("Species"), Departamentos_afectados)
+
+# Match bird observations with taxonomic equivalents and create Species_ayerbe column
+Bird_pcs_all_spp2 <- Bird_pcs_all_spp %>%
+  left_join(Site_covs[, c("Id_muestreo_no_dc", "Departamento")]) %>%
+  left_join(Tax_equivalents) %>% 
+  mutate(Species_ayerbe = coalesce(Species_ayerbe, Species_original)) %>%
+  # If the changes are restricted to certain departments AND the current Departamento is NOT in that list, then overwrite with Species_original. Otherwise keep Species_ayerbe
   mutate(Species_ayerbe = case_when(
-    Species_ayerbe == "Sirystes sibilator" ~ "Sirystes albocinereus",
-    Species_ayerbe == "Machaeropterus regulus" ~ "Machaeropterus striolatus",
+    !is.na(Departamentos_afectados) & !str_detect(Departamentos_afectados, Departamento) ~ Species_original,
     .default = Species_ayerbe
   ))
 
+# Og_name & Ayerbe ---------------------------------------------------------
 # Data frame with distinct combinations of Og_name & Ayerbe.
 Tax_OG_Ay <- Bird_pcs_all_spp2 %>% # Taxonomy Og_name + Ayerbe
-  distinct(Nombre_cientifico_original, Species_ayerbe) %>%
-  rename(Og_name = Nombre_cientifico_original)
+  distinct(Species_original, Species_ayerbe) %>%
+  rename(Og_name = Species_original)
 
 # Create rm object of non-species names
 rm <- map(Tax_OG_Ay, \(col){
@@ -99,7 +106,8 @@ Missing <- Missing_df %>% pull(latin_name_sacc)
 
 # We need to find matches for these 70 species.. 
 # Step 1) Join species that have the same scientific name in both sacc and avilist
-Sacc <- Sacc_avilist2 %>% select(contains("sacc"), concept_id) %>% 
+Sacc <- Sacc_avilist2 %>% 
+  select(contains("sacc"), concept_id) %>% 
   distinct() %>% 
   filter(!is.na(latin_name_sacc))
 Avilist <- Sacc_avilist2 %>% select(contains("avilist"), concept_id) %>% 
@@ -121,9 +129,13 @@ Manual_adjust <- Tax_df2 %>% filter(is.na(latin_name_avilist))
 Manual_adjust2 <- Tax_df %>% filter(is.na(concept_id_sacc))
 
 # Pine warbler only species that wasn't in SACC, but confirmed it is in Ayerbe (2018) field guide as Setophaga pinus. 
-# Megascops colombianus is a (sub)species of Megascops ingens depending on taxonomy
+# Megascops colombianus is a (sub)species of Megascops ingens, depending on taxonomy
 Manual_adjust2
-Manual_adjust_comb <- bind_rows(Manual_adjust, Manual_adjust2)
+Manual_adjust_comb <- bind_rows(Manual_adjust, Manual_adjust2) %>% 
+  # These two species incorrectly match to the wrong subspecies, ie prasinus = Northern emerald toucanet, cinereus = Southern tropical pewee, and grisea = Southern White-fringed Antwren (also in Colombia, but our observations were all in N Colombia)
+  add_row(latin_name_sacc = c(
+    "Aulacorhynchus prasinus", "Contopus cinereus", "Formicivora grisea")
+    )
 Manual_adjust_comb
 
 # >Manual adjustments -----------------------------------------------------
@@ -240,8 +252,12 @@ Tax_df_final %>% filter(Species_sacc_18 != Species_ayerbe | is.na(Species_sacc_1
 
 # Export ------------------------------------------------------------------
 stop()
+
 Tax_df_final %>% write_csv("Derived/Excels/Taxonomy/Taxonomy_all.csv")
-Bird_pcs_all_spp2 %>% filter(Species_ayerbe %in% Tax_df_final$Species_ayerbe) %>% 
+Bird_pcs_all_spp2 %>% 
+  filter(Species_ayerbe %in% Tax_df_final$Species_ayerbe) %>% 
+  relocate(c(Species_ayerbe, Count), .after = Species_original) %>% 
+  select(-c(contains("Departamento"), Species_original)) %>% 
   write_csv("Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
 
 # EXTRAS ------------------------------------------------------------------
@@ -252,9 +268,10 @@ Ayerbe_all_spp <- list.files(path = "../Geospatial_data/Ayerbe_shapefiles_1890sp
 Ayerbe_all_spp <- substr(Ayerbe_all_spp, 1, nchar(Ayerbe_all_spp) - 4) # Remove the .dbf extension
 
 # CHECK:: any individual species that we're having difficulty with 
-TF <- str_detect(Ayerbe_all_spp, "Thripadectes") #"tyrannina"
+TF <- str_detect(Ayerbe_all_spp, "Machaeropterus") #"tyrannina"
 Ayerbe_all_spp[TF]
 
-Spp_obs_sacc <- Tax_df_final %>% pull(Species_ayerbe) %>% unique()
+Spp_obs_sacc <- Tax_df_final %>% pull(Species_ayerbe) %>% 
+  unique()
 TF <- Spp_obs_sacc %in% Ayerbe_all_spp
 Spp_obs_sacc[!TF]
