@@ -27,7 +27,7 @@ Figures/
 Simulating_data_Claire/
 Data_paper/*
 Data_paper/Scripts/
-Extra_scripts/*
+#Extra_scripts/*
 !Data_paper/Scripts/Data_paper_ecology.qmd
 !Data_paper/Scripts/Data_paper_ecology_figs.R
 
