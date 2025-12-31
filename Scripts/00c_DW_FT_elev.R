@@ -2,7 +2,7 @@
 ## Data wrangling 00c -- Functional traits (FT) & elevational ranges
 ## This script generates the outputs related to functional traits (Avo_traits_final), & elevational ranges (Elev_ranges) that will be used in future scripts 
 
-# Contents
+## Contents
 # 1) Functional traits database -- Use Tax_df & the Avonet files to create FT database using a for loop & the Match_type (e.g., "1BL to 1BT") column to ensure that species are matched appropriately with their FT. Each species has a single row. 
 # 2) Elevational ranges -- Use 3 databases to pull elevational ranges for each species 
 # 3) Join dfs -- Join the dfs to create a single df (Elev_ranges) where each species has a single row with relevant elevational information, including the elevational range (a functional trait) for each species
@@ -23,18 +23,12 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
+#source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+
 ## Load data and custom functions
-load("Rdata/Taxonomy_09.29.25.Rdata")
 Bird_pcs_all <-  read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
-Tax_df <- read_csv("Derived/Excels/Taxonomy/Taxonomy_all.csv")
-
-# Traits from Bird et al. 2020, likely want to add some longevity traits here. Maybe from Wolfe et al 2025 too? It will be interesting to see if species that are on the k-side of the r-k continuum are impacted more greatly than r-selected species.
-bird20t <- read_excel("../Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0003-tables3.xlsx")
-bird20t <- bird20t %>%
-  rename_with(make.names) %>%
-  rename(Min_B20 = Minimum.altitude, Max_B20 = Maximum.altitude)
-
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+Tax_df <- read_csv("Derived/Excels/Taxonomy/Taxonomy_all.csv") #%>% 
+#mutate(Avibase.ID = str_sub(concept_id_avilist, 1, 8)) # Match with Avonet
 
 # Avonet list  ------------------------------------------------------------
 # See metadata tab in Excel for information on what each column contains
@@ -97,7 +91,7 @@ lapply(Ft_df2[17:21], table)
 # From Hilty guidebook, thanks to Hazen
 Hilty_elev <- read_xlsx(
   "../Datasets_external/Elev_ranges/Elev_ranges_Hazen.xlsx"
-  ) %>% select(Species_sacc_18, contains("Hilty"), Comments)
+) %>% select(Species_ayerbe, contains("Hilty"))
 
 # From Suarez Castro et al (2024)
 Ayerbe_elev <- read_csv(
@@ -108,8 +102,11 @@ Ayerbe_elev <- read_csv(
   Max_ayerbe = Maximum.elevation
 ) #%>% select(Species_bl, ends_with("ayerbe"))
 
-
-Ayerbe_elev %>% head() %>% view()
+# Traits from Bird et al. 2020, likely want to add some longevity traits here. Maybe from Wolfe et al 2025 too? It would be interesting to see if species that are on the k-side of the r-k continuum are impacted more greatly than r-selected species.
+bird20t <- read_excel("../Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0003-tables3.xlsx")
+bird20t <- bird20t %>%
+  rename_with(make.names) %>%
+  rename(Min_B20 = Minimum.altitude, Max_B20 = Maximum.altitude)
 
 # Pull elevational ranges of the species of Colombia from Quintero & Jetz 2018, 'Global elevational diversity and diversification of birds'
 elev_rangesQJ <- read_excel("../Datasets_external/Elev_ranges/Quintero_Jetz_Elevational_ranges_2018.xlsx") # QJ = Quintero Jetz
@@ -145,39 +142,78 @@ Col_elev_QJ <- elev_rangesQJ %>%
 # For now we leave out Bird (2020) as it is global so these ranges might be too large & don't really make sense for Colombia specifically.
 
 # Join tables
-elev_raw <- Tax_df2 %>%
-  select(Species_sacc_18, Species_bt, Species_eb, Species_bl, Match_type) %>%
-  left_join(Hilty_elev,      by = "Species_sacc_18") %>%
+elev_raw <- Tax_df %>%
+  select(Species_ayerbe, Species_bt, Species_eB, Species_bl) %>%
+  left_join(Hilty_elev,      by = join_by("Species_ayerbe" == "Species_ayerbe")) %>%
   left_join(Col_elev_QJ,     by = c("Species_bt" = "Species")) %>%
   #left_join(bird20t,         by = c("Species_bl" = "Scientific.name")) %>%
-  left_join(Ayerbe_elev) %>%
+  left_join(
+    Ayerbe_elev %>% select(-Species_bl), 
+    by = join_by("Species_ayerbe" == "Scientific.Name")) %>%
   left_join(
     Free22_Co %>% select(scientific.name, Min_eB, Max_eB),
-    by = c("Species_eb" = "scientific.name")
+    by = c("Species_eB" = "scientific.name")
   ) %>% distinct(
-    Species_sacc_18, Species_bt, Species_eb, Species_bl, 
+    Species_ayerbe, Species_eB, Species_bl, 
     Min_Hilty, Max_Hilty, Elev_range_Hilty, 
     Min_QJ, Max_QJ,
     #Min_B20, Max_B20, 
     Min_ayerbe, Max_ayerbe,
     Min_eB, Max_eB, 
-    Match_type, Year
+    Year
   )
 
+# >Calculate ayerbe -------------------------------------------------------
+## Calculate using the same methodology as Suarez Castro et al (2024)
+# TEMPORARY - Until Hazen provides results from Ayerbe field guide
+Spp_elev_to_extract <- elev_raw %>% 
+  select(contains("ayerbe")) %>% 
+  filter(is.na(Min_ayerbe)) %>% 
+  pull(Species_ayerbe)
+
+# Use Ayerbe shapefiles to calculate the elevational range per species
+Ayerbe_path <- "../Geospatial_data/Ayerbe_shapefiles_1890spp/"
+#Elev_90m <- geodata::elevation_3s(lat = 4, lon = -75, path = tempdir())
+Elev_1km <- geodata::elevation_30s(country = "COL", path = tempdir())
+ggplot() + geom_spatraster(data = Elev_1km)
+
+# Confirmed that smoothr::drop_crumbs does reduce the area of polygons 
+thresh <- units::set_units(1, km^2) 
+Ayerbe_calc_tbl <- map_dfr(Spp_elev_to_extract, \(Spp){
+  sv <- terra::vect(paste0(Ayerbe_path, Spp, ".shp"))  
+  sv_clean <- sv %>% makeValid() %>%
+    smoothr::drop_crumbs(thresh) # drop small polygons
+  rast_range <- terra::extract(Elev_1km, sv_clean)[[2]]
+  tibble(Species_ayerbe = Spp,
+         elev05 = quantile(rast_range, .05, na.rm = TRUE),
+         elev95 = quantile(rast_range, .95, na.rm = TRUE))
+})
+
+elev_raw2 <- elev_raw %>% left_join(Ayerbe_calc_tbl) %>% 
+  mutate(Min_ayerbe = coalesce(Min_ayerbe, elev05), 
+         Max_ayerbe = coalesce(Max_ayerbe, elev95)) %>% 
+  select(-c(elev05, elev95)) %>% 
+  group_by(Species_ayerbe) %>%
+  fill(c(Min_QJ, Max_QJ, Year), .direction = "downup") %>% 
+  ungroup() %>% 
+  distinct() 
+elev_raw2 %>% count(Species_ayerbe, sort = T)
+
+# >Min max ----------------------------------------------------------------
 # Custom functions to take the minimum value or return NA 
 safe_min <- function(x) if (all(is.na(x))) NA_real_ else min(x, na.rm = TRUE)
 safe_max <- function(x) if (all(is.na(x))) NA_real_ else max(x, na.rm = TRUE)
 
 # Generate tbl with the minimum and maximum values across all sources. The idea behind the min and max elevation combined columns (these are the broadest elevational ranges) is this should be useful for checking specific observations with data collectors. The goal is to make the list manageable and to just consist of the species that really are likely mistakes
-Elev_min_max <- elev_raw %>%
-  group_by(Species_sacc_18) %>%
+Elev_min_max <- elev_raw2 %>%
+  group_by(Species_ayerbe) %>%
   summarize(
-      across(starts_with("Min"), safe_min),
-      across(starts_with("Max"), safe_max),
-      Year = first(Year),
-      .groups = "drop"
-      ) %>%
-# combined min/max across Colombia-specific sources
+    across(starts_with("Min"), safe_min),
+    across(starts_with("Max"), safe_max),
+    Year = first(Year),
+    .groups = "drop"
+  ) %>%
+  # combined min/max across Colombia-specific sources
   mutate(
     Min_elev_comb = pmin(Min_Hilty, Min_QJ, Min_eB, Min_ayerbe, na.rm = TRUE),
     Max_elev_comb = pmax(Max_Hilty, Max_QJ, Max_eB, Max_ayerbe, na.rm = TRUE),
@@ -199,6 +235,7 @@ Elev_min_max <- elev_raw %>%
       .default = NA_character_)
   )
 
+# >Elev ranges ------------------------------------------------------------
 # Generate tbl with elevational ranges according to each source
 Elev_ranges <- Elev_min_max %>%
   mutate(
@@ -208,37 +245,36 @@ Elev_ranges <- Elev_min_max %>%
     Elev_range_eB    = Max_eB    - Min_eB,
     Elev_range_Hilty = ifelse(Elev_range_Hilty == 0, NA, Elev_range_Hilty), 
     # Combine Hilty, QJ, ayerbe, and Freeman (2022), all Colombia-specific, into a single column.
-    Elev_range_comb  = coalesce(Elev_range_Hilty, Elev_range_ayerbe, Elev_range_QJ)
+    Elev_range_comb  = Max_elev_comb - Min_elev_comb
   )
 
-
-
+# >Differences sources ----------------------------------------------------
 # Take the differences of elevational ranges between all pairwise combinations of sources
 Elev_diffs <- Elev_ranges %>% 
   mutate(
-    #Diff_QJ_eB       = abs(Elev_range_eB - Elev_range_QJ),
-    #Diff_Hilty_eB    = abs(Elev_range_Hilty - Elev_range_eB),
-    #Diff_ayerbe_eB = abs(Elev_range_eB - Elev_range_ayerbe),
+    Diff_QJ_eB       = abs(Elev_range_eB - Elev_range_QJ),
+    Diff_Hilty_eB    = abs(Elev_range_Hilty - Elev_range_eB),
+    Diff_ayerbe_eB = abs(Elev_range_eB - Elev_range_ayerbe),
     Diff_Hilty_QJ    = abs(Elev_range_Hilty - Elev_range_QJ),
     Diff_Hilty_ayerbe = abs(Elev_range_Hilty - Elev_range_ayerbe),
     Diff_QJ_ayerbe = abs(Elev_range_QJ - Elev_range_ayerbe)
   ) %>%
-  select(Species_sacc_18, matches("Elev_range|Diff"), Year)
+  select(Species_ayerbe, matches("Elev_range|Diff"), Year)
 
 # Identify which sources show agreement for each species.
 diff_tbl <- Elev_diffs %>%
-  select(Species_sacc_18, starts_with("Diff_")) %>%
+  select(Species_ayerbe, starts_with("Diff_")) %>%
   pivot_longer(
     cols = starts_with("Diff_"),
     names_to = "source",
     values_to = "diff"
   ) %>%
-  group_by(Species_sacc_18) %>%
+  group_by(Species_ayerbe) %>%
   mutate(
     min_diff = if (all(is.na(diff))) NA_real_ else min(diff, na.rm = TRUE)
   ) %>%
   filter(diff == min_diff | is.na(min_diff)) %>%
-  arrange(Species_sacc_18, diff, source) %>%
+  arrange(Species_ayerbe, diff, source) %>%
   slice(1) %>%  
   mutate(source = ifelse(is.na(diff), NA, source)) %>%
   select(-diff) %>% 
@@ -250,34 +286,36 @@ diff_tbl <- Elev_diffs %>%
 diff_tbl %>% filter(min_diff > 500) %>% 
   arrange(desc(min_diff)) 
 
-diff_tbl %>% tabyl(source) %>% 
-  arrange(desc(n))
-
-## WORKING
 ## Select a chosen range 
 source_choice <- diff_tbl %>%
   mutate(
     chosen_range = case_when(
+      str_detect(source, "ayerbe") ~ "Ayerbe",
       str_detect(source, "Hilty") ~ "Hilty",
       str_detect(source, "QJ")    ~ "QJ",
-      str_detect(source, "B20")   ~ "B20",
       str_detect(source, "eB")    ~ "eB",
       TRUE ~ NA_character_
     )
   )
+source_choice %>% tabyl(chosen_range)
+source_choice %>% filter(min_diff > 500) %>% 
+  arrange(min_diff)
 
+#KEY - 'We looked for concordance between 2 Colombia-specific elevational range sources, and prioritized sources in the following order: Ayerbe-Quiñones (2018), Hilty (2021), QJ (variable)'
 Elev_final <- Elev_ranges %>%
-  left_join(source_choice %>% select(Species_sacc_18, chosen_range),
-            by = "Species_sacc_18") %>%
+  left_join(source_choice %>% select(Species_ayerbe, chosen_range),
+            by = "Species_ayerbe") %>%
   mutate(
     Elev_range_final = case_when(
       chosen_range == "Hilty" ~ Elev_range_Hilty,
       chosen_range == "QJ"    ~ Elev_range_QJ,
-      chosen_range == "B20"   ~ Elev_range_B20,
+      chosen_range == "Ayerbe"   ~ Elev_range_ayerbe,
       chosen_range == "eB"    ~ Elev_range_eB,
       TRUE ~ NA_real_
     )
   )
+
+Elev_final %>% select(Species_ayerbe, Elev_range_final, chosen_range)
 
 # >Understand elevational ranges-----------------------------------------
 # Several checks to better understand the elevational range data
@@ -302,9 +340,9 @@ pairs <- combn(source, 2, simplify = FALSE)
 
 compare_tbl_long <- map_dfr(pairs, \(pair){
   Elev_ranges %>% 
-    select(Species_sacc_18, starts_with("Elev_range_")) %>%
+    select(Species_ayerbe, starts_with("Elev_range_")) %>%
     transmute(
-      Species_sacc_18,
+      Species_ayerbe,
       x = .data[[paste0("Elev_range_", pair[1])]],
       y = .data[[paste0("Elev_range_", pair[2])]],
       x_lab = pair[1],
@@ -336,26 +374,21 @@ ggplot(compare_tbl_long2, aes(x = x, y = y)) +
 # If you wanted to fill in blanks of QJ with ranges from another source.. Could consider applying a correction based on the beta estimate(?)
 summary(lm(Elev_range_eB ~ Elev_range_QJ, data = Elev_ranges))
 
-# NOTE::These are the species that don't match up between the Avonet BirdLife taxonomy & the Bird 2020.. I did try with BirdTree & eBird but they had even fewer matches compared to BirdLife
-Tax_df2 %>%
-  select(Species_bl) %>%
-  anti_join(bird20t, join_by("Species_bl" == "Scientific.name"))
-
 # NOTE:: This still does not provide elevational ranges for all species, likely due to name changes in BirdLife & some missing elevational ranges. Could check the species missing from Freeman (see above)
 Miss_elev <- Elev_ranges %>% 
-  filter(is.na(Elev_range_comb)) %>% # View()
-  pull(Species_sacc_18)
-Tax_df2 %>%
-  filter(Species_sacc_18 %in% Miss_elev) %>%
-  select(Species_sacc_18, Common_name, Species_bl, Species_bt, Species_eb) %>%
+  filter(is.na(Elev_range_comb)) %>% #view()
+  pull(Species_ayerbe)
+Tax_df %>%
+  filter(Species_ayerbe %in% Miss_elev) %>%
+  select(Species_ayerbe, Species_bl, Species_bt, Species_eB) %>%
   distinct()
 
 # CHECK:: There are some species Ayerbe that have multiple Bird Tree species equivalents, and thus can have multiple Min & max elevations. It makes sense to combine these elevations since it is a single species according to Ayerbe.. Thus in the case of Chlorostilbon mellisugus the min & max should be 0 to 2000. The only other species this is relevant for is Ramphastos ambiguus
-Tax_df2[, c("Species_sacc_18", "Species_bt", "Match_type")] %>%
+Tax_df[, c("Species_ayerbe", "Species_bt")] %>%
   left_join(Col_elev_QJ, join_by("Species_bt" == "Species")) %>%
-  filter(Species_sacc_18 == "Chlorostilbon mellisugus")
+  filter(Species_ayerbe == "Chlorostilbon mellisugus")
 Elev_ranges %>%
-  filter(Species_sacc_18 == "Chlorostilbon mellisugus") %>%
+  filter(Species_ayerbe == "Chlorostilbon mellisugus") %>%
   select(matches("comb|Elev_range"))
 
 # For this reason the '1BL to many BT' matches are not an issue. 'Many BL to 1BT' are also not an issue b/c the one BT matches cleanly with the QJ database
@@ -363,14 +396,15 @@ table(elev_raw$Match_type)
 
 # >Add elev range to FT df -------------------------------------------------
 # Merge with functional traits database
-Avo_traits_final <- Avo_traits_form %>%
+Ft_final <- Ft_df2 %>%
   full_join(
-    Elev_ranges[,c("Species_sacc_18", "Elev_range_comb", "Source_comb_elev")]
-    ) %>% 
+    Elev_final[,c("Species_ayerbe", "Elev_range_final", "Source_comb_elev")]
+  ) %>% 
   tibble()
 
-# Eye_size ----------------------------------------------------------------
+Elev_final
 
+# Eye_size ----------------------------------------------------------------
 # Load in data
 path <- "../Datasets_external/Eye Size Excel Audrey Hanson.xlsx"
 Aaron_tax <- read_xlsx(path, sheet = "Taxonomy") %>% 
@@ -390,51 +424,22 @@ Aaron_join <- Aaron_tax %>%
 ## Inspect 
 # 292 species with eye size data 
 Aaron_join %>% filter(!is.na(Td_mean)) %>% 
-  distinct(Species_sacc_18, Td_mean)
+  distinct(species_ayerbe, Td_mean)
 
 # But also many without - are these true absences from Ausprey's data set? Issues with taxonomy? Or coding errors? 
 Aaron_join %>% filter(is.na(Td_mean)) %>% 
-  distinct(Species_sacc_18, Td_mean)
+  distinct(species_ayerbe, Td_mean)
 
 # Save & export -----------------------------------------------------------
 stop()
-## Export functional traits (primarily from Avonet)
-# Export as Excel 
-Avo_traits_final %>% as.data.frame() #%>% 
-  #write.xlsx("Derived/Excels/Avo_traits_final.xlsx", sheetName = "Traits", row.names = F, showNA = FALSE)
 
-## Export elevational range data for Hazen
-# Create dataframe
-Elev_hazen_exp <- Tax_df2 %>% 
-  distinct(Order_gbif, Family_gbif, Species_sacc_18) %>% 
-  full_join(Elev_ranges) %>% 
-  left_join(Hilty_elev) %>% 
-  select(-c(matches("comb|_bt|_bl"), Match_type, Species_eb)) %>% 
-  mutate(Diff_QJ_B20 = abs(Elev_range_QJ - Elev_range_B20)) %>% 
-  relocate(c(Diff_QJ_eB, Closest_to), .after = Diff_QJ_B20) %>%
-  arrange(desc(is.na(Elev_range_QJ)), 
-          desc(is.na(Diff_QJ_B20)), 
-          desc(Diff_QJ_B20))
-
-# Filter & export dataframe for Hazen
-if(FALSE){
-  Elev_hazen_exp %>% 
-    filter(is.na(Diff_QJ_B20) | Diff_QJ_eB > 500 | Diff_QJ_B20 > 500) %>% 
-    as.data.frame() %>%
-    xlsx::write.xlsx("Derived/Excels/Elev_ranges_diff_qj_ebird.xlsx", 
-                     row.names = FALSE, showNA = FALSE)
-}
-
-## Export the final functional traits database
-# The species that were observed in point counts
-Spp_pc <- Tax_pcs %>% pull(Species_sacc_18) %>% 
-  unique()
-
-# Export as csv 
-Avo_traits_final %>% 
-  filter(Species_sacc_18 %in% Spp_pc) %>%
+# Export functional traits file as csv 
+Ft_final %>%
   rename_with(.cols = everything(), .fn = ~str_remove(., "_comb")) %>%
   write_csv(file = "Derived/Excels/Functional_traits.csv")
+
+# Export full elevation file as csv 
+Elev_final %>% write_csv(file = "Derived/Excels/Elev_ranges_all_sources.csv")
 
 #rm(list = ls()[!(ls() %in% c("Elev_ranges", "Avo_traits_final"))])
 #save.image(paste0("Rdata/Traits_elev_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
@@ -445,36 +450,36 @@ Avo_traits_final %>%
 # >Hazen elevation scratch pad ---------------------------------------------
 # With the Hilty guide book, it is worth checking the species with extreme differences in ranges, or without data from the most trustworthy sources. This has been iterative as Hazen has gone through the Hilty guidebook and we have had more information available to us.
 Old_path <- ("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Mentorship/Hazen/Elev_ranges_diff_qj_ebird_10.2.25.xlsx") 
-Hilty_elev <- read_xlsx("../Datasets_external/Elev_ranges/Elev_ranges_Hazen2.xlsx")
+Hilty_elev <- read_xlsx("../Datasets_external/Elev_ranges/Elev_ranges_Hazen.xlsx")
 
 # Check elevational limits of coffee region species
-Elev_min_max %>% select(Species_sacc_18, matches("Min|Max")) %>% 
-  filter(str_detect(Species_sacc_18, "Xenops")) 
+Elev_min_max %>% select(Species_ayerbe, matches("Min|Max")) %>% 
+  filter(str_detect(Species_ayerbe, "Xenops")) 
 
 # Lengthen the tibble
 Hazen_elev <- Hilty_elev %>%
-  select(Species_sacc_18, contains("Hilty"), contains("range")) %>%
+  select(Species_ayerbe, contains("Hilty"), contains("range")) %>%
   filter(!is.na(Elev_range_Hilty) & Elev_range_Hilty != 0) 
 
-Hazen_elev %>% filter(str_detect(Species_sacc_18, "Phyllomyias"))
+Hazen_elev %>% filter(str_detect(Species_ayerbe, "Phyllomyias"))
 
 # Examine correlations between different data collectors
 Hazen_elev %>% 
-  select(-c(Species_sacc_18, matches("Max|Min"))) %>%
+  select(-c(Species_ayerbe, matches("Max|Min"))) %>%
   cor(use = "complete.obs") %>% 
   data.frame() %>% 
   mutate(across(everything(), round, 2))
 
 # Compare the Hilty ranges to the other 3 data collectors and determine which of the other 3 is closest to Hilty
 Hazen_elev2 <- Hazen_elev %>%
-  pivot_longer(cols = -c(Species_sacc_18, Elev_range_Hilty, matches("Max|Min")),
+  pivot_longer(cols = -c(Species_ayerbe, Elev_range_Hilty, matches("Max|Min")),
                names_to = "Source", values_to = "Elev_range") %>%
   mutate(Source = str_remove_all(Source, "Elev_range_|Elev_range_")) %>%
   mutate(Diff = abs(Elev_range - Elev_range_Hilty)) %>% 
-  slice_min(order_by = Diff, by = Species_sacc_18) %>% 
+  slice_min(order_by = Diff, by = Species_ayerbe) %>% 
   summarize(across(-Source, first), 
             Closest_to = str_c(sort(unique(Source)), collapse = ", "),
-            .by = Species_sacc_18) %>%
+            .by = Species_ayerbe) %>%
   rename(Elev_range_closest = Elev_range) %>% 
   select(-c(Elev_range_closest, Diff))
 
@@ -483,13 +488,13 @@ Hazen_elev2 %>% tabyl(Closest_to)
 
 # Plot 
 Hazen_elev2 %>%
-  pivot_longer(cols = -c(Species_sacc_18,  matches("Max|Min")), 
+  pivot_longer(cols = -c(Species_ayerbe,  matches("Max|Min")), 
                names_to = "Source",
                values_to = "Elev_range") %>% 
   mutate(Source = str_remove_all(Source, "Elev_range_|Elev_range_"),
          Source = factor(Source, levels = c("B20", "QJ", "Hilty", "eB"))) %>% 
   ggplot(aes(x = Source, y = Elev_range, 
-             color = Species_sacc_18, group = Species_sacc_18)) + 
+             color = Species_ayerbe, group = Species_ayerbe)) + 
   geom_point() + 
   geom_line() +
   guides(color = "none") +
@@ -522,4 +527,3 @@ lapply(Hab_types[2:3], table)
 # save(Hab_types, file = "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/R_Files/PhD/Hab_types.Rdata")
 
 birdlife_threats(22689248)
-
