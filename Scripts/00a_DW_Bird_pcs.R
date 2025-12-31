@@ -102,7 +102,8 @@ df_birds <- map(df_birds, function(x) {
         Ano %in% c(2016, 2017) ~ "16-17",
         Ano == 2019 ~ "19",
         Ano == 2022 ~ "22",
-        Ano == 2024 ~ "24"
+        Ano == 2024 ~ "24",
+        Ano == 2025 ~ "25"
       )
     )
 }) ### GAICA did not record date for 74 Recorridos libres
@@ -129,7 +130,8 @@ df_birds_red <- map(df_birds_red, function(df) {
       str_remove_all(., "revisada|estandarizado|_sin formul|_sin formula|_cipav|_gaica|_ubc|_unillanos|corregido|_homologado|_base_infotnc|_investigacion"),
       c(
         "Observacion_climatica" = "Clima",
-        "Distancia_observacion" = "Distancia_bird"
+        "Distancia_observacion" = "Distancia_bird", 
+        "Nombre_cientifico_original" = "Species_original"
       )
     ))
   df
@@ -262,7 +264,7 @@ df_birds_red$Gaica_mbd <- df_birds_red$Gaica_mbd %>%
 df_birds_red$Ubc <- df_birds_red$Ubc %>% select(-c(Habitat1 | Habitat2))
 
 # Change species name column so all data frames match ('Nombre_cientifico_final')
-df_birds_red[4:6] <- map(df_birds_red[4:6], \(df){
+df_birds_red[4:7] <- map(df_birds_red[4:7], \(df){
   df %>% rename(Nombre_cientifico_final = Nombre_cientifico_final_ayerbe_2018)
 })
 
@@ -393,8 +395,25 @@ map(df_birds_red, \(df){
   }
 })
 
+## Hatico
 df_birds_red$Ubc_hatico <- df_birds_red$Ubc_hatico %>% 
   mutate(across(c(Latitud_decimal, Longitud_decimal), as.character))
+
+# Add Habitat_ut and sub_ut
+Hatico_hab <- df_metadata$Ubc_hatico %>% 
+  select(Id_punto_muestreo_final, starts_with("Habitat")) %>% 
+  distinct() %>% 
+  rename(Habitat_ut = Habitat_predominante,
+         Habitat_sub_ut = Habitat_sub)
+df_birds_red$Ubc_hatico <- df_birds_red$Ubc_hatico %>% 
+  left_join(Hatico_hab, by = join_by("Id_muestreo" == "Id_punto_muestreo_final"))
+
+# Change CIPAV survey of C-MB-VC-EH_02 to Borde de bosque. This is not ideal but it is better to have a single consistent habitat type through time for 'Site_covs'. Looking at Google Earth the 25m buffer did contain a portion of the guadua forest in 2017, so this change is justified. 
+df_birds_red$Cipav <- df_birds_red$Cipav %>% 
+  mutate(
+    Habitat_ut = ifelse(Id_muestreo == "C-MB-VC-EH_02", "Bosque", Habitat_ut),
+    Habitat_sub_ut = ifelse(Id_muestreo == "C-MB-VC-EH_02", "Borde", Habitat_sub_ut)
+  )
 
 # Combine dfs -------------------------------------------------------------
 ## Combine all dfs & remove more irrelevant columns##
@@ -444,7 +463,10 @@ Birds_comb2 <- Birds_comb %>%
     Tipo_registro == "Visual-auditivo" ~ "Visual/auditivo",
     Tipo_registro == "Vuelo" ~ "Sobrevuelo",
     .default =  Tipo_registro
-  )) %>% select(-Id_punto_muestreo_original)
+  )) %>%
+  mutate(Species_original = ifelse(
+    is.na(Species_original), Species_ayerbe, Species_original
+  )) %>% select(-c(Id_punto_muestreo_original, Species_ayerbe))
 
 ### Distancias FULL y Buffer, Id_gcs##
 Birds_comb3 <- Birds_comb2 %>%
@@ -471,7 +493,6 @@ Birds_comb3 <- Birds_comb2 %>%
   select(-c(Nombre_predio_gcs_poligono_full, Id_predio_gcs_poligono_full, Id_predio_mas_cercano_gcs_poligono_full, Nombre_predio_gcs_poligono_buffer, Id_predio_gcs_poligono_buffer, Id_predio_mas_cercano_gcs_poligono_buffer, Distancia_predio_mas_cercano_gcs_poligono_full, Distancia_predio_mas_cercano_gcs_poligono_buffer, Row_sum, Same))
 
 # 2 manual adjustments - In Google Earth the 50m buffers showed the correct location, but the points were changed by GAICA in a revision. Changed points back to the (approximate) centroid of the 50m buffer. 
-
 Birds_comb4 <- Birds_comb3 %>% 
   mutate(Latitud = case_when(
     Id_muestreo == "G-MB-M-EPO1_03" ~ 3.8285,
@@ -483,7 +504,7 @@ Birds_comb4 <- Birds_comb3 %>%
     Id_muestreo == "G-MB-M-EPO1_03_(1)" ~ -73.8417, 
     .default = Longitud
   ))
-  
+
 # Bird_pcs_all  ---------------------------------------------------------------
 # Create data base with just point counts and Id_muestreo_no_dc column
 Bird_pcs_all <- Birds_comb4 %>%
@@ -528,6 +549,11 @@ df_metadata[c(1:3)] <- map(df_metadata[c(1:3)], \(df){
     )
 })
 
+# Format of Hatico cells didn't add a fake year, so just adding 'Year' as a placeholder
+df_metadata$Ubc_hatico <- df_metadata$Ubc_hatico %>% 
+  mutate(Hora = paste("Year", Hora))
+
+# Remove dummy year and turn time into hms
 df_metadata <- map(df_metadata, \(df)
 df %>% mutate(
   Hora = sapply(str_split(Hora, " "), function(x) {
@@ -536,6 +562,7 @@ df %>% mutate(
   Hora = as_hms(Hora))
 )
 
+# Join together and remove rownames
 df_meta <- smartbind(list = df_metadata) %>% tibble()
 rownames(df_meta) <- NULL
 
@@ -818,8 +845,17 @@ df_metadata$Ubc_gaica_OQ <- df_metadata$Ubc_gaica_OQ %>%
   mutate(Percent_potrero = 0,
          Cows_50m = "No")
 
+# Convert to categorical
+df_metadata$Ubc_hatico <- df_metadata$Ubc_hatico %>% 
+  mutate(Clouds = case_when(
+    0 <= Clouds_per & Clouds_per < 25 ~ 0,
+    25 <= Clouds_per & Clouds_per < 50 ~ 1,
+    50 <= Clouds_per & Clouds_per < 75 ~ 2,
+    75 <= Clouds_per ~ 3
+  ))
+
 # Remove 'Ensayo' days to match Birds_df?
-Covs_ubc_gaica <- map(df_metadata[4:6], \(df) {
+Covs_ubc_gaica <- map(df_metadata[4:7], \(df) {
   df %>%
     as_tibble() %>%
     select(
@@ -975,7 +1011,6 @@ Site_covs <- Bird_pcs_all %>%
   select(-c(Id_muestreo, Uniq_db, Nombre_institucion, Id_group)) %>%
   distinct() 
 
-
 # >Precipitation ----------------------------------------------------------
 # Extract data & create df where each row is a point count and there are 12 'prec' columns, one for each month
 PrecPCs <- terra::extract(Wc_col[[2]], Pc_locs_sf, ID = FALSE)
@@ -1032,17 +1067,18 @@ rm(list = ls()[!(ls() %in% c("Bird_pcs_all", "Birds_comb4", "Pc_date8", "Pc_hab"
 
 ## Export Bird_pcs_all as csv
 names(Bird_pcs_all)
-Bird_pcs_all %>% 
+Bird_pcs_all_export <- Bird_pcs_all %>% 
   arrange(Id_group, Id_muestreo, Fecha, Pc_start) %>%
   select(
-    Id_muestreo, Id_muestreo_no_dc, Fecha, Pc_start, Species_ayerbe, Distancia_bird, Tipo_registro, Grabacion, Count 
+    Id_muestreo, Id_muestreo_no_dc, Fecha, Pc_start, Species_original, Count,  Distancia_bird, Registrado_por, Tipo_registro, Grabacion
     ) %>% 
-  summarize(Count = sum(Count), .by = -Count) %>% 
-  write_csv(file = "Derived/Excels/Bird_pcs_all.csv")
+  summarize(Count = sum(Count), .by = -Count)
+# Export
+Bird_pcs_all_export %>% 
+  write_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all_spp.csv")
 
 ## Export covariates as csv
 # Site covariates - There are 496 unique locations, so all of these are stable irrespective of which data collector
-
 Site_covs %>% write_csv(file = "Derived/Excels/Site_covs.csv")
 
 # Export Precipitation df for the data_paper_figs script
@@ -1073,10 +1109,14 @@ Birds_comb4 %>% filter(Id_group == "C-MB-S-V") %>%
 
 # Send screenshot to ecotropico
 df_birds$Cipav %>% 
-  filter(Departamento == "Santander" & Nombre_finca == "Valparaiso") %>% 
+  filter(Departamento == "Atlantico" & Nombre_finca == "El Descanso") %>% 
   distinct(Id_muestreo, Ano, Mes, Dia, Hora) %>% 
   arrange(Id_muestreo, Hora) %>% 
   view()
+
+Pc_hab %>% 
+  filter(Departamento == "Atlantico" & Uniq_db == "Gaica mbd" & Id_group == "G-MB-A-LRE") %>% 
+  distinct(Id_muestreo, Habitat, Habitat_og)
 
 # GPT - I want to create a logical check that examines whether the End time of a given point count (Id_muestreo) is after the start time of any other different point count on the same day, so, for example : INCLUDE DPUT is a problem because there are two point counts occurring simultaneously 
 dput(head(Event_covs))
@@ -1090,7 +1130,6 @@ Event_covs2 %>% left_join(Site_covs) %>%
   filter(Uniq_db == "Cipav mbd" & Departamento == "Santander" & Id_group == "C-MB-S-V") %>% 
   distinct(Id_muestreo, Pc_start, Pc_end, Pc_length) #%>% 
   #dput()
-
 
 # Field work --------------------------------------------------------------
 # Formatting data 
@@ -1139,6 +1178,36 @@ df_metadata$Ubc_hatico %>% select(Id_muestreo, Latitude, Longitude) %>%
 df_birds_red$Cipav %>% filter(Nombre_finca == "El hatico") %>% 
   distinct(Id_muestreo, Latitud_decimal, Longitud_decimal)
 
+## Hatico species list 
+Col_eb <- read_csv("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Outreach/Outreach_farmers/eBird_Colombia_2025.csv")
+# Species observed in El Hatico from eBird
+Spp_eb_eh <- Col_eb %>% filter(location == "RN El Hatico") %>% 
+  distinct(scientific_name) %>% 
+  filter(str_detect(scientific_name, "sp.|/"))
+# During point counts
+Spp_pc_eh <- Bird_pcs_analysis %>% 
+  left_join(Site_covs) %>% 
+  left_join(Event_covs) %>%
+  filter(Id_gcs == "Ref_El hatico" & Uniq_db != "Cipav mbd") %>% 
+  distinct(Species_original) %>% 
+  rename(scientific_name = Species_original)
+# Join lists
+Spp_list_eh <- bind_rows(Spp_eb_eh, Spp_pc_eh) %>% distinct() %>% 
+  arrange(scientific_name) 
+# Export
+Spp_list_eh %>% data.frame() %>% 
+  write.xlsx("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Outreach/Outreach_farmers/El_hatico/Final_spp_list_eh.xlsx", row.names = FALSE)
+
+Col_eb %>% pull(submission_id) %>% unique() # 45 checklists
+Col_eb %>% pull(date) %>% unique()
+# 262 species + 16 additional in El Hatico + 2 from Cartagena = 280 
+Col_eb %>% distinct(scientific_name) %>% 
+  filter(!str_detect(scientific_name, "sp.|/")) %>% 
+  arrange(scientific_name)
+
+Col_eb %>% pull(state_province) %>% unique() # 6 departments in 4 ecoregions
+# 5 outreach guides explained (in person) and delivered (electronically) to farmers 
+# 10 farms visited 
 
 
 ## Visit in the field 2025
