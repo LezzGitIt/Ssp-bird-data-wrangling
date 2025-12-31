@@ -36,69 +36,60 @@ bird20t <- bird20t %>%
 
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
-# Functional traits database ----------------------------------------------
-# Used a loop to ensure that we are taking trait data from a single species instead of a subspecies. For example, we want to ensure we're grabbing from BirdTree for Momotus momota and not the BirdLife subspecies
-Tax_df %>% filter(Species_sacc_18 == "Momotus momota")
-
-# For loop create functional traits data base
-SpMT <- distinct(Tax_df2, Species_sacc_18, Match_type) # Species match type
-Avo_traits_loop <- vector("list", length = nrow(SpMT))
-
-for (i in 1:length(SpMT$Species_sacc_18)) {
+# Avonet list  ------------------------------------------------------------
+# See metadata tab in Excel for information on what each column contains
+# Bring in here as this is used to create Tax_df
+Traits_path <- "../Datasets_external/Avonet_Data/TraitData/"
+filesAvo <- list.files(path = Traits_path, pattern = ".xlsx")
+sheetsAvo <- str_split_i(filesAvo, ".x", 1)
+dfsAvo <- list() # dfs Ecotropico
+for (i in 1:length(filesAvo)) {
   print(i)
-  if (!is.na(SpMT$Match_type[i]) & SpMT$Match_type[i] %in% c("1BL to 1BT", "Many BL to 1BT")) {
-    Avo_traits_loop[[i]] <- SpMT[i, ] %>% left_join(Avo_traits_l$BirdTree,
-                                                    by = join_by("Species_sacc_18" == "Species")
-    )
-    Avo_traits_loop[[i]]$Source <- "BT"
-  }
-  # There are some cases where Species_sacc_18 is not found in SpeciesBL.. This resulted in rows of NAs
-  if (!is.na(SpMT$Match_type[i]) & SpMT$Species_sacc_18[i] %in% Tax_df2$Species_bl & SpMT$Match_type[i] %in% c("1BL to 1BT", "1BL to many BT")) {
-    Avo_traits_loop[[i]] <- SpMT[i, ] %>% left_join(Avo_traits_l$BirdLife,
-                                                    by = join_by("Species_sacc_18" == "Species")
-    )
-    Avo_traits_loop[[i]]$Source <- "BL"
-  }
-  # Adding is.null creates the 1 row df with NAs, allowing next if() statement to work
-  if (is.na(SpMT$Match_type[i]) | is.null(Avo_traits_loop[[i]])) {
-    Avo_traits_loop[[i]] <- SpMT[i, ] %>% left_join(Avo_traits_l$eBird,
-                                                    by = join_by("Species_sacc_18" == "Species")
-    )
-    Avo_traits_loop[[i]]$Source <- "eB"
-  }
-  # If slot is still NAs link with eBird
-  if (is.na(Avo_traits_loop[[i]]$Total.individuals)) {
-    Avo_traits_loop[[i]] <- SpMT[i, ] %>% left_join(Avo_traits_l$eBird,
-                                                    by = join_by("Species_sacc_18" == "Species")
-    )
-    Avo_traits_loop[[i]]$Source <- "eB"
-  }
+  dfsAvo[[i]] <- read_excel(
+    path = paste0(Traits_path, filesAvo[i]), sheet = sheetsAvo[i]
+  ) #%>% 
+  #clean_names()
+}
+names(dfsAvo) <- c("BirdLife", "eBird", "BirdTree")
+
+# Remove the 1 2 & 3 for easy removal of irrelevant columns
+names <- lapply(dfsAvo, function(x) {
+  str_remove(names(x), "1|2|3")
+})
+for (i in 1:length(dfsAvo)) {
+  names(dfsAvo[[i]]) <- names[[i]]
 }
 
-Avo_traits_comb <- smartbind(list = Avo_traits_loop)
-# CHECK:: #Should be 0
-Avo_traits_comb %>%
-  filter(is.na(Total.individuals)) %>%
-  nrow()
+# Remove irrelevant columns
+Avo_traits_l <- lapply(dfsAvo, function(x) {
+  select(x, -c(Family, Order, Female, Male, Unknown, Mass.Source, Mass.Refs.Other, Inference, Traits.inferred, Reference.species))
+}) # Avonet morphology list
+
+Avo_traits_l$BirdLife <- Avo_traits_l$BirdLife %>% 
+  mutate(Avibase.ID = str_remove(Avibase.ID, "AVIBASE-"))
+
+# Match with Avonet
+Ft_df <- Tax_df %>% 
+  distinct(Species_ayerbe, Species_bl) %>%
+  left_join(Avo_traits_l$BirdLife, by = join_by("Species_bl" == "Species")) 
+# A single species from each species SACC
+Ft_df %>% count(Species_ayerbe, sort = T)
 
 # Format & remove extraneous columns
-Avo_traits_form <- Avo_traits_comb %>%
-  select(-c(Sequence, Avibase.ID, Species.Status)) %>%
+names(Ft_df)
+Ft_df2 <- Ft_df %>%
+  select(-c(Sequence, Avibase.ID)) %>%
   mutate(
     Habitat.Density = as.factor(Habitat.Density),
     Migration = as.factor(Migration),
     across(c(ends_with("tude"), "Range.Size"), as.numeric)
   ) %>%
-  mutate(across(where(is.numeric), \(x) round(x, 2))) %>%
-  relocate(Source, .after = Match_type)
-nrow(Avo_traits_form)
-head(Avo_traits_form)
+  mutate(across(where(is.numeric), \(x) round(x, 2))) 
 
 # Examine a few key traits
-lapply(Avo_traits_form[17:21], table)
+lapply(Ft_df2[17:21], table)
 # Woodland (= medium stature tree-dominated habitats, including Acacia woodland, riparian woodlands, mangrove forests, forest edges, also more open parkland with scattered taller trees);
 # Forest (= tall tree-dominated vegetation with more or less closed canopy, including palm forest)
-
 
 # Elevational ranges ------------------------------------------------------
 # Elevational ranges will be used for 2 things, to: 1) look for possible species misidentifications or other errors in the data, 2) to use as a trait representing environmental niche breadth. For #2 having a standardized source for elevations would be ideal (QJ has fewest NAs). One possibility would be to apply a correction across different sources (see below in EXTRAS, search 'correction'), another would be to use QJ estimates from across other countries
