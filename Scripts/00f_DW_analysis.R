@@ -1,4 +1,4 @@
-## PhD birds in silvopastoral landscapes##
+## PhD birds in silvopastoral landscapes ##
 ## Data wrangling 00f -- Setting up occupancy & abundance data, the site (unit) covs, and obsrvation (event) covariates
 ## This script generates the data structures that will be used as inputs for hierarchical modeling in future scripts 
 
@@ -34,7 +34,7 @@ conflicts_prefer(dplyr::filter)
 Pc_locs_sf <- st_read("Derived_geospatial/shp/Pc_locs.gpkg")
 
 Tax_df <- read_csv(file = "Derived/Excels/Taxonomy.csv")
-Bird_pcs <-  read_csv(file = "Derived/Excels/Bird_pcs.csv")
+Bird_pcs_all <-  read_csv(file = "Derived/Excels/Bird_pcs_all.csv")
 Event_covs <- read_csv(file = "Derived/Excels/Event_covs.csv")
 Site_covs <- read_csv(file = "Derived/Excels/Site_covs.csv")
 
@@ -48,38 +48,41 @@ Row_identifier <- c("Id_muestreo", "Ano_grp")
 
 # General formatting ---------------------------------------------------------
 # Format point count data for downstream analyses 
-Birds_analysis1 <- Bird_pcs %>% 
+Bird_pcs_analysis1 <- Bird_pcs_all %>% 
   mutate(Species_ayerbe_ = str_replace_all(Species_ayerbe, " ", "_")) %>%
-  filter(Species_ayerbe %in% Tax_df$Species_ayerbe) %>% 
-  filter(is.na(Grabacion) | Grabacion == "Cf") %>% # Remove birds identified only in recording
-  mutate(Count = ifelse(is.na(Count), 1, Count)) #Add 1 individual when # individual = NA (6 rows)
-  
-## Remove flyovers (vuelos)
-#STILL TO DO: INVESTIGATE UNILLANOS, CIPAV, GAICA MBD
-Birds_analysis2 <- Birds_analysis1 %>% 
-  filter(!(Tipo_registro %in% c("Sobrevuelo", "Vuelo")))
+  filter(Species_ayerbe %in% Tax_df$Species_ayerbe) %>%
+  # Add 1 individual when # individual = NA 
+  mutate(Count = ifelse(is.na(Count), 1, Count))
 
-if(FALSE){
-  ## Remove distances > 50m
-  # NOTE:: there are some rows that have NAs for distance. Nearly all are Gaica 2013 
-  Birds_analysis2 %>% filter(is.na(Distancia_bird)) %>% 
-    table()
-  
-  # GAICA reported birds > 50m that year, so we do not know if the birds with NA should be included or not.  
-  Birds_analysis2 %>% filter(is.na(Distancia_bird)) %>% 
-    distinct(Uniq_db, Departamento, Id_muestreo, Familia, Species_ayerbe) %>% 
-    distinct(Familia, Species_ayerbe) #%>% view()
-}
+# Remove recordings ---------------------------------------------------------
+# Given the inconsistent effort, remove birds that were only identified in recording
+Bird_pcs_analysis2 <- Bird_pcs_analysis1 %>% 
+  filter(is.na(Grabacion) | Grabacion == "Cf")
 
-# Within species that have NA for Distancia, there are a few species (e.g. hummingbirds) that would be nearly impossible to identify at >50m. Change the distance of these species to <50m so they are maintained
-Fam_join <- Tax_df %>% distinct(Species_ayerbe, Family_gbif)
-Birds_analysis3 <- Birds_analysis2 %>% 
+# Remove flyovers ---------------------------------------------------------
+# NOTE: CIPAV did not record information on flyovers (sobrevuelos). Thus we cannot exclude the possibility that a species flew over the observer and was included in the data set, despite NOT using the habitat. 
+Bird_pcs_analysis3 <- Bird_pcs_analysis2 %>% 
+  filter(is.na(Tipo_registro) | Tipo_registro != "Sobrevuelo")
+
+# Remove distances > 50m --------------------------------------------------
+# NOTE:: there are a few rows that have NAs for distance as data collector forgot to enter a distance in the field 
+Bird_pcs_analysis3 %>% 
+  filter(is.na(Distancia_bird)) 
+
+# However, there are a few species (e.g. hummingbirds, manakins) that would be nearly impossible to identify at >50m. Change the distance of these species to <50m so that they are maintained
+Fam_join <- Tax_df %>% 
+  distinct(Species_ayerbe, Family_gbif)
+Bird_pcs_analysis3 %>%
+  left_join(Fam_join) %>%
+  filter(is.na(Distancia_bird)) %>% 
+  distinct(Family_gbif, Species_ayerbe) #%>% view()
+Bird_pcs_analysis4 <- Bird_pcs_analysis3 %>% 
   left_join(Fam_join) %>%
   mutate(Distancia_bird = if_else(is.na(Distancia_bird) & Family_gbif %in% c("Trochilidae", "Pipridae"), "<50", Distancia_bird))
 
 # Make distances numeric
-Birds_analysis4 <- Birds_analysis3 %>%
-  mutate(Distancia_bird = case_when( # Birds_analysis = Birds analysis file
+Bird_pcs_analysis5 <- Bird_pcs_analysis4 %>%
+  mutate(Distancia_bird = case_when(
     Distancia_bird == "0-15" ~ "15",
     Distancia_bird == "15-30" ~ "30",
     Distancia_bird == "30-50" ~ "50",
@@ -92,30 +95,33 @@ Birds_analysis4 <- Birds_analysis3 %>%
   mutate(Distancia_bird = as.numeric(Distancia_bird))
 
 # Remove records with distance unknown or > 50m
-Birds_analysis5 <- Birds_analysis4 %>% 
+Bird_pcs_analysis6 <- Bird_pcs_analysis5 %>% 
   filter(Distancia_bird < 51) %>% 
   # select only the columns necessary
-  select(-c(Grabacion, Family_gbif, Distancia_bird))
+  select(-c(Grabacion, Family_gbif, Distancia_bird, Tipo_registro))
   #select(Ecoregion, Departamento, Uniq_db, Id_group, Id_muestreo_no_dc, Id_muestreo, Ano_grp, Fecha, Ano, Mes, Dia, Pc_start, Pc_length, Orden, Familia, Species_ayerbe, Species_ayerbe_, Count, Nombre_institucion, Id_gcs)
 
-## Add Rep_ano_grp to dataframe -- Pc_start & Rep_ano_grp are equivalent in terms of grouping (when combined with Id_muestreo & Ano_grp), but since we are using Rep_ano_grp for formatting of analysis dataframes it makes sense to include Rep_ano_grp as well
-date_join_spp_obs <- Event_covs %>% 
-  filter(Spp_obs == 1) %>% # Only point counts with spp observed
-  select(Id_muestreo, Ano_grp, Fecha, Pc_start, Rep_ano_grp) 
-Birds_analysis6 <- Birds_analysis5 %>% 
-  left_join(date_join_spp_obs) 
-
+if(FALSE){
+  ## Add Rep_ano_grp to tbl -- Pc_start & Rep_ano_grp are equivalent in terms of grouping (when combined with Id_muestreo & Ano_grp), but since we are using Rep_ano_grp for formatting of analysis dataframes it makes sense to include Rep_ano_grp as well
+  date_join_spp_obs <- Event_covs %>% 
+    filter(Spp_obs == 1) %>% # Only point counts with spp observed
+    select(Id_muestreo, Ano_grp, Fecha, Pc_start, Rep_ano_grp) 
+  Bird_pcs_analysis6 <- Bird_pcs_analysis6 %>% 
+    left_join(date_join_spp_obs) 
+}
+# Sum counts --------------------------------------------------------------
 # Summarize so each species is listed only once in each point count 
-Birds_analysis6 %>% filter(if_any(everything(), is.na)) # No NAs in any rows
-Birds_analysis7 <- Birds_analysis6 %>% 
+Bird_pcs_analysis6 %>% filter(if_any(everything(), is.na)) # No NAs in any rows
+Bird_pcs_analysis7 <- Bird_pcs_analysis6 %>% 
   summarize(Count = sum(Count), .by = -Count)
 
-# Lessen the magnitude of 4 outliers 
-Birds_analysis <- Birds_analysis7 %>% 
+# Reduce impact of outliers ---------------------------------------------
+# Lessen the magnitude of 4 outliers with counts > 50 individuals
+Bird_pcs_analysis <- Bird_pcs_analysis7 %>% 
   mutate(Count = ifelse(Count > 50, 50, Count)) 
 
 ## Simplify this exercise by using only the most abundant species 
-Spp_counts <- Birds_analysis %>%
+Spp_counts <- Bird_pcs_analysis %>%
   summarize(Count = sum(Count), .by = c(Species_ayerbe, Species_ayerbe_)) %>%
   arrange(desc(Count))
 
@@ -206,6 +212,15 @@ Obs_covs_df <- Event_covs %>%
   ) 
 Obs_covs_df
 
+# FIX THIS POINT COUNT
+Event_covs %>%
+  mutate(across(everything(), as.character)) %>%
+  pivot_longer(cols = c(Julian_day, Pc_start, Pc_length),
+               names_to = "Variable", values_to = "Value") %>%
+  count(across(c(all_of(Row_identifier), Variable, Rep_ano_grp))) %>%
+  filter(n > 1)
+
+
 # Split Obs_covs_df into a list, where each slot in the list is a covariate 
 Obs_covs_spp <- map(Pcs_in_range, \(in_range){
   Obs_covs_grp <- Obs_covs_df %>%
@@ -213,7 +228,9 @@ Obs_covs_spp <- map(Pcs_in_range, \(in_range){
     arrange(across(all_of(Row_identifier))) %>%
     group_by(Variable) 
   Obs_covs <- Obs_covs_grp %>% group_split(.keep = FALSE)
-  keys <- Obs_covs_grp %>% group_keys() %>% pull(Variable)
+  keys <- Obs_covs_grp %>% 
+    group_keys() %>% 
+    pull(Variable)
   names(Obs_covs) <- keys
   return(Obs_covs)
 })
@@ -250,6 +267,7 @@ Site_covs_df <- Site_covs %>%
   ) %>% arrange(across(all_of(Row_identifier))) %>%
   select(Id_muestreo, Id_group, Uniq_db, Ecoregion, Elev, Avg_temp, Tot_prec, Habitat_cons, Ano1)
 
+
 # >Lsm_files --------------------------------------------------------------
 # FOR NOW, just keep the 300m buffer.
 Lsm_l_300 <- map(Lsm_l, \(df){
@@ -266,7 +284,8 @@ Lsm_l_300[2:3] <- map(Lsm_l_300[2:3], \(df){
 
 # Join site covs with landscapemetrics. First, match Site_covs_df with 'middle' shapefile, & then overwrite the middle file using the past & ubc files in the correct locations. 
 # NOTE:: The 'lc_file' column specifies where the lc information comes from
-Site_covs_df2 <- Site_covs_df %>% left_join(Lsm_l_300$middle) %>%
+Site_covs_df2 <- Site_covs_df %>% 
+  left_join(Lsm_l_300$middle) %>%
   rows_update(Lsm_l_300$ubc, by = c("Id_muestreo", "Ano1")) %>%
   rows_update(Lsm_l_300$past, by = c("Id_muestreo", "Ano1"))
 
@@ -303,7 +322,7 @@ add_pc_no_obs <- function(row_id, add_cols = NULL){ # additional columns
 No_obs_occ <- add_pc_no_obs(row_id = Row_identifier, add_cols = "Rep_ano_grp")
 
 # Abundances -- Use rbind with date_bind_no_obs to add counts where no species were observed
-Abund_no_obs <- Birds_analysis %>%
+Abund_no_obs <- Bird_pcs_analysis %>%
   distinct(across(all_of(Row_identifier)), Rep_ano_grp, Species_ayerbe, Count) %>% 
   rbind(No_obs_occ) 
  
@@ -314,10 +333,13 @@ Abund_l <- Abund_no_obs %>%
 names(Abund_l) <- names(Pcs_in_range)
 
 # Join abundance data (just containing points where species was observed) with all the point counts that the species could have been observed with. 
-date_join_rep <- Event_covs %>% distinct(across(all_of(Row_identifier)), Rep_ano_grp)
+date_join_rep <- Event_covs %>% 
+  distinct(across(all_of(Row_identifier)), Rep_ano_grp)
+
 # Add Rep_ano_grp & Ano_grp to the IDs in range to allow for a successful join with Abund_l
 Abund_in_range <- map2(Pcs_in_range, Abund_l, \(in_range, abund){
-  Date_in_range <- tibble(Id_muestreo = in_range) %>% left_join(date_join_rep)
+  Date_in_range <- tibble(Id_muestreo = in_range) %>% 
+    left_join(date_join_rep)
 #NOTE:: right_join effectively adds NAs for Count where species could have been observed but weren't (greatly lengthening the dataframe), and also does a clip, ensuring that there are not observations outside of buffer
   abund %>% right_join(Date_in_range) %>% 
     # Change NAs for 0s
@@ -495,28 +517,28 @@ Top_abu_df2 <- Top_abu_df %>%
 # Save & Export -----------------------------------------------------------
 stop()
 # Export R data object for future analyses 
-rm(list = ls()[!(ls() %in% c("Birds_analysis", "umf_abu_l", "umf_occ_l", "spOcc_l", "Top_abu_df2", "Abund_nas", "Abund_in_range", "Occ_nas"))]) #, "Site_covs", "Obs_covs2"
+rm(list = ls()[!(ls() %in% c("Bird_pcs_analysis", "umf_abu_l", "umf_occ_l", "spOcc_l", "Top_abu_df2", "Abund_nas", "Abund_in_range", "Occ_nas"))]) #, "Site_covs", "Obs_covs2"
 #save.image(paste0("Rdata/Occ_abu_inputs_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 #save.image("Rdata/Occ_abu_inputs_02.27.25.Rdata") # Manual
 
-# Export Birds_analysis dataframe
+# Export Bird_pcs_analysis dataframe
 if(FALSE){
   # Final data set I will analyze  w/ outliers reduced (max of 50 individuals) 
-  Birds_analysis %>% 
+  Bird_pcs_analysis %>% 
     as.data.frame() %>%
-    write.xlsx(file = "Derived/Excels/Birds_analysis.xlsx", 
+    write.xlsx(file = "Derived/Excels/Bird_pcs_analysis.xlsx", 
                showNA = FALSE, row.names = FALSE)
   
   # Final dataset in csv format for data paper
-Birds_export <- Birds_analysis %>% # Before manipulating magnitude of 4 outliers 
+Birds_export <- Bird_pcs_analysis %>% 
   arrange(Id_muestreo, Id_muestreo_no_dc, Fecha, Pc_start) %>%
-  select(-c(Species_ayerbe_, Ano_grp, Rep_ano_grp))
+  select(-c(Species_ayerbe_))
    #select(Id_muestreo, Id_muestreo_no_dc, Fecha, Pc_start, Species_ayerbe, Count) 
-Birds_export %>% write_csv(file = "Derived/Excels/Birds_analysis.csv")
+Birds_export %>% write_csv(file = "Derived/Excels/Bird_pcs_analysis.csv")
 }
 
 # Export R data object for BIOL314
-#rm(list = ls()[!(ls() %in% c("Bird_pcs", "Birds_analysis", "Pc_hab", "Site_covs_df"))])
+#rm(list = ls()[!(ls() %in% c("Bird_pcs_all", "Bird_pcs_analysis", "Pc_hab", "Site_covs_df"))])
 #save.image(paste0("Rdata/Biol314_inputs_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 
 # Checks ----------------------------------------------------
