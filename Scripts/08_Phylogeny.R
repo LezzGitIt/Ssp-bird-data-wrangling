@@ -31,8 +31,10 @@ conflicts_prefer(dplyr::filter)
 # Load data ---------------------------------------------------------------
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
-Taxonomy <- read_csv("Derived/Excels/Taxonomy.csv")
-Bird_pcs_analysis <- read_csv("Derived/Excels/Bird_pcs_analysis.csv")
+Taxonomy <- read_csv("Derived/Excels/Taxonomy/Taxonomy_all.csv")
+Bird_pcs <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
+
+Taxonomy
 
 # BirdTree equivalents ----------------------------------------------------
 Spp_join_bt <- Taxonomy %>%
