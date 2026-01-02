@@ -236,15 +236,14 @@ Col_prec_map +
     shape = guide_legend(title = "Data collector")
   )
 
-
 # >South America map ------------------------------------------------------
 # Plot map of Colombia within South America
 ggplot(data = SA) +
   geom_sf() +
-  geom_sf(data = SA[SA$adm0_a3 == "COL", ], color = "green") +
-  layer_spatial(st_bbox(Pc_locs_jit), color = "red")
+  geom_sf(data = SA[SA$adm0_a3 == "COL", ], linewidth = 2, color = "black") #+
+  #layer_spatial(st_bbox(Pc_locs_jit), color = "red")
 
-ggsave("Data_paper/Figures/Map_sampling/South_america.png", bg = "white", dpi = 300)
+ggsave("Data_paper/Figures/Map_sampling/South_america_grayscale.png", bg = "white", dpi = 300)
 
 # Combine inset map + South America map in powerpoint
 
@@ -459,9 +458,10 @@ ggsave("Data_paper/Figures/Rainfall/Prec_sampling_faceted.png", bg = "white")
 # Fig 5 -------------------------------------------------------
 ## Bar plots of species with the highest counts and observed at the greatest number of unique point count locations (i.e., localities)
 
+# >Data wrangling ---------------------------------------------------------
 # Summarize counts and localities across Species & ecoregion
-Species_summary <- Data$Bird_pcs_all %>% 
-  left_join(Data$Site_covs) %>%
+Species_summary <- Bird_pcs_all %>% 
+  left_join(Site_covs) %>%
   summarize(Count = sum(as.numeric(Count), na.rm = TRUE), 
             Localities = n_distinct(Id_muestreo),
             .by = c(Species_ayerbe, Ecoregion))
@@ -489,13 +489,14 @@ Count_10 <- Sj_count %>% semi_join(Sj_local) %>%
   slice_max(order_by = Total_Count, n = 10) %>% 
   mutate(order = row_number())
 
-# Which  species are both high abundance and widespread? 
+#For reporting in manuscript - which species are both high abundance and widespread? 
 full_join(Count_10, Loc_10, by = "Species_ayerbe") %>% 
   mutate(Order_both = order.x + order.y) %>% 
   arrange(Order_both) %>% 
   filter(!is.na(Order_both)) %>% 
   pull(Species_ayerbe)
 
+# >Create plot ------------------------------------------------------------
 # left plot: Counts
 p1 <- Species_summary %>%
   semi_join(Sj_count, by = "Species_ayerbe") %>%
@@ -532,8 +533,8 @@ p2 <- Species_summary %>%
   plot_layout(guides = "collect") & 
   theme(legend.position = "top")
 
-ggsave("Data_paper/Figures/Species_counts_localities.png", 
-       bg = "white", width = 12, height = 10)
+ggsave("Data_paper/Figures/Species_counts_localities_wide.png", 
+       bg = "white", width = 15, height = 10)
 
 # Supplementary figs ------------------------------------------------------
 ## Plot showing numer of point counts per farm, the number of farms each data collector surveyed, and the average number of times each point count was repeated within a season (< 80 days)
@@ -627,13 +628,14 @@ Fn_traits_meta <- Fn_traits %>% extract_metadata()
 Event_covs_meta <- Event_covs %>% extract_metadata() 
 
 ## Create column metadata list
-Cols_metadata_l <- list(Bird_abu = Bird_abu_meta, Site_covs = Site_covs_meta, Event_covs = Event_covs_meta, Taxonomy = Taxonomy_meta, Functional_traits = Fn_traits_meta2)
+Cols_metadata_l <- list(Bird_abu = Bird_abu_meta, Site_covs = Site_covs_meta, Event_covs = Event_covs_meta, Taxonomy = Taxonomy_meta, Functional_traits = Fn_traits_meta)
 
 # >Export  ------------------------------------------------------
 
 # Save the metadata list for each Excel included in repository
 saveRDS(Cols_metadata_l, file = "Data_paper/Rdata/Cols_metadata_l.rds") 
 
+stop()
 # Export Excel but write the definitions manually in Excel
 if(FALSE){
   Bird_abu_meta %>% 
