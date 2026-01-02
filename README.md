@@ -1,25 +1,26 @@
 # Silvopasture and Bird Diversity in Colombia
 
-This repository contains the code and data associated with my PhD dissertation, examining the impact of silvopasture on bird taxonomic and functional diversity in fragmented landscapes of Colombia. The project aims to explore how local landcover and land-use impact bird diversity, and how these relationships are moderated by landscape and environmental factors.
+This repository contains the data wrangling code associated with my PhD dissertation, examining the impact of silvopasture on bird taxonomic and functional diversity in fragmented landscapes of Colombia. The project aims to explore how local landcover and land-use impact bird diversity, and how these relationships are moderated by landscape and environmental factors.
 
 ## Project Overview
 
-As part of the Sustainable Cattle Ranching (SCR) project, this research uses data from 485 unique point count sites collected over a decade to model multi-species occupancy and abundance. The study seeks to:
+As part of the Sustainable Cattle Ranching (SCR) project, this research uses data from 500+ unique point count sites collected from 2013 - 2025 to model multi-species occupancy and abundance. The code in this repository prepares the data for future analyses and links these data with important covariates  (environmental, functional traits, etc.) that aid in future analyses:
 
-- Understand how silvopasture, a system combining productive trees and shrubs with pastoral land, influences bird taxonomic and functional diversity over time.
-- Generate recommendations regarding the optimal amount and configuration of on-farm tree cover to maintain key ecosystem services. 
-- Explore key hypotheses such as the 'dominance of beta diversity' and 'intermediate landscape complexity' hypotheses in the context of fragmented landscapes in Colombia
+-Taxonomy: Standradizing taxonomy to South American Classification Committee (SACC) 2018 taxonomy, and matching with BirdLife and BirdTree. 
+-Functional traits: Predominantly from Avonet
+-Land-use land-cover: Classification of manually digitized landcover in 300m buffers around point count centroids
+-Phylogeny: Using Hackett (2008) backbone
 
-The goal is to provide actionable insights for biodiversity conservation in the context of sustainable beef production and habitat restoration efforts in Colombia.
+Code also compares bird observations to their known distributional and elevational ranges, and removes observations that may have been erroneous or were not made within the 50-m fixed point count radius.
 
 ## Methodology
 
-- **Data**: 485 point count sites collected over a decade.
-- **Analysis**: Bayesian multi-species occupancy / abundance models, alpha and beta diversity, community composition, functional diversity metrics
+- **Data**: 500+ point count sites collected over a decade.
+- **Possible Analyses**: Bayesian multi-species occupancy / abundance models, alpha and beta diversity, community composition, functional / phylogenetic diversity
 
 ## Usage
 
-If you are interested in collaborating on this project please send me an email at skinnerayayron93 [at] gmail [dot] com. The data is not available publicly at present. For the time being the code can only be observed visually, although similar analyses could be performed using publicly available biodiversity data (e.g., from the vegan package). 
+If you are interested in collaborating on this project please send me an email at skinnerayayron93 [at] gmail [dot] com. The data is not available publicly at present. 
 
 ## License
 
