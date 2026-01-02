@@ -23,11 +23,10 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 conflicts_prefer(hms::hms)
 
-load("Rdata/the_basics_05.10.25.Rdata")
+load("Rdata/the_basics_09.15.25.Rdata")
 load("Rdata/Taxonomy_12.29.24.Rdata")
 load("Rdata/Traits_elev_11.14.24.Rdata")
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
-
 
 # Checking habitat types Natalia ------------------------------------------
 df_birds_red$Gaica_dist %>% left_join(Andrea) %>%
@@ -62,7 +61,7 @@ Bird_pcs %>% dplyr::slice_sample() %>%
   vis_miss()
 
 #Lets break things down by the numbers for all databases
-Method_Inst <- Birds_all3 %>% distinct(Id_muestreo, Nombre_institucion, Uniq_db, Protocolo_muestreo, Ecoregion, Departamento, Nombre_finca) 
+Method_Inst <- Birds_comb4 %>% distinct(Id_muestreo, Nombre_institucion, Uniq_db, Protocolo_muestreo, Ecoregion, Departamento, Nombre_finca) 
 Method_Inst %>% 
   group_by(Uniq_db, Protocolo_muestreo) %>%
   count()
@@ -107,7 +106,7 @@ Pc_date8 %>%
 ##Time of point counts
 #Plot hours for each Uniq_db 
 Sys.setenv(TZ='GMT')
-ggplot(data = Birds_all3, aes(x= Uniq_db, y = Hora)) + 
+ggplot(data = Birds_comb4, aes(x= Uniq_db, y = Hora)) + 
   geom_boxplot(coef = 6) + 
   geom_jitter(width = .2, alpha = .1, aes(color = Protocolo_muestreo)) + 
   scale_y_chron(format="%H:%M") + 
@@ -411,7 +410,7 @@ ggsave("Figures/Methods/Timeline.png")
 # Testing Ecotropico ------------------------------------------------------
 ## Look for errors
 # Are there any point count IDs in multiple data sets?
-Birds_all3 %>% filter(Uniq_db != "Ubc gaica DOM") %>%
+Birds_comb4 %>% filter(Uniq_db != "Ubc gaica DOM") %>%
   distinct(Uniq_db, Id_muestreo) %>%
   count(Id_muestreo, sort = T) %>% 
   filter(n>1)
@@ -431,16 +430,16 @@ Bird_pcs %>% filter(Id_muestreo %in% mult_habs) %>%
   group_split(Id_muestreo)
 
 # >Distance within & between point count IDs  ------------------------------
-#Recognize that some points have multiple coordinates associated with each point. NAs are from telemetry
-Bird_pcs %>% distinct(Id_muestreo, Latitud_decimal, Longitud_decimal) %>% 
+# Recognize that some points have multiple coordinates associated with each point. NAs are from telemetry
+Bird_pcs %>% distinct(Id_muestreo, Latitud, Longitud) %>% 
   count(Id_muestreo, sort = T) %>% 
   filter(n > 1)
 
 # >>Same IDs too far --------------------------------------------------------
 #Distance in meters WITHIN point counts / redes de niebla of the same ID_punto_muestreo #
 
-Pc_locs_mult_sf <- Pc_locs_mult %>% st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), 
-                                             crs = 4326, remove = F)
+Pc_locs_mult_sf <- Pc_locs_mult %>% 
+  st_as_sf(coords = c("Longitud", "Latitud"), crs = 4326, remove = F)
 
 #Can run this analysis for either Id_group or Id_muestreo (see comments to right of the loop to see where to switch these)
 uniqIDparc <- unique(Pc_locs_sf$Id_muestreo) #Id_group
@@ -513,7 +512,7 @@ nearest1 <- Locs1coord %>%
   st_nearest_feature()
 dist_nearest <- round(st_distance(Locs1coord, Locs1coord[nearest1,], by_element=TRUE),1)
 
-# Identify points < 150m
+# Identify the nearest point Ids < 150m
 TF <- as.numeric(dist_nearest) < 150
 ID_problem_dist <- Locs1coord[TF,] %>% 
   pull(Id_muestreo)
@@ -523,9 +522,7 @@ Nearest_pt <- Locs1coord[nearest1,][TF,] %>%
 #Points that are <150m
 dists2close <- data.frame(ID_problem_dist, Nearest_pt, dist_nearest_m = as.numeric(dist_nearest[TF])) %>% 
   left_join(st_drop_geometry(Locs1coord[,c("Id_muestreo", "Uniq_db", "Departamento")]), join_by("ID_problem_dist" == "Id_muestreo")) %>% 
-  arrange(Uniq_db, dist_nearest_m) %>% 
-  filter(dist_nearest_m < 100)
-
+  arrange(Uniq_db, dist_nearest_m)
 
 #This ensures that the first letter of the ID (data collector) and the second letter (question of interest, e.g., "MB") are the same. Ultimately, the distances are only problematic if they are from the same Uniq_db
 dists2close_sameUniq_db <- dists2close %>% 
@@ -536,7 +533,10 @@ dists2close_sameUniq_db <- dists2close %>%
     str_split_1(x, "-")[2]}) == sapply(Nearest_pt, function(x){str_split_1(x, "-")[2]
     }))
 
-dists2close_sameUniq_db %>% filter(dist_nearest_m < 100)
+
+dists2close_sameUniq_db %>% 
+  filter(dist_nearest_m < 98.8) %>% 
+  tabyl(Uniq_db)
 
 #Merge with habitat & export as Excel for CIPAV
 dists2close_sameUniq_db %>% 
@@ -668,7 +668,7 @@ Hora_dif_df %>% filter(Hora_dif > as_hms("00:45:00")) #%>% View()
 # Testing Ubc gaica DB ----------------------------------------------------
 # >Bird observation data --------------------------------------------------
 #Create dataframe with just Ubc gaica
-UBC_gaica_df <- Bird_pcs %>% filter(Nombre_institucion == "Ubc gaica")
+UBC_gaica_df <- Bird_pcs_all %>% filter(Nombre_institucion == "Ubc gaica")
 ubc_g_ids <- unique(UBC_gaica_df$Id_muestreo)
 
 ##Create dataframe of names to compare column names
@@ -729,7 +729,7 @@ Id_spat_errors(Eco_reg = "Piedemonte")
 Id_spat_errors(Eco_reg = "Cafetera") 
 
 ## Examine species present 
-ubc_g_spp <- UBC_gaica_df %>% pull(Nombre_ayerbe) %>% 
+ubc_g_spp <- UBC_gaica_df %>% pull(Species_ayerbe) %>% 
   unique()
 TF <- ubc_g_spp %in% Ayerbe_all_spp
 prob_spp <- ubc_g_spp[!TF]
@@ -921,18 +921,18 @@ map2(UBC_gaica_metadata_l[1:2], df_habitats[2:3],
 #NOTE:: Robert & Yuri have motivation to increase their counts in OQ. What can we find out from the data?
 Ubc_Monroy <- read_xlsx(path = "Data/Aves/David_Monroy/Data_Monroy_Skinner_Otun_Quimbaya2024.xlsx") %>% 
   mutate(Equipo = "David_Aaron", 
-         Nombre_ayerbe = paste(Genero, Epiteto_especifico))
+         Species_ayerbe = paste(Genero, Epiteto_especifico))
 
 # Create new Tax_df3 data frame & rerun 
 Ubc_Monroy <- Ubc_Monroy %>% 
   left_join(distinct(Tax_df3[,c("Species_ayerbe", "family_gbif")]), 
-                         by = join_by("Nombre_ayerbe" == "Species_ayerbe")) %>% 
+                         by = join_by("Species_ayerbe" == "Species_ayerbe")) %>% 
   rename(Familia = family_gbif)
 
 #Join data frames
 names(df_birds$Ubc_gaica_OQ)
 OQ <- df_birds$Ubc_gaica_OQ %>% mutate(Equipo = "GAICA") %>%
-  rename(Nombre_ayerbe = Nombre_cientifico_final_ayerbe_2018) %>% 
+  rename(Species_ayerbe = Nombre_cientifico_final_ayerbe_2018) %>% 
   select(names(Ubc_Monroy)[-11], contains("Grabacion")) %>%
   bind_rows(Ubc_Monroy) %>% 
   mutate(Fecha = lubridate::mdy(paste(Mes, Dia, Ano, sep = "/")),
@@ -955,11 +955,11 @@ OQ %>% tabyl(Confiabilidad_de_grabacion)
 
 #GAICA registered 1 species less than David & I, without recording point counts
 OQ_nr <- OQ %>% filter(Grabacion != "Y" | is.na(Grabacion)) #nr = no recording
-OQ_nr %>% distinct(Equipo, Nombre_ayerbe) %>% 
+OQ_nr %>% distinct(Equipo, Species_ayerbe) %>% 
   count(Equipo)
 
 #Or 8 more species if considering recordings 
-OQ %>% distinct(Equipo, Nombre_ayerbe) %>% 
+OQ %>% distinct(Equipo, Species_ayerbe) %>% 
   count(Equipo)
 
 # Create list with dataframes with & without recordings
@@ -993,7 +993,7 @@ data.frame(Ayerbe_all_spp) %>% write.xlsx(file = "Ayerbe_spp_names2018.xlsx", ro
 OQ_l$Grabando$Id_muestreo
 #Plot number of species observed per point count (over 3 days) per team
 OQ_comp <- imap(OQ_l, \(df, names){ #OQ comparison 
-  df %>% distinct(Equipo, Id_muestreo, Fecha, Nombre_ayerbe) %>% 
+  df %>% distinct(Equipo, Id_muestreo, Fecha, Species_ayerbe) %>% 
     count(Equipo, Id_muestreo, Fecha) %>% 
     ggplot(aes(x = Equipo, y = n)) + geom_boxplot() + 
     geom_jitter(alpha = .3, width = .03, aes(color = Id_muestreo)) + 
@@ -1003,17 +1003,190 @@ OQ_comp <- imap(OQ_l, \(df, names){ #OQ comparison
 ggarrange(OQ_comp[[1]], OQ_comp[[2]])
 ggsave("Figures/Otun_comparison.png", bg = "white")
 
-#Maybe they included more individuals towards the edge of the 50m radius? 
+# Maybe they included more individuals towards the edge of the 50m radius? 
 OQ_nr %>% filter(!is.na(Distancia_observacion)) %>% 
   ggplot(aes(x = Distancia_observacion)) +
   geom_histogram(stat = "count")
-
 
 ##CONCLUSIONS: 
 #I think GAICA was likely generous with distances they included in their point counts. For example, I noted this with a few species in the field (Henicorhina en el punto 8 on the first day, & Quetzal in point 2 on day 2). They also likely tried really hard with recordings, and it is possible that they were texting with David to get information about birds at specific point counts, or sending him recordings. They likely DID learn from David about which birds are in the area. 
 #Furthermore, David’s ear is likely very attuned to the species that are important for tourism, and he was definitely not used to focusing on the more common species. Additionally, it’s true that I was surely not as useful as Robert with his camera. When David would be photographing there’s no way he would be able to also concentrate on the songs / calls very much. 
 # I did also review a few points & the data entered into the Excel matched the scanned data. There were not too many species written in the margins, indicating not many species were entered after the point counts were over (even those that were could have been from Robert's photographs). 
 # I asked GAICA 2x whether there was anything that could have biased the data, and they said there was not. Ultimately, it is impossible to disqualify something more mischievous, but I will never know. Think I have to let it go & trust the data. 
+
+# That being said, there was a 25% increase in observations made only in the recordings. 
+Coffee_24 <- Bird_pcs %>% 
+  left_join(Event_covs) %>%
+  left_join(Site_covs) %>%
+  filter(Uniq_db == "Ubc gaica mbd" & Ecoregion == "Cafetera") 
+Recording_obs <- Coffee_24 %>%
+  filter(Grabacion == "Y" )
+Non_recording_obs <- Coffee_24 %>% 
+  filter(Grabacion != "Y" | is.na(Grabacion))
+# Percent increase of observations from recording only
+nrow(Recording_obs) / nrow(Non_recording_obs)
+
+# Quindio points were done over ~7 days, OQ points done over 3 days, but ultimately they weren't so different
+Recording_obs %>% tabyl(Departamento)
+
+# Testing Ubc El Hatico ----------------------------------------------------
+# >Bird observation data --------------------------------------------------
+#Create dataframe with just Ubc gaica
+Ubc_hatico <- Bird_pcs_all %>% 
+  filter(Nombre_institucion == "Ubc" & Nombre_finca == "El hatico")
+ubc_hatico_ids <- unique(Ubc_hatico$Id_muestreo)
+
+##Create dataframe of names to compare column names
+# Extract names from each data frame in UBC_gaica
+UBC_hatico <- df_birds$Ubc_hatico
+name_list <- names(UBC_hatico)
+
+# Adjust the lengths of each list of names, filling with NA where needed
+adjusted_names <- lapply(name_list, function(x) {
+  length(x) <- max(sapply(name_list, length)) #Fill with NAs 
+  return(x)
+})
+
+# Combine them using cbind
+combined_names <- do.call(cbind, adjusted_names)
+
+# View result
+data.frame(combined_names) %>%
+  mutate(TF = apply(., 1, function(row) all(row == row[1])))
+
+#Examine values in each column
+lapply(UBC_hatico, unique)
+
+## Ensure all point count IDs are specified correctly
+# Extract PC IDs not including those by Ubc gaica to compare against
+PCids <- Bird_pcs_all %>% filter(Nombre_institucion != "Ubc") %>% 
+  pull(Id_muestreo) %>% 
+  unique()
+# Expected result: Point counts from Otun Quimbaya & "G-MB-M-EPO1_03_(1)" have no match
+prob_ids <- ubc_hatico_ids %in% PCids
+unique(ubc_hatico_ids[!prob_ids])
+
+## Spatial
+# Determine if there are differences in Lat / long within a single ID
+# Expected result: Should be 0 rows 
+UBC_hatico %>%
+  distinct(Id_muestreo, Latitud_decimal, Longitud_decimal) %>% 
+  #filter(Id_muestreo %in% c("G-MB-Q-PORT_01", "G-MB-Q-LCA_09"))
+  #rename(name = Id_muestreo) %>%
+  #st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), crs = 4326, remove = F) %>%
+  #st_write(driver='kml', dsn = paste0("Derived_geospatial/kml/GAICA_2024_", format(Sys.Date(), "%m.%d.%y"), ".kml"))
+  group_by(Id_muestreo) %>%
+  reframe(diff = round(diff(Latitud_decimal), 10))
+
+## Examine Ubc GAICA to identify any spatial errors
+Id_spat_errors <- function(Eco_reg){
+  Pc_locs_sf %>% 
+    filter(Ecoregion == Eco_reg & Uniq_db == "Ubc gaica dom") %>% # Piedemonte
+    filter(Id_muestreo != "G-MB-M-EPO1_03_(1)" & Id_group != "OQ") %>%
+    ggplot() + 
+    geom_sf() + 
+    ggrepel::geom_text_repel(aes(label = Id_muestreo, geometry = geometry
+    ), stat = "sf_coordinates")
+}
+Id_spat_errors(Eco_reg = "Cafetera") 
+Id_spat_errors(Eco_reg = "Piedemonte")
+# For OQ,change Id_group != "OQ" to == "OQ" in function
+Id_spat_errors(Eco_reg = "Cafetera") 
+
+## Examine species present 
+Ayerbe_all_spp <- list.files(path = "../Geospatial_data/Ayerbe_shapefiles_1890spp", pattern = "\\.dbf$")
+Ayerbe_all_spp <- substr(Ayerbe_all_spp, 1, nchar(Ayerbe_all_spp) - 4)
+ubc_hatico_spp <- UBC_hatico %>% pull(Nombre_cientifico_final_ayerbe_2018) %>% 
+  unique()
+TF <- ubc_hatico_spp %in% Ayerbe_all_spp
+prob_spp <- ubc_hatico_spp[!TF]
+# Expected result: "Leptotila verreauxi"
+Nombre_cientifico_original <- prob_spp[!str_detect(prob_spp, "sp")]
+
+# Split species name & compare to genus & species 
+# Expected result: 0 rows 
+map(UBC_hatico_l, \(df){
+  df %>% 
+    mutate(
+      Genus = str_split_i(Nombre_cientifico_final_ayerbe_2018, " ", i = 1),
+      Genus_equal = Genus == Genero,
+      Species = str_split_i(Nombre_cientifico_final_ayerbe_2018, " ", i = 2),
+      Species_equal = Species == Epiteto_especifico) %>%
+    select(Genus_equal, Nombre_cientifico_final_ayerbe_2018, Genero, Species_equal, Epiteto_especifico) %>% 
+    filter(Genus_equal == FALSE | Species_equal == FALSE) %>% 
+    distinct(Nombre_cientifico_final_ayerbe_2018, Genero, Epiteto_especifico)
+})
+
+## Examine difference in times within same day 
+# Expected result: There are 3 point counts with times > 5 minutes 
+Pc_date8 %>% filter(Nombre_institucion == "Ubc mbd") %>% 
+  filter(!Pc_length %in% c(as_hms("00:05:00"), as_hms("00:00:00"))) %>% 
+  pull(Pc_length)
+
+# Identify sampling points that have multiple habitat types. 
+# Expected result: 0 rows
+UBC_hatico %>% distinct(Id_muestreo, Habitat_og) %>% 
+  count(Id_muestreo) %>% 
+  filter(n > 1)
+
+#Identify problematic orders & families
+TF_order <- UBC_gaica_df$Orden %in% Tax_df3$order_gbif
+TF_family <- UBC_gaica_df$Familia %in% Tax_df3$family_gbif 
+
+# Expected result: There are 3 families that exist, just not in gbif
+UBC_gaica_df[!TF_family,] %>% pull(Familia) %>% unique() 
+
+#Consistency in Registrado_por 
+# Expected result: Should be consistent across all databases
+unique(UBC_hatico$Registrado_por)
+map(UBC_hatico, \(df){
+  df %>% distinct(Registrado_por)
+})
+
+# >Metadata ---------------------------------------------------------------
+UBC_hatico_metadata <- df_metadata$Ubc_hatico
+
+# Adjust the lengths of each list of names, filling with NA where needed
+adjusted_names <- lapply(name_list_metadata, function(x) {
+  length(x) <- max(sapply(name_list_metadata, length)) #Fill with NAs 
+  return(x)
+})
+
+# Combine them using cbind
+combined_names <- do.call(cbind, adjusted_names) %>% 
+  data.frame() %>%
+  filter(if_any(everything(), ~ . != "Esfuerzo_muestreo(puntos de conteo por finca y conteos por punto)"))
+
+# View result
+combined_names %>%
+  mutate(TF = apply(., 1, function(row) all(row == row[1]))) #%>% 
+#write.xlsx(file = "Derived/Excels/Column_names_Ecotropico.xlsx", row.names = F, showNA = F)
+
+# Ensure that all point counts were sampled on 3 different days & that metadata file is consistent with that
+# Expected result: Only OQ practica was sampled on a single day
+UBC_hatico %>% distinct(Id_muestreo, Fecha) %>% 
+  count(Id_muestreo) %>% 
+  filter(n != 3)
+
+## Identify points where we did not survey 
+# Expected result: Should return the points where we did not survey
+  UBC_hatico_metadata %>% filter(is.na(Spp_obs)) %>% 
+    distinct(Id_muestreo, Spp_obs)
+
+#Do all 'percent' rows sum to 100%?
+# Expected result: 0 rows (except for OQ practica)
+  UBC_hatico_metadata %>% select(starts_with("percent")) %>%
+    mutate(Sum = rowSums(across(everything()), na.rm = T)) %>% 
+    filter(Sum != 100)
+
+# Look for inconsistencies in habitat types
+  UBC_hatico_metadata %>%
+    select(contains("Habitat"), starts_with("percent"))
+
+# Ensure that the water features are not changing day to day 
+  UBC_hatico_metadata %>% distinct(Id_muestreo, Cuerpo_de_agua) %>% 
+    count(Id_muestreo) %>% 
+    filter(n > 1)
 
 # Miscellaneous -----------------------------------------------------------
 # Andrea habitat ----------------------------------------------------------
@@ -1054,8 +1227,8 @@ Exp_hab_match %>%
   filter(str_detect(Id_punto_muestreo_original, "CA|LC")) %>% 
   arrange(Id_punto_muestreo_original) %>%
   as.data.frame() %>% 
-  write.xlsx("Derived/Excels/Habitat_mismatches_6.5.25.xlsx", row.names = F, showNA = F)
-
+  write.xlsx("Derived/Excels/Habitat_mismatches_6.5.25.xlsx", 
+             row.names = F, showNA = F)
 
 # >Cipav_veg ---------------------------------------------------------------
 #Create a kml file for exploration in Google Earth
