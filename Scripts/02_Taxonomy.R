@@ -1,5 +1,5 @@
 ## PhD birds in silvopastoral landscapes##
-# Data wrangling 00b -- Taxonomy
+# Data wrangling 02 -- Taxonomy
 ## This script generates a data frame of taxonomic equivalents using Suarez Castro et al 2024 (providing a link between SACC, BirdLife, and eBird) and an Excel with taxonomic equivalents between SACC 2018 - Avilist 2025 (provided by Denis Lepage). 
 # Importantly, the final product (Tax_df_final) only contains species equivalents that are present in Colombia (instead of globally). 
 
@@ -34,15 +34,19 @@ conflicts_prefer(dplyr::filter)
 Bird_pcs_all_spp <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_all_spp.csv")
 Site_covs <- read_csv("Derived/Excels/Site_covs.csv")
 
+# Specify path 
+path <- "../Datasets_external/"
+
 ## Use the crosswalk file to create a data frame of true taxonomic equivalents (at least for BL & BT)
 Crosswalk <- read.csv(
-  "../Datasets_external/Avonet_Data/PhylogeneticData/BirdLife-BirdTree crosswalk.csv"
+  paste0(path, "Avonet_Data/PhylogeneticData/BirdLife-BirdTree crosswalk.csv")
 ) %>% rename(Species_bl = Species1, Species_bt = Species3) %>%
   select(Species_bl, Species_bt) %>% # Match.type, Match.notes
   tibble()
+
 # Taxonmy from SACC available in (Suarez Castro et al, 2024)
 Tax_suarez <- read_csv(
-  "../Datasets_external/Elev_ranges/Suarez_castro_AOH_birds_table_S3_V3.csv"
+  paste0(path, "Elev_ranges/Suarez_castro_AOH_birds_table_S3_V3.csv")
 ) %>% clean_names() %>% 
   select(1:3) %>% 
   rename_with(~c("Species_sacc", "Species_bl", "Species_eB")) %>% 
@@ -51,10 +55,13 @@ Tax_suarez <- read_csv(
   )
 
 # Match between SACC and Avilist 
-Sacc_avilist <- read.xlsx("../Datasets_external/sacc18 vs avilist Colombia.xlsx", sheetIndex = 1) %>% 
+Sacc_avilist <- read_excel(paste0(path, "sacc18 vs avilist Colombia.xlsx")) %>% 
   as_tibble() 
 Sacc_avilist2 <- Sacc_avilist %>% 
   select(starts_with("latin_name"), starts_with("common_name"), concept_id)
+
+# Avilist from June 2025 
+Avilist_all <- read_excel(paste0(path, "AviList-v2025-11Jun-short.xlsx"))
 
 # Taxonomic / transcription changes ---------------------------------------
 # Bring in taxonomic equivalents from manual review of species observed with Nick and data collectors (GAICA and CIPAV)
@@ -146,7 +153,8 @@ Manual_adjust_comb %>%
 
 ## Bring back in and add to final taxonomy list
 # NOTE: Xenops genibarbis is in Meta while Xenops mexicanus is in the other ecoregions we observed, thus Xenops minutus has two rows 
-Tax_manual_match <- read.xlsx("Derived/Excels/Taxonomy/Tax_manual_match.xlsx", sheetIndex = 1)
+Tax_manual_match <- read.xlsx("Derived/Excels/Taxonomy/Tax_manual_match.xlsx",
+                              sheetIndex = 1)
 Spp_rm <- Manual_adjust_comb %>% pull(latin_name_sacc)
 
 # Add manual updates
@@ -225,8 +233,16 @@ Tax_df7 <- Tax_df6 %>%
       Species_bt == latin_name_sacc
   ) %>% distinct()
 
+# Add order and family ----------------------------------------------------
+Avilist_join <- Avilist_all %>% select(Scientific_name, Order, Family)
+Tax_df8 <- Tax_df7 %>% 
+  left_join(Avilist_join, 
+            by = join_by("latin_name_avilist" == "Scientific_name"))
+
+# Tax_df_final ------------------------------------------------------------
 # Reorder the columns
-Tax_df_final <- Tax_df7 %>% 
+Tax_df_final <- Tax_df8 %>% 
+  relocate(c(Order, Family), .before = "latin_name_sacc") %>%
   relocate(c(starts_with("concept_id"), starts_with("common_name")), 
            .after = Species_bt) %>%
   rename_with(~str_replace(.x, "latin_name", "Species")) %>% 
@@ -234,7 +250,7 @@ Tax_df_final <- Tax_df7 %>%
          Species_avilist_25 = Species_avilist)
 
 # Examine -----------------------------------------------------------------
-nrow(Tax_df_final) #594
+nrow(Tax_df_final) #590
 
 # 4 species with multiple rows: "Piranga flava", "Setophaga petechia", "Turdus albicollis", "Xenops minutus" 
 Tax_df_final %>% count(Species_sacc_18, sort = T)
@@ -252,7 +268,6 @@ Tax_df_final %>% filter(Species_sacc_18 != Species_ayerbe | is.na(Species_sacc_1
 
 # Export ------------------------------------------------------------------
 stop()
-
 Tax_df_final %>% write_csv("Derived/Excels/Taxonomy/Taxonomy_all.csv")
 Bird_pcs_all_spp2 %>% 
   filter(Species_ayerbe %in% Tax_df_final$Species_ayerbe) %>% 
