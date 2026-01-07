@@ -1,5 +1,5 @@
 ## PhD birds in silvopastoral landscapes ##
-## Data wrangling 00g -- Phylogeny & metrics of phylogenetic diversity
+## Data wrangling 08 -- Phylogeny & metrics of phylogenetic diversity
 ## This script generates metrics of phylogenetic diversity and visualizes the phylogeny of all birds observed in the SCR project
 
 ## Contents:
@@ -31,27 +31,34 @@ conflicts_prefer(dplyr::filter)
 # Load data ---------------------------------------------------------------
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
-Taxonomy <- read_csv("Derived/Excels/Taxonomy/Taxonomy_all.csv")
-Bird_pcs <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
-
-Taxonomy
+Taxonomy <- read_csv("Derived/Excels/Taxonomy/Taxonomy.csv")
+Bird_pcs_all <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
 
 # BirdTree equivalents ----------------------------------------------------
 Spp_join_bt <- Taxonomy %>%
-  distinct(Species_ayerbe, Species_bt, Order_gbif, Family_gbif)
+  distinct(Species_ayerbe, Species_bt, Order, Family)
 
-## Filter just the bird species observed in Bird_pcs_analysis, join with BirdTree taxonomy, and keep only the first BirdTree option for each species (according to Ayerbe). This way we only keep a single representative subspecies when there are multiple BirdTree subspecies
-Bt_equivalents <- Bird_pcs_analysis %>% 
-  distinct(Species_ayerbe) %>% 
-  left_join(Spp_join_bt) %>%
-  reframe(Species_bt = first(Species_bt),
-          .by = Species_ayerbe)
-# NOTE:: Species with Species_bt repeated have multiple names for species_ayerbe
-Bt_equivalents %>% count(Species_bt, sort = T)
+# We only want one BirdTree option for each species Ayerbe (a single representative subspecies)
+Spp_join_bt %>% count(Species_ayerbe, sort = T) %>% 
+  filter(n > 1)
+# Example, there are two BirdTree equivalents equal to Piranga flava. Looking online, we want Piranga lutea which is in Colombia 
+Spp_join_bt %>% filter(Species_ayerbe == "Piranga flava")
+
+# Manually choose a single BirdTree option 
+Spp_join_bt2 <- Spp_join_bt %>% 
+  mutate(Species_bt = case_when(
+    Species_ayerbe == "Piranga flava" ~ "Piranga lutea", 
+    Species_ayerbe == "Setophaga petechia" ~ "Dendroica petechia", 
+    Species_ayerbe == "Turdus albicollis" ~ "Turdus albicollis",
+    .default = Species_bt
+)) %>% distinct() %>% 
+  mutate(Species_bt_ = str_replace(Species_bt, " ", "_")) 
+
+# NOTE:: Species with Species_bt repeated have multiple names for species_ayerbe, which is OK
+Spp_join_bt2 %>% count(Species_bt, sort = T)
 
 # Phylogenies we downloaded use BirdTree taxonomy and have "_" separating genus & species. Create vector of the species we observed in BirdTree taxonomy
-Spp_obs_bt <- Bt_equivalents %>% 
-  mutate(Species_bt_ = str_replace(Species_bt, " ", "_")) %>% 
+Spp_obs_bt <- Spp_join_bt2 %>% 
   pull(Species_bt_) %>% 
   unique()
 
@@ -78,29 +85,23 @@ phylo_obs <- read.tree(file = "Derived/Single_tree.tre")
 
 # Taxonomy: Order & Family ------------------------------------------------
 ## Bring in data on orders or families 
-Tax_join <- Spp_join_bt %>% 
+Tax_join <- Spp_join_bt2 %>% 
   select(-Species_ayerbe) %>% 
-  distinct() %>% 
-  mutate(
-    Species_bt = str_replace(Species_bt, " ", "_"), 
-    Order_gbif = if_else(
-      Species_bt == "Ortalis_guttata", "Galliformes", Order_gbif
-      ), 
-    Family_gbif = if_else(
-      Species_bt == "Ortalis_guttata", "Galliformes", Family_gbif
-      )
-  ) %>% rename_with(~ str_remove(., "_gbif"))
+  distinct() #%>% 
+  #rename_with(~ str_remove(., ""))
 
 # Take species from pruned tree, join with taxonomy, & add in node information
 Tax_tbl_nodes <- tibble(tip.label = phylo_obs$tip.label) %>% 
-  left_join(Tax_join, by = join_by("tip.label" == "Species_bt")) %>% 
-  mutate(genus = str_split_i(string = tip.label, pattern = "_", i = 1)) %>%
+  left_join(Tax_join, by = join_by("tip.label" == "Species_bt_")) %>% 
+  mutate(Genus = str_split_i(string = tip.label, pattern = "_", i = 1)) %>%
   mutate(node = row_number()) # Not sure why this works. Seems like multiple species would share a single node? 
+
+# Should be no NAs
+Tax_tbl_nodes %>% filter(is.na(Order))
 
 # Summary table -----------------------------------------------------------
 # Create summary table with number of families, genera, & spp per order
 Tax_summary <- Tax_tbl_nodes %>%
-  mutate(Genus = str_split_i(tip.label, "_", 1)) %>%
   summarise(
     N_fam = n_distinct(Family),
     N_gen = n_distinct(Genus),
@@ -136,55 +137,67 @@ Family_dominant <- Tax_tbl_nodes %>%
 
 ## Download & adjust the phylopic silhouettes
 # NOTE:: Only need to download and adjust the images once, so skip this code if the folder already exists
-Phylopic_path <- "Figures/Phylogeny/Phylopic/Bird_orders/"
-if(!file.exists(Phylopic_path)){
+Phylopic_path <- "Figures/Phylogeny/Phylopic/Bird_orders_"
+if(!file.exists(paste0(Phylopic_path, "final/"))){
   # For each order download the phylopic silhouette
-  Phylopic_tbl <- pmap(Family_dominant, function(order, family, pic_n){
-    # Phylopic - Get a single image uuid for a species
-    image <- pick_phylopic(name = {{ family }}, auto = 2) # n = pic_n
-    uuid <- get_uuid(img = image)
-    # Combine in tbl
-    tibble(Order = {{ order }}, Uuid = uuid)
+  Phylopic_tbl <- pmap(Family_dominant, function(Order, Family_dom, pic_n){
+    image <- pick_phylopic(name = Family_dom, auto = 2) # n = pic_n, auto = 2
+    tibble(Order = Order, Uuid = get_uuid(img = image))
   }) %>% list_rbind()
   
   # Modify images (rotations & size adjustments) & save
   uuid_labs <- setNames(Phylopic_tbl$Uuid, Phylopic_tbl$Order)
   Make_larger <- c("Falconiformes", "Trogoniformes", "Cuculiformes", "Caprimulgiformes")
+  flip <- c("Coraciiformes", "Galbuliformes", "Cathartiformes", "Charadriiformes", "Cuculiformes")
   imap(uuid_labs, \(uuid, order){
     img <- get_phylopic(uuid = uuid) 
-    if(order == "Charadriiformes"){
+    if(order %in% flip){
       img <- flip_phylopic(img)
     }
     # Save images to Figures folder
     if(order %in% Make_larger){
-      save_phylopic(img, path = paste0(Phylopic_path, order, ".png"), 
-                    width = 1000, heigh = 1000) #580
+      save_phylopic(img, path = paste0(Phylopic_path, "auto2/", order, ".png"), 
+                    width = 1000, height = 1000) #580
     } 
     else{
-      save_phylopic(img, path = paste0(Phylopic_path, order, ".png"))
+      save_phylopic(img, path = paste0(Phylopic_path, "auto2/", order, ".png"))
     }
     # Default dimensions are 480 x 480
   })
 }
 
+# >Combine icons in final -------------------------------------------------
+# Move a few orders that look better from auto_2 
+if(!file.exists(paste0(Phylopic_path, "final/"))){
+  Orders_move <- c("Falconiformes", "Cathartiformes", "Charadriiformes", "Cuculiformes")
+  map(Orders_move, \(order){
+    file.copy(from = paste0(Phylopic_path, "auto2/", order, ".png"),  
+              to = paste0(Phylopic_path, "final/", order, ".png"), 
+              overwrite = TRUE)
+  })
+}
+
+# Copy Piciformes from pic_n
+file.copy(from = paste0(Phylopic_path, "picn/Piciformes.png"),  
+          to = paste0(Phylopic_path, "final/Piciformes.png"), 
+          overwrite = TRUE)
+
 # Visualize ---------------------------------------------------------------
 ## Plot phylogeny coloring species names by family and including orders on the outside of the phylogeny 
-# NOTE:: Spent a lot of time trying to get clade labels on a circular tree
-# This function created from phytools guy could work? http://blog.phytools.org/2017/03/clade-labels-on-circular-fan-tree.html?m=1
-# What about some cheats, like removing some of the images in the really dense areas? 
+# Remove the orders with only 1 species to improve visibility on plot
 Orders_plot <- Mrca_nodes %>% 
   full_join(Tax_summary) %>%
   filter(N_spp > 1 & Order != "Anseriformes") %>% 
   rowwise() %>%
   mutate(
-    Image_path = paste0(Phylopic_path, Order, ".png"),
+    Image_path = paste0(Phylopic_path, "final/", Order, ".png"),
     Label = paste0(Order, " (", N_spp, ")") # N_fam, ",",
   ) %>% ungroup()
 
 # Plot full phylogeny
 ggtree(phylo_obs, layout='circular', aes(color = Family)) %<+%
   Tax_tbl_nodes + 
-  #geom_tiplab(size = 3, aes(color = family_gbif, angle = angle)) +
+  #geom_tiplab(size = 3, aes(color = family, angle = angle)) +
   geom_cladelab(
     data        = Orders_plot,
     mapping     = aes(node = Mrca_node, label = Label, image = Image_path),
@@ -202,7 +215,8 @@ ggtree(phylo_obs, layout='circular', aes(color = Family)) %<+%
                 offset = 10, 
                 barsize = 0) + # auto-rotates text radially
   theme(plot.margin = margin(30, 30, 20, -40)) # Control
-#ggsave("Data_paper/Figures/Phylogeny_equal_sizes.png")
+ggsave("Data_paper/Figures/Phylogeny_equal_sizes.png",
+       height = 8, width = 7.35)
 
 ## Visualize each order that has more than 1 species
 plots_order <- pmap(Orders_plot[,c("Order", "Mrca_node", "N_spp")], 
@@ -219,14 +233,14 @@ plots_order <- pmap(Orders_plot[,c("Order", "Mrca_node", "N_spp")],
 
 # Export  -------------------------------------------------------------
 stop()
-# Write a single tree for BIOL314 class
+# Write a single tree
 write.tree(phylo_obs, file = "Derived/Single_tree.tre")
 
 ## Export summary table
 # Recreate summary_tbl using all species (not just BirdTree)
 Tax_summary_exp <- Taxonomy %>%
-  distinct(Species_ayerbe, Order_gbif, Family_gbif) %>%
-  rename_with(~ str_remove(., "_gbif")) %>%
+  distinct(Species_ayerbe, Order, Family) %>%
+  #rename_with(~ str_remove(., "")) %>%
   mutate(Genus = str_split_i(Species_ayerbe, " ", 1)) %>% 
   summarise(
     N_fam = n_distinct(Family),
