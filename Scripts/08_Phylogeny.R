@@ -147,43 +147,43 @@ if(!file.exists(paste0(Phylopic_path, "final/"))){
   
   # Modify images (rotations & size adjustments) & save
   uuid_labs <- setNames(Phylopic_tbl$Uuid, Phylopic_tbl$Order)
-  Make_larger <- c("Falconiformes", "Trogoniformes", "Cuculiformes", "Caprimulgiformes")
-  flip <- c("Coraciiformes", "Galbuliformes", "Cathartiformes", "Charadriiformes", "Cuculiformes")
+  Flip <- c("Coraciiformes", "Galbuliformes", "Cathartiformes", "Cuculiformes", 
+            "Charadriiformes", "Galliformes")
+  
+  # Map through images saving final form
   imap(uuid_labs, \(uuid, order){
     img <- get_phylopic(uuid = uuid) 
-    if(order %in% flip){
+    if(order %in% Flip){
       img <- flip_phylopic(img)
     }
-    # Save images to Figures folder
-    if(order %in% Make_larger){
-      save_phylopic(img, path = paste0(Phylopic_path, "auto2/", order, ".png"), 
-                    width = 1000, height = 1000) #580
-    } 
     else{
       save_phylopic(img, path = paste0(Phylopic_path, "auto2/", order, ".png"))
     }
-    # Default dimensions are 480 x 480
   })
 }
 
 # >Combine icons in final -------------------------------------------------
-# Move a few orders that look better from auto_2 
+## Manually paste auto1 into _final folder, then move a few orders that look better from auto_2 or that were manually downloaded 
+Move_auto2 <- c("Cathartiformes", "Charadriiformes", "Coraciiformes", "Cuculiformes", "Falconiformes")
 if(!file.exists(paste0(Phylopic_path, "final/"))){
-  Orders_move <- c("Falconiformes", "Cathartiformes", "Charadriiformes", "Cuculiformes")
-  map(Orders_move, \(order){
-    file.copy(from = paste0(Phylopic_path, "auto2/", order, ".png"),  
-              to = paste0(Phylopic_path, "final/", order, ".png"), 
+  # From auto_2 
+  map(Move_auto2, \(order_auto2){
+    file.copy(from = paste0(Phylopic_path,  "auto2/", order_auto2, ".png"),  
+              to = paste0(Phylopic_path, "final/", order_auto2, ".png"), 
+              overwrite = TRUE)
+  })
+  # From manual download
+  Orders_move_png <- list.files(paste0(Phylopic_path, "manual/"))
+  map(Orders_move_png, \(order_manual){
+    file.copy(from = paste0(Phylopic_path,  "manual/", order_manual),  
+              to = paste0(Phylopic_path, "final/", order_manual), 
               overwrite = TRUE)
   })
 }
 
-# Copy Piciformes from pic_n
-file.copy(from = paste0(Phylopic_path, "picn/Piciformes.png"),  
-          to = paste0(Phylopic_path, "final/Piciformes.png"), 
-          overwrite = TRUE)
-
 # Visualize ---------------------------------------------------------------
 ## Plot phylogeny coloring species names by family and including orders on the outside of the phylogeny 
+
 # Remove the orders with only 1 species to improve visibility on plot
 Orders_plot <- Mrca_nodes %>% 
   full_join(Tax_summary) %>%
@@ -194,29 +194,48 @@ Orders_plot <- Mrca_nodes %>%
     Label = paste0(Order, " (", N_spp, ")") # N_fam, ",",
   ) %>% ungroup()
 
+# Adjust size
+Make_way_larger <- c("Falconiformes",  "Caprimulgiformes", "Cathartiformes")
+Make_larger <- c("Trogoniformes", "Piciformes", "Galliformes", "Accipitriformes", "Pelecaniformes")
+Make_smaller <- c("Coraciiformes", "Charadriiformes", "Tinamiformes") #"Galbuliformes"
+
+# Create image_size column
+Orders_plot2 <- Orders_plot %>% 
+  mutate(image_size = case_when(
+    Order %in% Make_way_larger  ~ 0.07,
+    Order %in% Make_larger  ~ 0.06,
+    Order %in% Make_smaller ~ 0.04,
+    .default = 0.05
+  ))
+
 # Plot full phylogeny
 ggtree(phylo_obs, layout='circular', aes(color = Family)) %<+%
   Tax_tbl_nodes + 
-  #geom_tiplab(size = 3, aes(color = family, angle = angle)) +
+  # This geom_cladelab() controls the images
   geom_cladelab(
-    data        = Orders_plot,
-    mapping     = aes(node = Mrca_node, label = Label, image = Image_path),
+    data        = Orders_plot2,
+    mapping     = aes(node = Mrca_node, 
+                      label = Label, 
+                      image = Image_path,
+                      size = image_size),
     geom        = "image", # "phylopic"
     imagecolor  = "black",
     inherit.aes = FALSE,
     offset      = 3,    # distance from the clade
     barsize     = 0.3,  
     show.legend = FALSE
-  ) + guides(color = "none") + 
+  ) + scale_size_identity() +
+  guides(color = "none") + 
+  # This geom_cladelab() controls the text
   geom_cladelab(data = Orders_plot,
                 mapping = aes(node = Mrca_node, label = Label), 
                 fontsize = 3,
                 angle = "auto", 
-                offset = 10, 
+                offset = 11, 
                 barsize = 0) + # auto-rotates text radially
   theme(plot.margin = margin(30, 30, 20, -40)) # Control
-ggsave("Data_paper/Figures/Phylogeny_equal_sizes.png",
-       height = 8, width = 7.35)
+#ggsave("Data_paper/Figures/Phylogeny_equal_sizes.png",
+ #      height = 8, width = 7.35)
 
 ## Visualize each order that has more than 1 species
 plots_order <- pmap(Orders_plot[,c("Order", "Mrca_node", "N_spp")], 
@@ -249,7 +268,7 @@ Tax_summary_exp <- Taxonomy %>%
     .by = Order
   ) %>% arrange(desc(N_fam), desc(N_gen), desc(N_spp))
 write.csv(Tax_summary_exp, row.names = FALSE, 
-          file = "Derived/Excels/Tax_summary.csv")
+          file = "Derived/Excels/Taxonomy/Tax_summary.csv")
 
 # Phylogenetic diversity (PD) -----------------------------------------------
 # ALSO SEE BIOL314 SCRIPT
