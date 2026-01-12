@@ -167,7 +167,7 @@ create_barplot <- function(df, slice_n, plot_title = NULL){
 # Create barplot by farm & export as png 
 imap(.x = Birds_by_farm, \(df, names){
   bar.p <- df %>% create_barplot(slice_n = 10)
-  ggsave(plot = bar.p, filename = paste0(path, "Farm_specific_inputs/Relative_Frequency_plots_test/", names, ".png"), bg = "white")
+  ggsave(plot = bar.p, filename = paste0(path, "Farm_specific_inputs/Relative_Frequency_plots/", names, ".png"), bg = "white")
 })
 #}
 
@@ -187,7 +187,7 @@ imap(.x = Birds_by_farm, \(df, names){
   stargazer(df50,
     type = "latex",
     out =
-      paste0(path, "Farm_specific_inputs/Species_lists_test/", names, ".tex"),
+      paste0(path, "Farm_specific_inputs/Species_lists/", names, ".tex"),
     title = "Especies encontradas en la finca (de mas a menos abundantes)",
     colnames = FALSE,
     rownames = FALSE,
@@ -238,7 +238,7 @@ Birds_comb2 %>%
   distinct(Id_gcs, Nombre_finca, Ecoregion) %>%
   mutate(Identifier = paste0(Nombre_finca, "_", "Id_gcs_", Id_gcs)) %>%
   as.data.frame() %>%
-  write.xlsx(paste0(path, "Excels/Farm_names_IDs_test.xlsx"), row.names = FALSE)
+  write.xlsx(paste0(path, "Excels/Farm_names_IDs.xlsx"), row.names = FALSE)
 stop()
 
 # Export KML --------------------------------------------------------------
