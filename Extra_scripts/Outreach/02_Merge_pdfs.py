@@ -1,6 +1,6 @@
 ## Execute this Python script to merge each farm-specific bird biodiversity PDF with the region-specific PDFs in pdf'##
-# Key inputs from this script were generated in the 'Outreach_farmers.R' script & the 'create_pdfs.py' script
-# Run 'python3 Python/02_Merge_pdfs_working.py' in terminal to run this script
+# Key inputs from this script were generated in the 'Outreach_farmers.R' script & the 'Create_pdfs.py' script
+# Run 'python3 Python/02_Merge_pdfs.py' in terminal to run this script
 
 import os
 import glob
@@ -14,7 +14,7 @@ regional_directory = f'{Outreach_directory}/Fun_facts_regional_pdfs'
 merged_directory = f'{Outreach_directory}/Merged_pdfs'
 
 # Load Excel created in the 'Outreach_farmers.R' script
-data_filepath = f'{Outreach_directory}/Excels/Farm_names_IDs_test.xlsx'
+data_filepath = f'{Outreach_directory}/Excels/Farm_names_IDs.xlsx'
 df = pd.read_excel(data_filepath)
 df["Id_gcs"] = pd.to_numeric(df["Id_gcs"], errors="coerce").astype("Int64")
 
