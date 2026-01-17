@@ -19,6 +19,7 @@ library(chron)
 library(ggpubr)
 library(cowplot)
 library(conflicted)
+library(stringi)
 ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
@@ -27,7 +28,7 @@ conflicts_prefer(dplyr::filter)
 
 ## Load data and custom functions
 Bird_pcs_all <-  read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
-Tax_df <- read_csv("Derived/Excels/Taxonomy/Taxonomy_all.csv") #%>% 
+Tax_df <- read_csv("Derived/Excels/Taxonomy/Taxonomy.csv") #%>% 
 #mutate(Avibase.ID = str_sub(concept_id_avilist, 1, 8)) # Match with Avonet
 
 # Avonet list  ------------------------------------------------------------
@@ -90,7 +91,7 @@ lapply(Ft_df2[17:21], table)
 
 # From Hilty guidebook, thanks to Hazen
 Hilty_elev <- read_xlsx(
-  "../Datasets_external/Elev_ranges/Elev_ranges_Hazen.xlsx"
+  "../Datasets_external/Elev_ranges/Hazen_Elev_ranges_Hilty.xlsx"
 ) %>% select(Species_ayerbe, contains("Hilty"))
 
 # From Suarez Castro et al (2024)
@@ -100,7 +101,15 @@ Ayerbe_elev <- read_csv(
   Species_bl = BirdLife..IUCN.,
   Min_ayerbe = Minimum.elevation,
   Max_ayerbe = Maximum.elevation
-) #%>% select(Species_bl, ends_with("ayerbe"))
+) %>% rename(Species_ayerbe = Scientific.Name)
+
+# From Ayerbe-Quiñones (2018) field guide 
+Ayerbe_elev_hazen <- read_xlsx(
+  "../Datasets_external/Elev_ranges/Hazen_Elev_ranges_Ayerbe.xlsx"
+) %>% select(-Elev_range_ayerbe)
+
+# Join Suarez Castro et al (2024) and Hazen's work from Ayerbe field guide
+Ayerbe_elev2 <- Ayerbe_elev %>% bind_rows(Ayerbe_elev_hazen)
 
 # Traits from Bird et al. 2020, likely want to add some longevity traits here. Maybe from Wolfe et al 2025 too? It would be interesting to see if species that are on the k-side of the r-k continuum are impacted more greatly than r-selected species.
 bird20t <- read_excel("../Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0003-tables3.xlsx")
@@ -148,8 +157,8 @@ elev_raw <- Tax_df %>%
   left_join(Col_elev_QJ,     by = c("Species_bt" = "Species")) %>%
   #left_join(bird20t,         by = c("Species_bl" = "Scientific.name")) %>%
   left_join(
-    Ayerbe_elev %>% select(-Species_bl), 
-    by = join_by("Species_ayerbe" == "Scientific.Name")) %>%
+    Ayerbe_elev2 %>% select(-Species_bl)
+    ) %>%
   left_join(
     Free22_Co %>% select(scientific.name, Min_eB, Max_eB),
     by = c("Species_eB" = "scientific.name")
@@ -163,49 +172,13 @@ elev_raw <- Tax_df %>%
     Year
   )
 
-# >Calculate ayerbe -------------------------------------------------------
-## Calculate using the same methodology as Suarez Castro et al (2024)
-# TEMPORARY - Until Hazen provides results from Ayerbe field guide
-Spp_elev_to_extract <- elev_raw %>% 
-  select(contains("ayerbe")) %>% 
-  filter(is.na(Min_ayerbe)) %>% 
-  pull(Species_ayerbe)
-
-# Use Ayerbe shapefiles to calculate the elevational range per species
-Ayerbe_path <- "../Geospatial_data/Ayerbe_shapefiles_1890spp/"
-#Elev_90m <- geodata::elevation_3s(lat = 4, lon = -75, path = tempdir())
-Elev_1km <- geodata::elevation_30s(country = "COL", path = tempdir())
-ggplot() + geom_spatraster(data = Elev_1km)
-
-# Confirmed that smoothr::drop_crumbs does reduce the area of polygons 
-thresh <- units::set_units(1, km^2) 
-Ayerbe_calc_tbl <- map_dfr(Spp_elev_to_extract, \(Spp){
-  sv <- terra::vect(paste0(Ayerbe_path, Spp, ".shp"))  
-  sv_clean <- sv %>% makeValid() %>%
-    smoothr::drop_crumbs(thresh) # drop small polygons
-  rast_range <- terra::extract(Elev_1km, sv_clean)[[2]]
-  tibble(Species_ayerbe = Spp,
-         elev05 = quantile(rast_range, .05, na.rm = TRUE),
-         elev95 = quantile(rast_range, .95, na.rm = TRUE))
-})
-
-elev_raw2 <- elev_raw %>% left_join(Ayerbe_calc_tbl) %>% 
-  mutate(Min_ayerbe = coalesce(Min_ayerbe, elev05), 
-         Max_ayerbe = coalesce(Max_ayerbe, elev95)) %>% 
-  select(-c(elev05, elev95)) %>% 
-  group_by(Species_ayerbe) %>%
-  fill(c(Min_QJ, Max_QJ, Year), .direction = "downup") %>% 
-  ungroup() %>% 
-  distinct() 
-elev_raw2 %>% count(Species_ayerbe, sort = T)
-
 # >Min max ----------------------------------------------------------------
 # Custom functions to take the minimum value or return NA 
 safe_min <- function(x) if (all(is.na(x))) NA_real_ else min(x, na.rm = TRUE)
 safe_max <- function(x) if (all(is.na(x))) NA_real_ else max(x, na.rm = TRUE)
 
 # Generate tbl with the minimum and maximum values across all sources. The idea behind the min and max elevation combined columns (these are the broadest elevational ranges) is this should be useful for checking specific observations with data collectors. The goal is to make the list manageable and to just consist of the species that really are likely mistakes
-Elev_min_max <- elev_raw2 %>%
+Elev_min_max <- elev_raw %>%
   group_by(Species_ayerbe) %>%
   summarize(
     across(starts_with("Min"), safe_min),
@@ -282,9 +255,9 @@ diff_tbl <- Elev_diffs %>%
 
 ## Examine
 # There are many species where the minimum difference between sources is >500m
-# I bet many of these are due to taxonomy... Notice nearly all of these have QJ in it, and may be very old (as far back as 1986) 
+# Some of these may be due to taxonomy... Some of these have QJ in it, and may be very old (as far back as 1986) 
 diff_tbl %>% filter(min_diff > 500) %>% 
-  arrange(desc(min_diff)) 
+  arrange(desc(min_diff))
 
 ## Select a chosen range 
 source_choice <- diff_tbl %>%
@@ -320,8 +293,13 @@ Elev_final %>% select(Species_ayerbe, Elev_range_final, chosen_range)
 # >Understand elevational ranges-----------------------------------------
 # Several checks to better understand the elevational range data
 
-## CHECK:: A few of these to ensure that things are working as expected
-Elev_ranges %>% select(-starts_with("Species"), -contains("B20"))
+# Nearly all of the species have elevational ranges from at least two sources (only 6 have one source)
+Elev_ranges %>% select(Species_ayerbe, contains("range")) %>% 
+  select(-Elev_range_comb) %>%
+  mutate(n_miss = naniar::n_miss_row(.)) %>% 
+  arrange(desc(n_miss))
+
+
 # Examine where elevational ranges come from (mostly 2018, some as old as 1986)
 Elev_ranges %>%
   pull(Year) %>%
