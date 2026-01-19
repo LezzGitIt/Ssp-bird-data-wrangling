@@ -1,5 +1,5 @@
 ## PhD birds in silvopastoral landscapes##
-# Data wrangling 00a -- Create base data frame (Bird_pcs_all)
+# General data wrangling 01 -- Create base data frame (Bird_pcs_all)
 ## This script loads raw data from data providers, combines data into single df, & tidies and filters data to produce the environment necessary for future scripts & downstream analyses
 
 # Contents
@@ -831,8 +831,39 @@ Pc_date8 <- Pc_date7 %>%
   ungroup() %>%
   select(-c(Days_since))
 
+# NOTE: Season is grouped by by point count, whereas this is grouped by data collector
+Pc_date_days_since <- Pc_date8 %>%
+  group_by(Nombre_institucion, Ano_grp) %>% #, Ecoregion
+  mutate(Days_since = Fecha - min(Fecha))
+
+# Visualize to determine appropriate cutoff values
+if(FALSE){
+  # Within data collector
+  Pc_date_days_since %>% filter(Nombre_institucion == "Cipav") %>% 
+    ggplot() +
+    geom_histogram(aes(x = Days_since, fill = Nombre_institucion), alpha = .3, position = "identity") 
+  # All data collectors
+  Pc_date_days_since %>% 
+    ggplot(aes(x = Days_since, fill = Nombre_institucion)) +
+    geom_density(alpha = .3)
+}
+
+# Define groups - somewhat arbitrary cutoffs (used visual plots to assess)
+Pc_date9 <- Pc_date_days_since %>% mutate(Grp = case_when(
+  Days_since < 80 ~ "1", 
+  Days_since > 80 & Days_since < 250 ~ "2", 
+  Days_since > 250 ~ "3")
+) %>% group_by(Nombre_institucion, Ano_grp, Grp) %>%
+  mutate(Sampling_day = Fecha - min(Fecha) + 1) %>% # +1 so day 0 = day 1
+  ungroup() %>%
+  select(-c(Days_since, Grp))
+  
+# Visualize
+Pc_date9 %>% ggplot() + 
+  geom_density(aes(x = Sampling_day, color = Nombre_institucion))
+
 # NOTE:: There are still some NAs in this dataframe, but I don't think it would be too hard to fill in in the future if necessary
-Pc_date8 %>% 
+Pc_date9 %>% 
   Na_rows_cols(cols_inc = c(Id_group, Ano_grp, Id_muestreo, Uniq_db, Fecha)) 
 
 # Event covariates --------------------------------------------------------
@@ -929,7 +960,7 @@ Event_covs_ubc <- df_metadata$Ubc %>%
 Event_covs_ubc_ug <- bind_rows(Event_covs_ubc, Event_covs_ug)
 
 # >Merge with Pc_date -----------------------------------------------------
-Event_covs_all <- Pc_date8 %>%
+Event_covs_all <- Pc_date9 %>%
   left_join(
     Event_covs_ubc_ug,
     by = c("Id_muestreo", "Fecha", "Pc_start"),
@@ -939,12 +970,12 @@ Event_covs_all <- Pc_date8 %>%
   select(-Clima.new)
 
 ## Testing - Did this work? YES
-# These are points that are in Event_covs_ubc_ug and not in Pc_date8. These are practice points, points that we did not survey but took some measurements (e.g. habitat), etc. 
+# These are points that are in Event_covs_ubc_ug and not in Pc_date9. These are practice points, points that we did not survey but took some measurements (e.g. habitat), etc. 
 anti_join(Event_covs_ubc_ug, Event_covs_all)
 
 # Keep (and order) only the relevant columns
 Event_covs <- Event_covs_all %>% 
-  select(Id_muestreo, Id_muestreo_no_dc, Id_group, Nombre_institucion, Uniq_db, Fecha, Ano_grp, Ano, Mes, Dia, Julian_day, Pc_start, Pc_length, N_samp_periods, N_reps, Rep_ano_grp, Rep_season, Spp_obs, Noise, Clima, Cows_50m)
+  select(Id_muestreo, Id_muestreo_no_dc, Id_group, Nombre_institucion, Uniq_db, Fecha, Ano_grp, Ano, Mes, Dia, Julian_day, Sampling_day, Pc_start, Pc_length, N_samp_periods, N_reps, Rep_ano_grp, Rep_season, Spp_obs, Noise, Clima, Cows_50m)
 
 # Environmental data ---------------------------------------------------
 #stop() 
@@ -1005,7 +1036,7 @@ Envi_df2 <- Envi_df %>%
 # >Site covs --------------------------------------------------------------
 Site_covs <- Bird_pcs_all %>% 
   distinct(
-    Id_muestreo, Id_muestreo_no_dc, Nombre_institucion, Id_gcs
+    Id_muestreo, Id_muestreo_no_dc, Nombre_institucion, Id_gcs, Nombre_finca
   ) %>% 
   left_join(Envi_df2) %>% 
   select(-c(Id_muestreo, Uniq_db, Nombre_institucion, Id_group)) %>%
@@ -1061,7 +1092,7 @@ if (FALSE) { # This process is slow
 
 # Save & export -----------------------------------------------------------
 stop() 
-rm(list = ls()[!(ls() %in% c("Bird_pcs_all", "Birds_comb4", "Pc_date8", "Pc_hab", "Pc_locs", "df_birds", "df_metadata", "df_meta", "df_birds_red", "Mes_mod", "Pc_locs_mult", "Pc_locs_sf", "Envi_df2", "Prec_df", "Prec_daily", "Rep_dfs"))])
+rm(list = ls()[!(ls() %in% c("Bird_pcs_all", "Birds_comb4", "Pc_date9", "Pc_hab", "Pc_locs", "df_birds", "df_metadata", "df_meta", "df_birds_red", "Mes_mod", "Pc_locs_mult", "Pc_locs_sf", "Envi_df2", "Prec_df", "Prec_daily", "Rep_dfs"))])
 #save.image(paste0("Rdata/the_basics_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 #save.image("Rdata/the_basics_09.15.25.Rdata") # Manual
 
@@ -1078,13 +1109,13 @@ Bird_pcs_all_export %>%
   write_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all_spp.csv")
 
 ## Export covariates as csv
-# Site covariates - There are 496 unique locations, so all of these are stable irrespective of which data collector
+# Site covariates - There are 504 unique locations, so all of these are stable irrespective of which data collector
 Site_covs %>% write_csv(file = "Derived/Excels/Site_covs.csv")
 
 # Export Precipitation df for the data_paper_figs script
 Prec_df %>% write_csv(file = "Derived/Excels/Prec_df.csv")
 
-# Event covariates - 2691  point count surveys
+# Event covariates - 2727  point count surveys
 Event_covs %>% write_csv(file = "Derived/Excels/Event_covs.csv")
 
 ## Export Pc_hab to update points manually using Google Earth
@@ -1161,7 +1192,8 @@ df_birds$Ubc_hatico %>% select(Id_muestreo) %>% distinct() %>%
 pt_locs
 
 # Join
-df_metadata$Ubc_hatico %>% select(Id_muestreo, Latitude, Longitude) %>%
+df_metadata$Ubc_hatico %>% 
+  select(Id_muestreo, Latitude, Longitude) %>%
   distinct() %>%
   view()
   right_join(df_birds$Ubc_hatico, 
@@ -1177,38 +1209,6 @@ df_metadata$Ubc_hatico %>% select(Id_muestreo, Latitude, Longitude) %>%
 
 df_birds_red$Cipav %>% filter(Nombre_finca == "El hatico") %>% 
   distinct(Id_muestreo, Latitud_decimal, Longitud_decimal)
-
-## Hatico species list 
-Col_eb <- read_csv("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Outreach/Outreach_farmers/eBird_Colombia_2025.csv")
-# Species observed in El Hatico from eBird
-Spp_eb_eh <- Col_eb %>% filter(location == "RN El Hatico") %>% 
-  distinct(scientific_name) %>% 
-  filter(str_detect(scientific_name, "sp.|/"))
-# During point counts
-Spp_pc_eh <- Bird_pcs_analysis %>% 
-  left_join(Site_covs) %>% 
-  left_join(Event_covs) %>%
-  filter(Id_gcs == "Ref_El hatico" & Uniq_db != "Cipav mbd") %>% 
-  distinct(Species_original) %>% 
-  rename(scientific_name = Species_original)
-# Join lists
-Spp_list_eh <- bind_rows(Spp_eb_eh, Spp_pc_eh) %>% distinct() %>% 
-  arrange(scientific_name) 
-# Export
-Spp_list_eh %>% data.frame() %>% 
-  write.xlsx("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Outreach/Outreach_farmers/El_hatico/Final_spp_list_eh.xlsx", row.names = FALSE)
-
-Col_eb %>% pull(submission_id) %>% unique() # 45 checklists
-Col_eb %>% pull(date) %>% unique()
-# 262 species + 16 additional in El Hatico + 2 from Cartagena = 280 
-Col_eb %>% distinct(scientific_name) %>% 
-  filter(!str_detect(scientific_name, "sp.|/")) %>% 
-  arrange(scientific_name)
-
-Col_eb %>% pull(state_province) %>% unique() # 6 departments in 4 ecoregions
-# 5 outreach guides explained (in person) and delivered (electronically) to farmers 
-# 10 farms visited 
-
 
 ## Visit in the field 2025
 # Create Valledupar point as sf object (note: lon, lat)
@@ -1226,11 +1226,6 @@ Dist_valledupar2 <- Dist_valledupar %>%
   relocate(Id_gcs, Dist_Valledupar_km, .after = Id_muestreo_no_dc)
 
 st_write(Dist_valledupar2, "Derived_geospatial/shp/Dist_valledupar.gpkg", layer = "Dist_valledupar")
-
-test <- st_read("Derived_geospatial/shp/Dist_valledupar.gpkg") 
-test %>% ggplot(aes(color = Dist_Valledupar_km)) +
-  geom_sf() + 
-  geom_sf(data = Valledupar, color = "red", shape = 3, size = 8)
 
 ## Bajo Magdalena
 Pc_locs_sf %>% 
@@ -1253,14 +1248,19 @@ Resurvey_santi <- Bird_pcs_all %>%
   st_as_sf(coords = c("Longitud", "Latitud"), crs = 4326) %>%
   distinct(Id_muestreo, Nombre_institucion, Id_gcs, Nombre_finca, geometry) 
 
-# Distinct farms 
-Resurvey_santi %>% 
-  pull(Id_gcs) %>% 
-  unique()
-
 # Visualize map
 Resurvey_santi %>% ggplot() + 
   geom_sf(aes(color = Nombre_institucion))
+
+# Export 50m buffers
+Resurvey_santi %>% #filter(Nombre_institucion == "Unillanos") %>%
+  st_transform("EPSG:3116") %>%
+  st_buffer(dist = 50) %>% 
+  #st_transform("EPSG:4686") %>%
+  #st_write(
+   # driver='kml', dsn="Derived_geospatial/kml/Resurvey_santi_50m_buff.kml"
+  #)
+  write_sf("Derived_geospatial/kml/Resurvey_santi_50m_buff.gpx", driver = "GPX", dataset_options = "GPX_USE_EXTENSIONS=YES")
 
 # Export Google Earth file 
 Resurvey_santi %>%
@@ -1325,7 +1325,7 @@ df_birds_red$Gaica_dist %>%
   distinct(Id_muestreo, Fecha, Hora) %>%
   arrange(Fecha, Hora)
 
-Pc_date8 %>% filter(Spp_obs == 0)
+Pc_date9 %>% filter(Spp_obs == 0)
 
 Rep_dfs %>%
   bind_rows() %>%
