@@ -140,11 +140,10 @@ df_birds_red <- map(df_birds_red, function(df) {
 ## Group point counts, determine pc_start time & pc_length
 # Some data collectors surveyed certain point counts multiple times on the same day, & some data collectors reported the time that each bird was observed instead of a single time at the start of the point count
 
-# Create 'Same_pc' column to indicate the rows where the time is less than the value in the cutoff_time vector. These observations of the same Id_muestreo & Fecha will be grouped as a point count.
 # Specify database specific cutoff times, as CIPAV has a single point count that is 90 minutes long (and thus should be grouped together), and UBC & Unillanos has distinct same day point counts that are only separated by 68 and 74 minutes, respectively (and thus should be grouped apart). Otherwise, largest difference in point count times in the same day is 13 minutes (from an 18 minute point count), so I used that for convenience for all other databases.
-
 cutoff_time <- hms::hms(minutes = c(91, rep(18, 6), 61, 73))
 
+# Create 'Same_pc' column to indicate the rows where the time is less than the value in the cutoff_time vector. These observations of the same Id_muestreo & Fecha will be grouped as a point count.
 df_birds_red <- map2(df_birds_red, cutoff_time, \(df, cutoff){
   df %>%
     group_by(Id_muestreo, Fecha) %>%
@@ -165,6 +164,7 @@ df_birds_red <- map2(df_birds_red, cutoff_time, \(df, cutoff){
 df_birds_red <- map(df_birds_red, \(df){
   df %>%
     group_by(Id_muestreo, Ano_grp, Fecha, Same_pc) %>%
+    arrange(Id_muestreo, Ano_grp, Fecha, Same_pc, Hora) %>%
     mutate(
       Pc_start = first(Hora),
       Pc_length = hms::hms(seconds = as.numeric(last(Hora) - Pc_start))
@@ -452,10 +452,9 @@ Birds_comb2 <- Birds_comb %>%
     Fecha = as.Date(Fecha),
     Id_group = sapply(
       str_split(Id_muestreo, "_"),
-      function(x) {
-        x[1]
-      }
-    )
+      function(x) { x[1] }
+    ), 
+    Id_group_no_dc = str_remove(Id_group, "C-|G-|UBC-|U-")
   ) %>%
   mutate(across(
     .cols = c(matches("Id_pr|Distancia_pr"), Latitud, Longitud, Count), as.numeric
@@ -574,11 +573,6 @@ Add_metadata <- map(df_birds_red, \(df){
   df %>% distinct(Ecoregion, Departamento, Nombre_institucion, Uniq_db, Id_muestreo, Ano, Ano_grp)
 })
 
-# PROBLEM: Unillanos did not record time or date when they observed no species? 
-df_metadata$UniLlanos %>%
-  filter(Spp_obs == 0) %>%
-  select(Id_muestreo, Fecha, Hora, Spp_obs)
-
 # Filter & format so only the point counts where no species were observed remain
 No_obs_l <- map2(
   df_metadata, Add_metadata,
@@ -617,22 +611,34 @@ Rep_dfs <- map2(df_birds_red, No_obs_l, \(df, No_obs){
 # Point count (PC) files -----------------------------------------------
 ## Create different files based on inclusion of location, date, and habitat #
 # Create a file where each row is a unique point count x data collector #
-Pc_uniq <- Bird_pcs_all %>% distinct(Uniq_db, Nombre_institucion, Id_group, Ecoregion, Departamento, Id_muestreo, Id_muestreo_no_dc, Id_gcs)
+Pc_uniq <- Bird_pcs_all %>% 
+  distinct(Uniq_db, Nombre_institucion, Id_group, Id_group_no_dc, Ecoregion, Departamento, Id_muestreo, Id_muestreo_no_dc, Id_gcs)
 
 # >Pc_locs ----------------------------------------------------------------
-# NOTE: There are 540 unique point count x data collector combinations, but 16 points have multiple coordinates. 556 rows here
+# NOTE: There are 604 unique point count x data collector combinations, but 17 points have multiple coordinates (very close). For now we will take the average lats & longs.
 Pc_locs_mult <- Bird_pcs_all %>% 
-  distinct(Uniq_db, Nombre_institucion, Id_group, Ecoregion, Departamento, Id_gcs, Id_muestreo, Id_muestreo_no_dc, Latitud, Longitud)
-nrow(Pc_locs_mult)
+  distinct(Uniq_db, Nombre_institucion, Id_group, Id_group_no_dc, Ecoregion, Departamento, Id_gcs, Id_muestreo, Id_muestreo_no_dc, Latitud, Longitud)
+nrow(Pc_locs_mult) 
 
-# For now, take the average lats & longs of these 16 points.
-Pc_locs <- Pc_locs_mult %>%
+# Maintain data collector information
+Pc_locs_dc <- Pc_locs_mult %>%
   group_by(Id_muestreo_no_dc) %>%
-  summarize(
+  mutate(
     Latitud = round(mean(Latitud), 4),
     Longitud = round(mean(Longitud), 4)
-  ) %>%
-  full_join(Pc_uniq, by = "Id_muestreo_no_dc")
+  ) %>% distinct() %>% 
+  ungroup()
+
+Pc_locs_dc_sf <- st_as_sf(
+  Pc_locs_dc,
+  coords = c("Longitud", "Latitud"),
+  crs = 4326,
+  remove = F
+  )
+
+Pc_locs <- Pc_locs_dc %>% 
+  select(-c(Nombre_institucion, Uniq_db, Id_group, Id_muestreo)) %>% 
+  distinct()
 
 ## Create relevant KMZ files
 Pc_locs_sf <- st_as_sf(Pc_locs,
@@ -641,8 +647,9 @@ Pc_locs_sf <- st_as_sf(Pc_locs,
                        remove = F)
 
 if(FALSE){
-  # Export shapefile
+  # Export shapefiles
   st_write(Pc_locs_sf, "Derived_geospatial/shp/Pc_locs.gpkg", layer = "Pc_locs")
+  st_write(Pc_locs_dc_sf, "Derived_geospatial/shp/Pc_locs_dc.gpkg", layer = "Pc_locs_dc")
   
   # Export reduced set of columns to kml
   Pc_locs_sf %>%
@@ -1003,11 +1010,11 @@ rast(paste0("../Geospatial_data/Environmental/elevation_90m/elevation/", tif)))
 Elev_90m <- do.call(merge, Elev_90m)
 
 ## Create list with elevation, temp, & precip
-envi.vars <- list(elev.dem = Elev_90m, avg.temp = avg.temp, tot.prec = tot.prec)
+envi_vars_l <- list(elev.dem = Elev_90m, avg.temp = avg.temp, tot.prec = tot.prec)
 
 # Visualize
 if(FALSE){
-  imap(envi.vars, \(var, names){
+  imap(envi_vars_l, \(var, names){
     ggplot() +
       geom_spatraster(data = var) +
       labs(title = names)
@@ -1015,11 +1022,11 @@ if(FALSE){
 }
 
 # Extract environmental vars & create df with envi variables at each PC location
-Envi_df <- cbind(
-  Pc_locs_sf[,c("Id_muestreo", "Ecoregion", "Departamento", "Uniq_db", "Id_group")],
-  coords,
-  sapply(envi.vars, terra::extract, Pc_locs_sf, ID = FALSE)
-) %>%
+envi_vars_cols <- sapply(envi_vars_l, terra::extract, Pc_locs_sf, ID = FALSE)
+Envi_df <- Pc_locs_sf %>% 
+  st_drop_geometry() %>%
+  select(Id_group_no_dc, Id_muestreo_no_dc, Ecoregion, Departamento) %>%
+  bind_cols(coords, envi_vars_cols) %>%
   rename(Elev = elev.dem.srtm_21_10, 
          Avg_temp = avg.temp.mean, 
          Tot_prec = tot.prec.sum, 
@@ -1027,32 +1034,26 @@ Envi_df <- cbind(
          Lat = Y) %>% 
   mutate(Avg_temp = round(Avg_temp, 3))
 Envi_df2 <- Envi_df %>%
-  st_drop_geometry() %>%
-  slice_head(by = Id_muestreo) %>%
-  full_join(distinct(Pc_hab, Id_muestreo, Habitat, Habitat_sub)) %>%
+  full_join(distinct(Pc_hab, Id_muestreo_no_dc, Habitat, Habitat_sub)) %>%
   as_tibble()
-
 
 # >Site covs --------------------------------------------------------------
 Site_covs <- Bird_pcs_all %>% 
-  distinct(
-    Id_muestreo, Id_muestreo_no_dc, Nombre_institucion, Id_gcs, Nombre_finca
-  ) %>% 
+  distinct(Id_muestreo_no_dc, Id_gcs, Nombre_finca) %>% 
   left_join(Envi_df2) %>% 
-  select(-c(Id_muestreo, Uniq_db, Nombre_institucion, Id_group)) %>%
-  distinct() 
+  relocate(Id_group_no_dc, .before = Id_muestreo_no_dc)
 
 # >Precipitation ----------------------------------------------------------
 # Extract data & create df where each row is a point count and there are 12 'prec' columns, one for each month
-PrecPCs <- terra::extract(Wc_col[[2]], Pc_locs_sf, ID = FALSE)
-Prec_df <- cbind(Pc_locs_sf[, c("Id_muestreo", "Ecoregion", "Departamento", "Uniq_db")], PrecPCs) %>%
+PrecPCs <- terra::extract(Wc_col[[2]], Pc_locs_dc_sf, ID = FALSE)
+Prec_df <- cbind(Pc_locs_dc_sf[, c("Id_muestreo", "Ecoregion", "Departamento", "Uniq_db")], PrecPCs) %>%
   group_by(Id_muestreo) %>%
   slice_head() %>%
   ungroup() %>%
   st_drop_geometry() %>%
   rename_with(~ str_remove(., "COL_wc2.1_30s_"))
 
-if (FALSE) { # This process is slow
+if(FALSE) { # This process is slow
   ## Download daily precipitation data for Cubarral from IDEAM stations for the 4 months before first date + sampling period
   # Unillanos: sampling period (11/10 - 11/26 of 2019, about 16 days)
   Prec_daily19 <- ColOpenData::download_climate(
@@ -1115,8 +1116,8 @@ Site_covs %>% write_csv(file = "Derived/Excels/Site_covs.csv")
 # Export Precipitation df for the data_paper_figs script
 Prec_df %>% write_csv(file = "Derived/Excels/Prec_df.csv")
 
-# Event covariates - 2727  point count surveys
-Event_covs %>% write_csv(file = "Derived/Excels/Event_covs.csv")
+# Event covariates of point counts (not including landcover or landscape habitat information) - 2727  point count surveys
+Event_covs %>% write_csv(file = "Derived/Excels/Event_covs_pcs.csv")
 
 ## Export Pc_hab to update points manually using Google Earth
 # NOTE: This is likely not necessary because can use Mathilde / Natalia digitized landcover & calculate distance to forest edge from point count location. 
@@ -1132,258 +1133,3 @@ if(FALSE){
 }
 
 st_write(Pc_locs_sf, dsn = "Derived_geospatial/shp", layer = "Pc_locs.shp")
-
-# Working data paper ------------------------------------------------------
-# PROBLEM WITH PC_START FOR V-03 AND V-04
-Birds_comb4 %>% filter(Id_group == "C-MB-S-V") %>% 
-  distinct(Id_muestreo, Pc_start, Pc_length)
-
-# Send screenshot to ecotropico
-df_birds$Cipav %>% 
-  filter(Departamento == "Atlantico" & Nombre_finca == "El Descanso") %>% 
-  distinct(Id_muestreo, Ano, Mes, Dia, Hora) %>% 
-  arrange(Id_muestreo, Hora) %>% 
-  view()
-
-Pc_hab %>% 
-  filter(Departamento == "Atlantico" & Uniq_db == "Gaica mbd" & Id_group == "G-MB-A-LRE") %>% 
-  distinct(Id_muestreo, Habitat, Habitat_og)
-
-# GPT - I want to create a logical check that examines whether the End time of a given point count (Id_muestreo) is after the start time of any other different point count on the same day, so, for example : INCLUDE DPUT is a problem because there are two point counts occurring simultaneously 
-dput(head(Event_covs))
-
-Event_covs2 <- Event_covs %>% mutate(Pc_end = as_hms(Pc_start + Pc_length))
-Event_covs2 %>% 
-  group_by(Uniq_db) %>%
-  mutate(Problem = ifelse(Pc_start < Pc_end & Fecha == Fecha), "Yes", "No")
-
-Event_covs2 %>% left_join(Site_covs) %>% 
-  filter(Uniq_db == "Cipav mbd" & Departamento == "Santander" & Id_group == "C-MB-S-V") %>% 
-  distinct(Id_muestreo, Pc_start, Pc_end, Pc_length) #%>% 
-  #dput()
-
-# Field work --------------------------------------------------------------
-# Formatting data 
-df_metadata$Ubc_hatico %>% 
-  rename(Habitat = Habitat_predominante) %>%
-  select(Año, Mes, Dia, Hora, ID_punto_muestreo_FINAL, Habitat) %>% 
-  right_join(df_birds$Ubc_hatico) %>% 
-  mutate(Hora = sapply(str_split(Hora, " "), function(x) {
-    x[2]
-  }),
-  Hora = as.character(as_hms(Hora)),
-  Hora = sapply(str_split(Hora, ":"), function(x) {
-    paste0(x[1], ":", x[2])
-  })) %>%
-  as.data.frame() %>%
-  write.xlsx("Data/Ubc_hatico_habitat.xlsx", showNA = FALSE, row.names = FALSE)
-
-# Spatial information
-coords <- st_read("Data/ubc-points-el_hatico.kml") %>% st_coordinates() %>%
-  as_tibble() %>%
-  select(1:2)
-pt_names <- st_read("Data/ubc-points-el_hatico.kml") %>% pull(Name)
-pt_locs <- tibble(pt_names, coords) %>% 
-  select(1:3) %>% 
-  rename_with(~c("ID_punto_muestreo_FINAL", "Longitude", "Latitude"))
-
-df_birds$Ubc_hatico %>% select(Id_muestreo) %>% distinct() %>% 
-  left_join(pt_locs)
-pt_locs
-
-# Join
-df_metadata$Ubc_hatico %>% 
-  select(Id_muestreo, Latitude, Longitude) %>%
-  distinct() %>%
-  view()
-  right_join(df_birds$Ubc_hatico, 
-             by = join_by("Id_punto_muestreo_final" == "ID_punto_muestreo_FINAL")) %>% mutate(Hora = sapply(str_split(Hora, " "), function(x) {
-               x[2]
-             }),
-             Hora = as.character(as_hms(Hora)),
-             Hora = sapply(str_split(Hora, ":"), function(x) {
-               paste0(x[1], ":", x[2])
-             })) %>%
-  as.data.frame() %>%
-  write.xlsx("Data/Ubc_hatico_coords.xlsx", showNA = FALSE, row.names = FALSE)
-
-df_birds_red$Cipav %>% filter(Nombre_finca == "El hatico") %>% 
-  distinct(Id_muestreo, Latitud_decimal, Longitud_decimal)
-
-## Visit in the field 2025
-# Create Valledupar point as sf object (note: lon, lat)
-Valledupar <- st_sfc(st_point(c(-73.2500, 10.4833)), crs = 4326)
-
-# Calculate distance (in meters by default)
-Dist_valledupar <- Pc_locs_sf %>% 
-  filter(Ecoregion == "Rio cesar") %>%
-  mutate(Dist_Valledupar_km = st_distance(., Valledupar) / 1000) %>% 
-  arrange(Dist_Valledupar_km)
-
-Dist_valledupar2 <- Dist_valledupar %>% 
-  left_join(Site_covs[,c("Id_muestreo_no_dc", "Id_gcs")]) %>% 
-  select(-Nombre_institucion) %>% 
-  relocate(Id_gcs, Dist_Valledupar_km, .after = Id_muestreo_no_dc)
-
-st_write(Dist_valledupar2, "Derived_geospatial/shp/Dist_valledupar.gpkg", layer = "Dist_valledupar")
-
-## Bajo Magdalena
-Pc_locs_sf %>% 
-  filter(Ecoregion == "Bajo magdalena") %>% 
-  select(-Nombre_institucion) %>% 
-  st_write("Derived_geospatial/shp/Bajo_magdalena_pts.gpkg", 
-           layer = "Bajo_magdalena_pts")
-
-## Boyaca santander
-Pc_locs_sf %>% 
-  filter(Ecoregion == "Boyaca santander") %>% 
-  select(-Nombre_institucion) %>% 
-  filter(Id_gcs %in% c(2492, 2921)) %>% 
-  pull(Id_muestreo)
-#st_write("Derived_geospatial/shp/Boyaca_santander_pts.gpkg", layer = "Boyaca_santander_pts")
-
-## Resurvey with Santiago
-Resurvey_santi <- Bird_pcs_all %>% 
-  filter(Uniq_db %in% c("Ubc gaica mbd", "Unillanos mbd") & Ecoregion == "Piedemonte") %>% 
-  st_as_sf(coords = c("Longitud", "Latitud"), crs = 4326) %>%
-  distinct(Id_muestreo, Nombre_institucion, Id_gcs, Nombre_finca, geometry) 
-
-# Visualize map
-Resurvey_santi %>% ggplot() + 
-  geom_sf(aes(color = Nombre_institucion))
-
-# Export 50m buffers
-Resurvey_santi %>% #filter(Nombre_institucion == "Unillanos") %>%
-  st_transform("EPSG:3116") %>%
-  st_buffer(dist = 50) %>% 
-  #st_transform("EPSG:4686") %>%
-  #st_write(
-   # driver='kml', dsn="Derived_geospatial/kml/Resurvey_santi_50m_buff.kml"
-  #)
-  write_sf("Derived_geospatial/kml/Resurvey_santi_50m_buff.gpx", driver = "GPX", dataset_options = "GPX_USE_EXTENSIONS=YES")
-
-# Export Google Earth file 
-Resurvey_santi %>%
-  arrange(Nombre_institucion, Id_muestreo) %>%
-  rename(
-    name = Id_muestreo,
-    Institucion = Nombre_institucion # ,
-    # Farm = Nombre_finca_mixed
-  ) %>%
-  st_write(
-    driver='kml', dsn="Derived_geospatial/kml/Resurvey_santi.kml", layer = "Resurvey_santi"
-  )
-
-## Examine Id_gcs in the databases before any manipulation
-map(df_birds, \(df){
-  df %>% mutate(across(starts_with("Id_pr"), ~ na_if(., 0))) %>%
-    mutate(Id_gcs = do.call(coalesce, across(starts_with("Id_pr")))) %>% 
-    select(Id_gcs) 
-}) %>% list_rbind() %>% 
-  pull(Id_gcs) %>% 
-  unique() %>% 
-  tibble(Id_gcs = .) %>%
-  data.frame() %>%
-  write.xlsx(file = "Derived/Id_gcs.xlsx", row.names = FALSE)
-
-# Use anti_join to see mismatches between metadata & the birds databases
-map2(df_birds_red, df_metadata, \(birds, meta){
-  detection <- birds %>%
-    select(
-      Id_muestreo, Fecha, Hora,
-      contains(c("Clima", "Cigarras", "Ruido", "Vacas"))
-    ) %>%
-    distinct()
-  meta <- meta %>% distinct(Id_muestreo, Fecha, Hora, Spp_obs)
-  comb <- meta %>% full_join(detection)
-  comb %>%
-    anti_join(detection) %>%
-    filter(!str_detect(Id_muestreo, "LCR|JB|LCA") & # In metadata file but 0 (or 1) accompanying PC
-             !str_detect(Id_muestreo, "ECOR|PORT") & # Ensayo days
-             Spp_obs != 0) # Points where no species were observed
-})
-
-# Find the cutoff_times specific to each database
-map(df_birds_red, \(df){
-  df %>%
-    group_by(Id_muestreo, Fecha) %>%
-    filter(!str_detect(Id_muestreo, "LIBRE")) %>%
-    arrange(Hora) %>%
-    mutate(
-      Pc_length_day = (Hora - first(Hora) * 1440), # For entire day, not within a PC
-      Same_pc = if_else(Pc_length_day < 91, "Same", "Diff")
-    ) %>%
-    distinct(Pc_length_day) %>%
-    arrange(desc(Pc_length_day)) %>%
-    filter(Pc_length_day < 91)
-})
-
-## FOLLOWUP:
-# Ecotropico:: No observations where Hora == 07:36:00 or 07:37:00
-df_birds_red$Gaica_dist %>%
-  filter(Id_muestreo == "G-AD-M-CO_05") %>%
-  distinct(Id_muestreo, Fecha, Hora) %>%
-  arrange(Fecha, Hora)
-
-Pc_date9 %>% filter(Spp_obs == 0)
-
-Rep_dfs %>%
-  bind_rows() %>%
-  filter(if_any(everything(), is.na)) %>%
-  # count(Id_muestreo, sort = T) %>%
-  left_join(Pc_samp_periods[, c("N_samp_periods", "Uniq_db", "Id_muestreo")]) %>%
-  count(Id_muestreo, sort = T)
-
-Rep_dfs %>%
-  bind_rows() %>%
-  filter(Id_muestreo == "G-MB-Q-ECOR_03")
-
-df_metadata$Gaica_dist %>%
-  filter(Id_muestreo == "G-AD-M-LCA2_04") %>%
-  distinct(Id_muestreo, Fecha, Hora, Comentario)
-
-# Farm names from FEDEGAN -------------------------------------------------
-
-#578
-Birds_comb4 %>% filter(Id_gcs == 578)
-Birds_comb4 %>% 
-  filter(Nombre_finca %in% c("La renuncia", "El girasol") & Departamento == "Atlantico") %>% 
-  pull(Id_gcs) %>% unique()
-
-Ids_mult_farms <- Birds_comb4 %>% 
-  distinct(Id_gcs, Nombre_finca) %>% 
-  count(Id_gcs, sort = T) %>% 
-  filter(n > 1) %>% 
-  pull(Id_gcs)
-
-Birds_comb4 %>% 
-  distinct(Id_gcs, Nombre_finca) %>% 
-  filter(Id_gcs %in% Ids_mult_farms) %>% 
-  arrange(Id_gcs)
-
-Birds_comb4 %>% filter(Id_gcs == "Ref_La luisa") %>% pull(Id_muestreo) %>% unique()
-
-
-Birds_comb4 %>% filter(Nombre_finca == "La herradura") %>% distinct(Id_gcs, Nombre_institucion, Nombre_finca, Ecoregion, Nombre_finca_mixed, Latitud, Longitud) 
-
-#1053
-Birds_comb4 %>% filter(Id_gcs %in% c(1053)) %>% 
-  distinct(Id_gcs, Nombre_institucion, Nombre_finca, Ecoregion, Nombre_finca_mixed, Latitud, Longitud) %>% view()
-Birds_comb4 %>% filter(Nombre_finca == "Cielo lirio" & Ecoregion == "Bajo magdalena") %>% distinct(Id_gcs, Nombre_institucion, Nombre_finca, Nombre_finca_mixed, Latitud, Longitud) #%>% 
-pull(Id_gcs) %>% unique()
-Birds_comb4 %>% filter(Id_gcs %in% c(2206)) %>% 
-  distinct(Id_gcs, Nombre_institucion, Nombre_finca, Ecoregion, Nombre_finca_mixed, Latitud, Longitud)
-
-#259 and 1732
-Birds_comb4 %>% filter(Id_gcs %in% c(259, 1732)) %>% 
-  distinct(Id_gcs, Nombre_institucion, Nombre_finca, Ecoregion, Nombre_finca_mixed)
-
-Birds_comb4 %>% 
-  filter(
-    Nombre_institucion %in% c("Ubc", "Ubc gaica") & Ecoregion == "Piedemonte"
-    ) %>% 
-  distinct(Id_gcs, Id_group, Nombre_finca) %>% 
-  arrange(Nombre_finca) %>%
-  as.data.frame() %>%
-  write.xlsx("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Outreach/Outreach_farmers/Excels/Consolidate_id_gcs.xlsx", row.names = FALSE)
-
