@@ -199,11 +199,10 @@ df_birds_red <- map(df_birds_red, \(df){
   )
 })
 
-# Create Uniq_db and Id_muestreo_no_dc (no data collector)
+# Create Uniq_db
 df_birds_red <- map(df_birds_red, \(df){
   df %>% mutate(
-    Uniq_db = paste(Nombre_institucion, Pregunta_gsc, sep = " "),
-    Id_muestreo_no_dc = str_remove(Id_muestreo, "^[^-]+-")
+    Uniq_db = paste(Nombre_institucion, Pregunta_gsc, sep = " ")
   )
 })
 
@@ -212,7 +211,7 @@ df_birds_red <- map(df_birds_red, \(df) {
   df %>% mutate(
     across(
       # Do not apply to certain columns.. 
-      .cols = -c(Id_muestreo, Id_muestreo_no_dc, Registrado_por, contains("Id_punto_muestreo_original")) & where(is.character),
+      .cols = -c(Id_muestreo, Registrado_por, contains("Id_punto_muestreo_original")) & where(is.character),
       .fns = ~ standardize_column_contents(.) # Custom function
     )
   )
@@ -256,12 +255,52 @@ df_birds_red$Gaica_dist <- df_birds_red$Gaica_dist %>%
 df_birds_red$Gaica_mbd <- df_birds_red$Gaica_mbd %>% 
   mutate(Id_muestreo = if_else(
     Id_muestreo == "G-MB-M-EPO1_03" & Ano == 2017, "G-MB-M-EPO1_03_(1)", Id_muestreo
-  ), Id_muestreo_no_dc = if_else(
-    Id_muestreo_no_dc == "MB-M-EPO1_03" & Ano == 2017, "MB-M-EPO1_03_(1)",Id_muestreo_no_dc
-  ))
+  ) #, Id_muestreo_no_dc = if_else(
+    #Id_muestreo_no_dc == "MB-M-EPO1_03" & Ano == 2017, "MB-M-EPO1_03_(1)", Id_muestreo_no_dc
+  )
 
 # Remove UBC microhabitat columns
 df_birds_red$Ubc <- df_birds_red$Ubc %>% select(-c(Habitat1 | Habitat2))
+
+## 2024 - 2026 
+## Hatico
+df_birds_red$Ubc_hatico <- df_birds_red$Ubc_hatico %>% 
+  mutate(across(c(Latitud_decimal, Longitud_decimal), as.character))
+
+# Add Habitat_ut and sub_ut
+Hatico_hab <- df_metadata$Ubc_hatico %>% 
+  select(Id_punto_muestreo_final, starts_with("Habitat")) %>% 
+  distinct() %>% 
+  rename(Habitat_ut = Habitat_predominante,
+         Habitat_sub_ut = Habitat_sub)
+df_birds_red$Ubc_hatico <- df_birds_red$Ubc_hatico %>% 
+  left_join(Hatico_hab, by = join_by("Id_muestreo" == "Id_punto_muestreo_final"))
+
+# Change CIPAV survey of C-MB-VC-EH_02 to Borde de bosque. This is not ideal but it is better to have a single consistent habitat type through time for 'Site_covs'. Looking at Google Earth the 25m buffer did contain a portion of the guadua forest in 2017, so I think this change is justified. 
+df_birds_red$Cipav <- df_birds_red$Cipav %>% 
+  mutate(
+    Habitat_ut = ifelse(Id_muestreo == "C-MB-VC-EH_02", "Bosque", Habitat_ut),
+    Habitat_sub_ut = ifelse(Id_muestreo == "C-MB-VC-EH_02", "Borde", Habitat_sub_ut)
+  )
+
+# UBC GAICA Cafetero & Meta
+df_birds_red[4:5] <- map(df_birds_red[4:5], \(df){
+  df %>% mutate(Id_muestreo = str_replace(Id_muestreo, "G", "UBCG"))
+})
+
+# Otun Quimbaya & El Hatico 
+df_birds_red[6:7] <- map(df_birds_red[6:7], \(df){
+  df %>% mutate(
+    # Change name of Cipav points 01 - 04 to UBC in El Hatico
+    Id_muestreo = ifelse(
+      str_detect(Id_muestreo, "01|02|03|04"), 
+      str_replace(Id_muestreo, pattern = "C", replacement = "UBC"),
+      Id_muestreo),
+    # Otun Quimbaya
+    Id_muestreo = str_replace(
+      Id_muestreo, pattern = "OQ", replacement = "UBCG-MB-R-OQ"
+             ))
+})
 
 # Change species name column so all data frames match ('Nombre_cientifico_final')
 df_birds_red[4:7] <- map(df_birds_red[4:7], \(df){
@@ -286,10 +325,10 @@ df_birds$UniLlanos %>%
 # Remove practice day data
 df_birds_red$Ubc_gaica_Caf <- df_birds_red$Ubc_gaica_Caf %>%
   filter(!Fecha %in% as.Date(c("2024-05-27", "2024-05-28"))) %>% # Ensayo dates
-  filter(!Id_muestreo %in% c(paste0("G-MB-Q-LCA_0", 7:9))) # PCs surveyed one time
+  filter(!Id_muestreo %in% c(paste0("UBCG-MB-Q-LCA_0", 7:9))) # PCs surveyed 1x
 
 df_birds_red$Ubc_gaica_OQ <- df_birds_red$Ubc_gaica_OQ %>% 
-  filter(Id_muestreo != "OQ_Practica")
+  filter(Id_muestreo != "UBCG-MB-R-OQ_Practica")
 
 ## Natalia put in lots of work to check and improve upon GAICA's recordings database, particularly she added all of the 
 path <- "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Mentorship/Natalia"
@@ -395,28 +434,20 @@ map(df_birds_red, \(df){
   }
 })
 
-## Hatico
-df_birds_red$Ubc_hatico <- df_birds_red$Ubc_hatico %>% 
-  mutate(across(c(Latitud_decimal, Longitud_decimal), as.character))
-
-# Add Habitat_ut and sub_ut
-Hatico_hab <- df_metadata$Ubc_hatico %>% 
-  select(Id_punto_muestreo_final, starts_with("Habitat")) %>% 
-  distinct() %>% 
-  rename(Habitat_ut = Habitat_predominante,
-         Habitat_sub_ut = Habitat_sub)
-df_birds_red$Ubc_hatico <- df_birds_red$Ubc_hatico %>% 
-  left_join(Hatico_hab, by = join_by("Id_muestreo" == "Id_punto_muestreo_final"))
-
-# Change CIPAV survey of C-MB-VC-EH_02 to Borde de bosque. This is not ideal but it is better to have a single consistent habitat type through time for 'Site_covs'. Looking at Google Earth the 25m buffer did contain a portion of the guadua forest in 2017, so this change is justified. 
-df_birds_red$Cipav <- df_birds_red$Cipav %>% 
-  mutate(
-    Habitat_ut = ifelse(Id_muestreo == "C-MB-VC-EH_02", "Bosque", Habitat_ut),
-    Habitat_sub_ut = ifelse(Id_muestreo == "C-MB-VC-EH_02", "Borde", Habitat_sub_ut)
-  )
-
 # Combine dfs -------------------------------------------------------------
-## Combine all dfs & remove more irrelevant columns##
+# Now that Id_muestreo is in good shape, create no_dc versions (no data collector)
+df_birds_red <- map(df_birds_red, \(df) {
+  df %>% mutate(
+    Id_muestreo_no_dc = str_remove(Id_muestreo, "^[^-]+-"),
+    Id_group = sapply(
+      str_split(Id_muestreo, "_"),
+      function(x) { x[1] }
+    ),
+    Id_group_no_dc = str_remove(Id_group, "C-|G-|UBC-|UBCG-|U-")
+  )
+})
+
+## Combine all dfs & remove irrelevant columns 
 # smartbind seems to work well on data frames, not tibbles
 df_birds_red <- map(df_birds_red, \(df) {
   df %>% as.data.frame()
@@ -449,13 +480,7 @@ Birds_comb2 <- Birds_comb %>%
       c(Hora, Pc_start, Pc_length),
       ~ as_hms(.)
     ),
-    Fecha = as.Date(Fecha),
-    Id_group = sapply(
-      str_split(Id_muestreo, "_"),
-      function(x) { x[1] }
-    ), 
-    Id_group_no_dc = str_remove(Id_group, "C-|G-|UBC-|U-")
-  ) %>%
+    Fecha = as.Date(Fecha)) %>%
   mutate(across(
     .cols = c(matches("Id_pr|Distancia_pr"), Latitud, Longitud, Count), as.numeric
   )) %>% mutate(Tipo_registro = case_when(
@@ -488,19 +513,20 @@ Birds_comb3 <- Birds_comb2 %>%
   ) %>%  
   # Fill in Id_gcs for UBC_GAICA data
   mutate(Id_gcs = if_else(is.na(Id_gcs), first(na.omit(Id_gcs)), Id_gcs), 
-         .by = Id_muestreo) %>% 
+         .by = Id_muestreo_no_dc) %>% 
   select(-c(Nombre_predio_gcs_poligono_full, Id_predio_gcs_poligono_full, Id_predio_mas_cercano_gcs_poligono_full, Nombre_predio_gcs_poligono_buffer, Id_predio_gcs_poligono_buffer, Id_predio_mas_cercano_gcs_poligono_buffer, Distancia_predio_mas_cercano_gcs_poligono_full, Distancia_predio_mas_cercano_gcs_poligono_buffer, Row_sum, Same))
 
-# 2 manual adjustments - In Google Earth the 50m buffers showed the correct location, but the points were changed by GAICA in a revision. Changed points back to the (approximate) centroid of the 50m buffer. 
+# 2 manual adjustments - In Google Earth the 50m buffers showed the correct location, but the points were changed by GAICA in a revision. Change points back to the (approximate) centroid of the 50m buffer. 
+
 Birds_comb4 <- Birds_comb3 %>% 
   mutate(Latitud = case_when(
-    Id_muestreo == "G-MB-M-EPO1_03" ~ 3.8285,
-    Id_muestreo == "G-MB-M-EPO1_03_(1)" ~ 3.8293, 
+    Id_muestreo_no_dc == "MB-M-EPO1_03" ~ 3.8285,
+    Id_muestreo_no_dc == "MB-M-EPO1_03_(1)" ~ 3.8293, 
     .default = Latitud
   ), 
   Longitud = case_when(
-    Id_muestreo == "G-MB-M-EPO1_03" ~ -73.842,
-    Id_muestreo == "G-MB-M-EPO1_03_(1)" ~ -73.8417, 
+    Id_muestreo_no_dc == "MB-M-EPO1_03" ~ -73.842,
+    Id_muestreo_no_dc == "MB-M-EPO1_03_(1)" ~ -73.8417, 
     .default = Longitud
   ))
 
@@ -522,15 +548,31 @@ df_metadata <- map(df_metadata, \(df) {
   return(df)
 })
 
-df_metadata$Gaica_mbd <- df_metadata$Gaica_mbd %>% 
-  mutate(Id_muestreo = if_else(
-    Id_muestreo == "G-MB-M-EPO1_03" & Ano == 2017, "G-MB-M-EPO1_03_(1)", Id_muestreo
-  ))
-
-df_metadata <- lapply(df_metadata, function(x) {
+df_metadata <- lapply(df_metadata, \(df) {
   bind_cols(
-    x, Fecha = lubridate::mdy(paste(x$Mes, x$Dia, x$Ano, sep = "/"))
+    df, Fecha = lubridate::mdy(paste(df$Mes, df$Dia, df$Ano, sep = "/"))
     ) %>% rename(Spp_obs = Observacion_especies_por_punto_conteo)
+})
+
+# >Dataset specific operations -------------------------------------------
+## 2024 - 2026 
+# UBC GAICA Cafetero & Meta
+df_metadata[4:5] <- map(df_metadata[4:5], \(df){
+  df %>% mutate(Id_muestreo = str_replace(Id_muestreo, "G", "UBCG"))
+})
+
+# Otun Quimbaya & El Hatico 
+df_metadata[6:7] <- map(df_metadata[6:7], \(df){
+  df %>% mutate(
+    # Change name of Cipav points 01 - 04 to UBC in El Hatico
+    Id_muestreo = ifelse(
+      str_detect(Id_muestreo, "01|02|03|04"), 
+      str_replace(Id_muestreo, pattern = "C", replacement = "UBC"),
+      Id_muestreo),
+    # Otun Quimbaya
+    Id_muestreo = str_replace(
+      Id_muestreo, pattern = "OQ", replacement = "UBCG-MB-R-OQ"
+    ))
 })
 
 df_metadata[c(4:6)] <- map(df_metadata[c(4:6)], \(df){
@@ -551,6 +593,11 @@ df_metadata[c(1:3)] <- map(df_metadata[c(1:3)], \(df){
 # Format of Hatico cells didn't add a fake year, so just adding 'Year' as a placeholder
 df_metadata$Ubc_hatico <- df_metadata$Ubc_hatico %>% 
   mutate(Hora = paste("Year", Hora))
+
+df_metadata$Gaica_mbd <- df_metadata$Gaica_mbd %>% 
+  mutate(Id_muestreo = if_else(
+    Id_muestreo == "G-MB-M-EPO1_03" & Ano == 2017, "G-MB-M-EPO1_03_(1)", Id_muestreo
+  ))
 
 # Remove dummy year and turn time into hms
 df_metadata <- map(df_metadata, \(df)
@@ -648,8 +695,8 @@ Pc_locs_sf <- st_as_sf(Pc_locs,
 
 if(FALSE){
   # Export shapefiles
-  st_write(Pc_locs_sf, "Derived_geospatial/shp/Pc_locs.gpkg", layer = "Pc_locs")
   st_write(Pc_locs_dc_sf, "Derived_geospatial/shp/Pc_locs_dc.gpkg", layer = "Pc_locs_dc")
+  st_write(Pc_locs_sf, "Derived_geospatial/shp/Pc_locs.gpkg", layer = "Pc_locs")
   
   # Export reduced set of columns to kml
   Pc_locs_sf %>%
@@ -667,9 +714,8 @@ if(FALSE){
 
 # >Pc_hab -----------------------------------------------------------------
 # Each point count has a single Habitat_ut except for Gaica distancia points
-
 Pc_hab_ano <- Bird_pcs_all %>%
-  group_by(Id_muestreo) %>%
+  group_by(Id_muestreo_no_dc) %>%
   fill(Habitat_ut) %>%
   ungroup() %>%
   mutate(Habitat_ut = case_when(
@@ -677,7 +723,7 @@ Pc_hab_ano <- Bird_pcs_all %>%
     .default = Habitat_ut
   ),
   Habitat_sub = case_when(
-    Id_group %in% c("OQ", "UBC-MB-M-LBR") ~ "Maduro", 
+    Id_group %in% c("UBCG-MB-R-OQ", "UBC-MB-M-LBR") ~ "Maduro", 
     Habitat_ut == "Bosque ripario" ~ "Ripario",
     Habitat_ut == "Bosque" & is.na(Habitat_sub) ~ "Secundario",
     Habitat_sub == "Transitorio" ~ NA_character_,
@@ -738,8 +784,9 @@ Pc_samp_periods <- Pc_date2 %>%
   tibble()
 
 # Merge with Pc_samp_periods
+Pc_samp_periods_join <- Pc_samp_periods %>% distinct(Id_muestreo, N_samp_periods)
 Pc_date4 <- Pc_date3 %>%
-  left_join(distinct(Pc_samp_periods, Id_muestreo, N_samp_periods))
+  left_join(Pc_samp_periods_join)
 
 ## Make educated guesses for UniLlanos Fecha column
 # UniLlanos did not record the date (or time) of point counts where they didn't observe any birds
@@ -869,10 +916,6 @@ Pc_date9 <- Pc_date_days_since %>% mutate(Grp = case_when(
 Pc_date9 %>% ggplot() + 
   geom_density(aes(x = Sampling_day, color = Nombre_institucion))
 
-# NOTE:: There are still some NAs in this dataframe, but I don't think it would be too hard to fill in in the future if necessary
-Pc_date9 %>% 
-  Na_rows_cols(cols_inc = c(Id_group, Ano_grp, Id_muestreo, Uniq_db, Fecha)) 
-
 # Event covariates --------------------------------------------------------
 # Format the information that varies per visit (event) , e.g. weather
 # distinct(Ano_grp, Rep_ano_grp) would be unique combos of samp_period and repetition
@@ -981,7 +1024,7 @@ Event_covs_all <- Pc_date9 %>%
 anti_join(Event_covs_ubc_ug, Event_covs_all)
 
 # Keep (and order) only the relevant columns
-Event_covs <- Event_covs_all %>% 
+Event_covs_pcs <- Event_covs_all %>% 
   select(Id_muestreo, Id_muestreo_no_dc, Id_group, Nombre_institucion, Uniq_db, Fecha, Ano_grp, Ano, Mes, Dia, Julian_day, Sampling_day, Pc_start, Pc_length, N_samp_periods, N_reps, Rep_ano_grp, Rep_season, Spp_obs, Noise, Clima, Cows_50m)
 
 # Environmental data ---------------------------------------------------
@@ -1091,6 +1134,22 @@ if(FALSE) { # This process is slow
 # Plot
 # ggplot() + geom_sf(data = mpio_sf)
 
+
+# Check files -------------------------------------------------------------
+# Event covariates of point counts (not including landcover or landscape habitat information) - 2727  point count surveys
+nrow(Event_covs_pcs)
+# Should be no NAs 
+Event_covs_pcs %>% Na_rows_cols(cols_inc = -c(Noise, Clima, Cows_50m))
+
+# Site covariates - There are 504 unique locations, so all of these are stable irrespective of which data collector
+nrow(Site_covs)
+# Should be no NAs
+Site_covs %>% 
+  filter(Id_group_no_dc != "MB-R-OQ") %>% # OQ doesn't have Id_gcs
+  # No sub_ut for these habitat types
+  filter(!Habitat %in% c("Cultivos", "Mosaic", "Pastizales")) %>% 
+  Na_rows_cols(id_cols = c(Id_muestreo_no_dc))
+
 # Save & export -----------------------------------------------------------
 stop() 
 rm(list = ls()[!(ls() %in% c("Bird_pcs_all", "Birds_comb4", "Pc_date9", "Pc_hab", "Pc_locs", "df_birds", "df_metadata", "df_meta", "df_birds_red", "Mes_mod", "Pc_locs_mult", "Pc_locs_sf", "Envi_df2", "Prec_df", "Prec_daily", "Rep_dfs"))])
@@ -1110,14 +1169,14 @@ Bird_pcs_all_export %>%
   write_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all_spp.csv")
 
 ## Export covariates as csv
-# Site covariates - There are 504 unique locations, so all of these are stable irrespective of which data collector
+# Site covariates 
 Site_covs %>% write_csv(file = "Derived/Excels/Site_covs.csv")
 
 # Export Precipitation df for the data_paper_figs script
 Prec_df %>% write_csv(file = "Derived/Excels/Prec_df.csv")
 
-# Event covariates of point counts (not including landcover or landscape habitat information) - 2727  point count surveys
-Event_covs %>% write_csv(file = "Derived/Excels/Event_covs_pcs.csv")
+# Event covariates
+Event_covs_pcs %>% write_csv(file = "Derived/Excels/Event_covs_pcs.csv")
 
 ## Export Pc_hab to update points manually using Google Earth
 # NOTE: This is likely not necessary because can use Mathilde / Natalia digitized landcover & calculate distance to forest edge from point count location. 
