@@ -11,8 +11,6 @@
 # 6) Export Rdata object
 
 # To do -------------------------------------------------------------------
-# Run 00e with as_hms , but consider using lubridate instead, particularly storing your Pc_length in minutes instead.
-
 ## Time removal modeling for CIPAV data? 
 if(FALSE){
   Bird_pcs_all %>% 
@@ -23,12 +21,13 @@ if(FALSE){
 }
 
 # Libraries ---------------------------------------------------------------
-library(janitor) # tabyl function
+
+#library(raster) # DELETE?
+#library(sp)
+library(janitor) 
 library(tidyverse)
 library(hms)
-library(raster)
 library(sf)
-library(sp)
 library(gtools)
 library(AICcmodavg)
 library(readxl)
@@ -71,11 +70,11 @@ df_metadata <- map(files, \(file){
   )
 })
 
-## Join lists together for initial formatting & then separate again STILL TO DO
-# Ensure data frames are in the same order
+## Name lists
 files
-names(df_birds) <- c("Cipav", "Gaica_dist", "Gaica_mbd", "Ubc_gaica_Caf", "Ubc_gaica_Meta", "Ubc_gaica_OQ", "Ubc_hatico", "Ubc", "UniLlanos") # "Ubc_Monroy"
-names(df_metadata) <- c("Cipav", "Gaica_dist", "Gaica_mbd", "Ubc_gaica_Caf", "Ubc_gaica_Meta", "Ubc_gaica_OQ", "Ubc_hatico", "Ubc", "UniLlanos")
+short_names <- c("Cipav", "Gaica_dist", "Gaica_mbd", "Ubc_gaica_Caf", "Ubc_gaica_Meta", "Ubc_gaica_OQ", "Ubc_hatico", "Ubc", "UniLlanos") # "Ubc_Monroy"
+names(df_birds) <- short_names 
+names(df_metadata) <- short_names
 
 # Format bird observation data -------------------------------------------
 df_birds <- map(df_birds, \(df) {
@@ -141,7 +140,7 @@ df_birds_red <- map(df_birds_red, function(df) {
 # Some data collectors surveyed certain point counts multiple times on the same day, & some data collectors reported the time that each bird was observed instead of a single time at the start of the point count
 
 # Specify database specific cutoff times, as CIPAV has a single point count that is 90 minutes long (and thus should be grouped together), and UBC & Unillanos has distinct same day point counts that are only separated by 68 and 74 minutes, respectively (and thus should be grouped apart). Otherwise, largest difference in point count times in the same day is 13 minutes (from an 18 minute point count), so I used that for convenience for all other databases.
-cutoff_time <- hms::hms(minutes = c(91, rep(18, 6), 61, 73))
+cutoff_time <- hms::hms(minutes = c(91, rep(18, 7), 61, 73))
 
 # Create 'Same_pc' column to indicate the rows where the time is less than the value in the cutoff_time vector. These observations of the same Id_muestreo & Fecha will be grouped as a point count.
 df_birds_red <- map2(df_birds_red, cutoff_time, \(df, cutoff){
@@ -315,6 +314,11 @@ df_birds_red[4:6] <- map(df_birds_red[4:6], \(df){
   Distancia_bird = if_else(
     Distancia_bird %in% c("Vuelo", "Sobrevuelo"), ">50", Distancia_bird
   ))
+})
+
+# A few observations have Registrado_por as just Robert or just Yuri, but this notation was due to my indicisiveness in the field. These should be both Yuri and Robert 
+df_birds_red[4:6] <- map(df_birds_red[4:6], \(df){
+  df %>% mutate(Registrado_por = "Yuri Rosero-Mora, Robert Rodriguez")
 })
 
 # NOTE in Unillanos:: Distancia_obs is >50 whenever Comentario == "Fuera"
@@ -760,14 +764,21 @@ Pc_hab %>% #filter(Uniq_db == "Ubc gaica dom") %>%
 # >Pc_date ----------------------------------------------------------------
 # Inclusion of date, time, and Ano_grp
 Pc_date <- Bird_pcs_all %>% 
-  distinct(Nombre_institucion, Pregunta_gsc, Uniq_db, Ecoregion, Departamento, Nombre_finca, Id_gcs, Id_group, Id_muestreo, Id_muestreo_no_dc, Ano, Mes, Dia, Fecha, Pc_start, Ano_grp, Clima)
+  distinct(Nombre_institucion, Pregunta_gsc, Uniq_db, Ecoregion, Departamento, Nombre_finca, Id_gcs, Id_group, Id_muestreo, Id_muestreo_no_dc, Ano, Mes, Dia, Fecha, Pc_start, Ano_grp, Clima, Registrado_por)
 nrow(Pc_date)
 
-# Combine Rep_dfs with additional information
-Pc_date2 <- Rep_dfs %>%
+# Combine Rep_dfs (contains Spp_obs) with additional information
+Pc_date2<- Rep_dfs %>%
   bind_rows() %>%
   select(-Same_pc) %>%
-  full_join(Pc_date)
+  full_join(Pc_date) %>%
+  # When Spp_obs == 0 there is no data collector information. Can fill this in for Gaica mbd and Ubc mbd, but can't fix this for Uniq_db X year combinations with multiple observers. 
+  mutate(Registrado_por = case_when(
+    Uniq_db == "Gaica mbd" & Ano_grp == "13-14" ~ "Ronald Fernandez-Gomez, Yuri Rosero-Mora", 
+    Uniq_db == "Gaica mbd" & Ano_grp == "16-17" ~ "Yuri Rosero-Mora, Robert Rodriguez", 
+    Uniq_db == "Ubc mbd" & Ano_grp == "22" & is.na(Registrado_por) ~ "Aaron Alexander Skinner, Santiago Lugo-Enciso",
+    .default = Registrado_por
+  ))
 
 # Calculate the total number of reps per PC
 Pc_date3 <- Pc_date2 %>% 
@@ -1025,7 +1036,7 @@ anti_join(Event_covs_ubc_ug, Event_covs_all)
 
 # Keep (and order) only the relevant columns
 Event_covs_pcs <- Event_covs_all %>% 
-  select(Id_muestreo, Id_muestreo_no_dc, Id_group, Nombre_institucion, Uniq_db, Fecha, Ano_grp, Ano, Mes, Dia, Julian_day, Sampling_day, Pc_start, Pc_length, N_samp_periods, N_reps, Rep_ano_grp, Rep_season, Spp_obs, Noise, Clima, Cows_50m)
+  select(Id_muestreo, Id_muestreo_no_dc, Id_group, Nombre_institucion, Uniq_db, Fecha, Ano_grp, Ano, Mes, Dia, Julian_day, Sampling_day, Pc_start, Pc_length, N_samp_periods, N_reps, Rep_ano_grp, Season, Rep_season, Spp_obs, Registrado_por, Noise, Clima, Cows_50m)
 
 # Environmental data ---------------------------------------------------
 #stop() 
@@ -1161,9 +1172,10 @@ names(Bird_pcs_all)
 Bird_pcs_all_export <- Bird_pcs_all %>% 
   arrange(Id_group, Id_muestreo, Fecha, Pc_start) %>%
   select(
-    Id_muestreo, Id_muestreo_no_dc, Fecha, Pc_start, Species_original, Count,  Distancia_bird, Registrado_por, Tipo_registro, Grabacion
+    Id_muestreo, Id_muestreo_no_dc, Fecha, Pc_start, Species_original, Count,  Distancia_bird, Tipo_registro, Grabacion
     ) %>% 
   summarize(Count = sum(Count), .by = -Count)
+
 # Export
 Bird_pcs_all_export %>% 
   write_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all_spp.csv")
