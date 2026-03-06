@@ -14,6 +14,7 @@
 # Load libraries
 library(readxl)
 library(tidyverse)
+library(janitor)
 library(sf)
 library(chron)
 library(ggpubr)
@@ -111,7 +112,7 @@ Ayerbe_elev_hazen <- read_xlsx(
 # Join Suarez Castro et al (2024) and Hazen's work from Ayerbe field guide
 Ayerbe_elev2 <- Ayerbe_elev %>% bind_rows(Ayerbe_elev_hazen)
 
-# Traits from Bird et al. 2020, likely want to add some longevity traits here. Maybe from Wolfe et al 2025 too? It would be interesting to see if species that are on the k-side of the r-k continuum are impacted more greatly than r-selected species.
+# Traits from Bird et al.
 bird20t <- read_excel("../Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0003-tables3.xlsx")
 bird20t <- bird20t %>%
   rename_with(make.names) %>%
@@ -158,7 +159,7 @@ elev_raw <- Tax_df %>%
   #left_join(bird20t,         by = c("Species_bl" = "Scientific.name")) %>%
   left_join(
     Ayerbe_elev2 %>% select(-Species_bl)
-    ) %>%
+  ) %>%
   left_join(
     Free22_Co %>% select(scientific.name, Min_eB, Max_eB),
     by = c("Species_eB" = "scientific.name")
@@ -372,41 +373,107 @@ Elev_ranges %>%
 # For this reason the '1BL to many BT' matches are not an issue. 'Many BL to 1BT' are also not an issue b/c the one BT matches cleanly with the QJ database
 table(elev_raw$Match_type)
 
-# >Add elev range to FT df -------------------------------------------------
+# r-k life history --------------------------------------------------------
+# r-k continuum traits. It would be interesting to see if species that are on the k-side of the continuum are impacted more greatly than r-selected species. Look at Wolfe et al 2025 too. 
+scrape <- read_csv("Derived/Excels/Traits/clutch_size_migrants_30.csv") %>% 
+  rename(Scientific.name = scientific_name)
+
+# First & last authors from Bird Life , so assuming that they use birdlife taxonomy
+Life_history <- bird20t %>% 
+  filter(Scientific.name %in% Tax_df$Species_bl) %>% 
+  replace_with_na_all(condition = ~.x == "NA") %>% 
+  select(Scientific.name, Mean.clutch.size, Survival, Age.at.first.breeding, Max.longevity) %>% 
+  rename(Clutch = Mean.clutch.size) %>% 
+  mutate(across(Clutch:Max.longevity, as.numeric))
+
+Life_history %>% right_join(scrape) %>% 
+  select(Scientific.name, contains("clutch")) %>% view()
+
+Life_history %>% view()
+
+# Inspect missingness
+gg_miss_var(Life_history)
+
+# 341 species with clutch size information
+Life_history %>%
+  filter(!is.na(Clutch)) %>% 
+  ggplot() + geom_histogram(aes(x = Clutch))
+
+# Eye_size ----------------------------------------------------------------
+# Load in data
+path <- "../Datasets_external/Eye Size Files/"
+
+Final_Book_Join <- read_excel(paste0(path, "Final_Book_Join.xlsx")) %>% 
+  mutate(Species_sacc_18 = str_to_sentence(Species_sacc_18), 
+         Ausprey_trop_2021_methodology = str_to_sentence(Ausprey_trop_2021_source)) %>% 
+  rename(Jones_methodology = Jones_measurement) 
+
+# Create Eye size tbl for joining 
+Eye_size_tbl <- Final_Book_Join %>% 
+  select(Species_sacc_18, ends_with("eye"), ends_with("methodology")) %>% 
+  # Order of columns determines which source takes priority
+  mutate(Transverse_eye = coalesce(Ausprey_trop_2021_eye, Jones_eye),
+         Methodology = coalesce(Ausprey_trop_2021_methodology, Jones_methodology)) %>% 
+  select(Species_sacc_18, Ausprey_2024_eye, Transverse_eye, Methodology)
+
+# Adjust photos by factor of 1.03 as in Ausprey et al 2021
+Eye_size_tbl2 <- Eye_size_tbl %>% 
+  mutate(Transverse_eye = if_else(
+    Methodology == "Photo", Transverse_eye * 1.03, Transverse_eye
+  ))
+
+# How closely do Transverse_eye and Ausprey_2024_eye measurement track each other? 
+Eye_size_tbl2 %>% ggplot(aes(x = Transverse_eye, y = Ausprey_2024_eye)) + 
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_abline(slope = 1, linetype = "dashed", color = "red")
+
+# Ian's suggestion - translate the values taken on live specimens or photos (Ausprey 2021, Jones 2023) to the Ausprey 2024 full eye measurements
+mod_eye <- lm(Ausprey_2024_eye ~ Transverse_eye, data = Eye_size_tbl2)
+summary(mod_eye) # 86% of the variation explained 
+# Predict full eye size using model
+Eye_predict <- Eye_size_tbl2 %>% filter(!is.na(Transverse_eye) & is.na(Ausprey_2024_eye))
+Eye_predict$Pred_Ausprey_2024 <- predict(mod_eye, Eye_predict)
+Eye_predict2 <- Eye_predict %>% select(Species_sacc_18, Pred_Ausprey_2024) %>% 
+  mutate(Source = "Predicted")
+
+# Join repository measurements with predicted measurements
+Eye_size_tbl3 <- Eye_size_tbl2 %>% 
+  left_join(Eye_predict2) %>% 
+  mutate(Source = if_else(
+    is.na(Source) & !is.na(Ausprey_2024_eye), "Repository", Source
+    ), 
+    Eye_comb = coalesce(Ausprey_2024_eye, Pred_Ausprey_2024)) %>% 
+  select(Species_sacc_18, Ausprey_2024_eye, Pred_Ausprey_2024, Eye_comb, Source) %>% 
+  filter(!is.na(Eye_comb)) %>% 
+  rename(Source_eye = Source)
+
+## Calculate residual eye size
+# Join with mass information
+Eye_size_tbl4 <- Eye_size_tbl3 %>% 
+  left_join(Ft_df[, c("Species_ayerbe", "Mass")],
+            by = join_by("Species_sacc_18" == "Species_ayerbe")) %>% 
+  filter(!is.na(Mass))
+
+# Run model & extract residuals
+mod_eye_allometry <- lm(Eye_comb ~ Mass, data = Eye_size_tbl4)
+Eye_size_tbl5 <- Eye_size_tbl4 %>% 
+  mutate(Eye_resid = resid(mod_eye_allometry))
+
+# Combine Ft_final -------------------------------------------------
 # Merge with functional traits database
 Ft_final <- Ft_df2 %>%
   full_join(
     Elev_final[,c("Species_ayerbe", "Elev_range_final", "Source_comb_elev")]
   ) %>% 
-  tibble()
-
-Elev_final
-
-# Eye_size ----------------------------------------------------------------
-# Load in data
-path <- "../Datasets_external/Eye Size Excel Audrey Hanson.xlsx"
-Aaron_tax <- read_xlsx(path, sheet = "Taxonomy") %>% 
-  clean_names()
-Ausprey_raw <- read_xlsx(path, sheet = "Ausprey, 2024 Raw Data") %>% 
-  clean_names()
-
-## Format Ausprey
-# Take mean per species
-Ausprey_form <- Ausprey_raw %>% 
-  summarize(Td_mean = mean(td1), .by = species_clements_2018)
-
-# Join
-Aaron_join <- Aaron_tax %>% 
-  left_join(Ausprey_form, by = join_by("species_eb" == "species_clements_2018"))
-
-## Inspect 
-# 292 species with eye size data 
-Aaron_join %>% filter(!is.na(Td_mean)) %>% 
-  distinct(species_ayerbe, Td_mean)
-
-# But also many without - are these true absences from Ausprey's data set? Issues with taxonomy? Or coding errors? 
-Aaron_join %>% filter(is.na(Td_mean)) %>% 
-  distinct(species_ayerbe, Td_mean)
+  full_join(
+    Eye_size_tbl5[,c("Species_sacc_18", "Eye_resid", "Source_eye")],
+    by = join_by("Species_ayerbe" == "Species_sacc_18")
+    ) %>% 
+  full_join(
+    Life_history[,c("Scientific.name", "Clutch")], 
+    by = join_by("Species_bl" == "Scientific.name")
+    )
 
 # Save & export -----------------------------------------------------------
 stop()
