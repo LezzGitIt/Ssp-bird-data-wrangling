@@ -373,11 +373,40 @@ Elev_ranges %>%
 # For this reason the '1BL to many BT' matches are not an issue. 'Many BL to 1BT' are also not an issue b/c the one BT matches cleanly with the QJ database
 table(elev_raw$Match_type)
 
+# IUCN status -------------------------------------------------------------
+HBW <- read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Datasets_external/Handbook of the Birds of the World and BirdLife International Digital Checklist of the Birds of the World_Version_7.xlsx", sheet = "HBW-BirdLife v7 ", skip = 3) %>% tibble() %>% 
+  clean_names() %>% 
+  rename(iucn_red_list = x2022_iucn_red_list_category)
+# Reduce file down just to recognized species 
+HBW_sp <- HBW %>% filter(subsp_seq == 0 & iucn_red_list != "NR")
+
+# Taxonomic difference Species_bl in Tax_df uses genus 'Amazilia'
+Hummer_no_match <- c("Amazilia fimbriata", "Amazilia cyanus", "Amazilia saucerottei", "Amazilia oenone", "Amazilia coeruleogularis", "Amazilia goudoti", "Amazilia versicolor")
+Hummer_hbw_name <- c("Chionomesa fimbriata", "Chlorestes cyanus", "Saucerottia saucerottei", "Chrysuronia oenone", "Chrysuronia coeruleogularis", "Chrysuronia goudoti", "Chrysuronia versicolor")
+Hummer_name_equivalents <- tibble(Hummer_no_match, Hummer_hbw_name) 
+
+# Merge and replace 
+HBW_sp2 <- HBW_sp %>% 
+  left_join(Hummer_name_equivalents, 
+            by = join_by("scientific_name" == "Hummer_hbw_name")) %>% 
+  mutate(scientific_name = coalesce(Hummer_no_match, scientific_name)) %>% 
+  select(-Hummer_no_match)
+
+
+iucn_status <- Tax_df %>% distinct(Species_bl) %>%
+  left_join(HBW_sp2[, c("scientific_name", "iucn_red_list")], 
+            by = join_by("Species_bl" == "scientific_name"))
+
+# Nearly all species observed are least concern
+iucn_status %>% tabyl(iucn_red_list)
+
 # r-k life history --------------------------------------------------------
-# r-k continuum traits. It would be interesting to see if species that are on the k-side of the continuum are impacted more greatly than r-selected species. Look at Wolfe et al 2025 too. 
+## r-k continuum traits. It would be interesting to see if species that are on the k-side of the continuum are impacted more greatly than r-selected species. Look at Wolfe et al 2025 too. 
+
+
+## Clutch size
 scrape <- read_csv("Derived/Excels/Traits/clutch_size_migrants_30.csv") %>% 
   rename(Scientific.name = scientific_name)
-
 # First & last authors from Bird Life , so assuming that they use birdlife taxonomy
 Life_history <- bird20t %>% 
   filter(Scientific.name %in% Tax_df$Species_bl) %>% 
@@ -387,9 +416,7 @@ Life_history <- bird20t %>%
   mutate(across(Clutch:Max.longevity, as.numeric))
 
 Life_history %>% right_join(scrape) %>% 
-  select(Scientific.name, contains("clutch")) %>% view()
-
-Life_history %>% view()
+  select(Scientific.name, contains("clutch"))
 
 # Inspect missingness
 gg_miss_var(Life_history)
@@ -398,6 +425,7 @@ gg_miss_var(Life_history)
 Life_history %>%
   filter(!is.na(Clutch)) %>% 
   ggplot() + geom_histogram(aes(x = Clutch))
+
 
 # Eye_size ----------------------------------------------------------------
 # Load in data
@@ -473,7 +501,9 @@ Ft_final <- Ft_df2 %>%
   full_join(
     Life_history[,c("Scientific.name", "Clutch")], 
     by = join_by("Species_bl" == "Scientific.name")
-    )
+    ) %>% 
+  full_join(iucn_status) %>%
+  full_join(Gen_length2)
 
 # Save & export -----------------------------------------------------------
 stop()
@@ -481,7 +511,7 @@ stop()
 # Export functional traits file as csv 
 Ft_final %>%
   rename_with(.cols = everything(), .fn = ~str_remove(., "_comb")) %>%
-  write_csv(file = "Derived/Excels/Functional_traits.csv")
+  write_csv(file = "Derived/Excels/Traits/Functional_traits.csv")
 
 # Export full elevation file as csv 
 Elev_final %>% write_csv(file = "Derived/Excels/Elev_ranges_all_sources.csv")
@@ -552,9 +582,7 @@ library(traits) # Traits data
 
 load("Hab_types.Rdata")
 
-HBW <- data.frame(read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Taxonomy/Handbook of the Birds of the World and BirdLife International Digital Checklist of the Birds of the World_Version_7.xlsx", sheet = "HBW-BirdLife v7 ", skip = 3))
-HBWsp <- HBW %>% filter(`Subsp..Seq.` == 0) # Reduce file down just to recognized species
-head(HBWsp)
+HBWsp
 # subset just relevant species of Colombia
 HBWco <- distinct(Tax_df[c("Species_bl")]) %>%
   inner_join(HBWsp[c("Scientific name", "SISRecID")], join_by("Species_bl" == "Scientific name"))
