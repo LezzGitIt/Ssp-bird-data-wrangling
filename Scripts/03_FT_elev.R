@@ -403,6 +403,37 @@ iucn_status %>% tabyl(iucn_red_list)
 # r-k life history --------------------------------------------------------
 ## r-k continuum traits. It would be interesting to see if species that are on the k-side of the continuum are impacted more greatly than r-selected species. Look at Wolfe et al 2025 too. 
 
+# Pace of life traits from Bird et al.
+Bird_pl <- read_excel("../Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0004-tables4.xlsx") %>% clean_names()
+
+# Variables are highly correlated
+Bird_pl %>% select(adult_survival:gen_length) %>%
+  GGally::ggcorr(label = T, label_size = 2, label_round = 2, hjust = 0.75, size = 3, layout.exp = 1.01)
+
+# Replace Amazilia genus with updated hummer names used by Bird et al
+Hummer_name_equivalents2 <- Hummer_name_equivalents %>% 
+  mutate(Hummer_bird_20 = case_when(
+    Hummer_no_match == "Amazilia coeruleogularis" ~ "Lepidopyga coeruleogularis",
+    Hummer_no_match == "Amazilia goudoti" ~ "Lepidopyga goudoti",
+    Hummer_no_match == "Amazilia cyanus" ~ "Hylocharis cyanus", 
+    Hummer_no_match == "Amazilia oenone" ~ "Chrysuronia oenone"
+))
+
+# Generation length is the average interval between the birth of individuals and the birth of their (first?) offspring
+Gen_length <- Bird_pl %>%
+  left_join(Hummer_name_equivalents2, 
+            by = join_by("scientific_name" == "Hummer_bird_20")) %>% 
+  mutate(scientific_name = coalesce(Hummer_no_match, scientific_name)) %>% 
+  select(-Hummer_no_match)
+
+# Join 
+Gen_length2 <- Tax_df %>% distinct(Species_bl) %>%
+  left_join(Gen_length[, c("scientific_name", "gen_length")], 
+            by = join_by("Species_bl" == "scientific_name"))
+
+# Histogram
+Gen_length2 %>%
+  ggplot() + geom_histogram(aes(x = gen_length))
 
 ## Clutch size
 scrape <- read_csv("Derived/Excels/Traits/clutch_size_migrants_30.csv") %>% 
@@ -426,6 +457,13 @@ Life_history %>%
   filter(!is.na(Clutch)) %>% 
   ggplot() + geom_histogram(aes(x = Clutch))
 
+## Compare clutch and generation length
+# Correlation = -0.17
+Gen_length2 %>% 
+  left_join(Life_history, by = join_by("Species_bl" == "Scientific.name")) %>% 
+  ggplot(aes(x = gen_length, y = Clutch)) +
+  geom_point() +
+  geom_smooth(method = "lm")
 
 # Eye_size ----------------------------------------------------------------
 # Load in data
