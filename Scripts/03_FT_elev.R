@@ -67,7 +67,7 @@ Avo_traits_l$BirdLife <- Avo_traits_l$BirdLife %>%
 
 # Match with Avonet
 Ft_df <- Tax_df %>% 
-  distinct(Species_ayerbe, Species_bl) %>%
+  distinct(Species_ayerbe, Species_bl, Species_avilist_25) %>%
   left_join(Avo_traits_l$BirdLife, by = join_by("Species_bl" == "Species")) 
 # A single species from each species SACC
 Ft_df %>% count(Species_ayerbe, sort = T)
@@ -101,6 +101,15 @@ Ft_df2 <- Ft_df %>%
 lapply(Ft_df2[17:21], table)
 # Woodland (= medium stature tree-dominated habitats, including Acacia woodland, riparian woodlands, mangrove forests, forest edges, also more open parkland with scattered taller trees);
 # Forest (= tall tree-dominated vegetation with more or less closed canopy, including palm forest)
+
+# Birdbase ----------------------------------------------------------------
+
+Birdbase <- read_excel("../Datasets_external/BIRDBASE v2025.1 Sekercioglu et al. Final.xlsx", skip = 1) %>% clean_names()
+Birdbase2 <- Birdbase %>% 
+  select(avi_list_v1_2025, primary_diet, db, hb, esi)
+Ft_df3 <- Ft_df2 %>% left_join(Birdbase2, by = join_by("Species_avilist_25" == "avi_list_v1_2025")) %>%
+  select(-Species_avilist_25) %>%
+  distinct() 
 
 # Elevational ranges ------------------------------------------------------
 # Elevational ranges will be used for 2 things, to: 1) look for possible species misidentifications or other errors in the data, 2) to use as a trait representing environmental niche breadth. For #2 having a standardized source for elevations would be ideal (QJ has fewest NAs). One possibility would be to apply a correction across different sources (see below in EXTRAS, search 'correction'), another would be to use QJ estimates from across other countries
@@ -606,7 +615,7 @@ Spp_classified <- Nesting_comb %>%
     Action = case_when(
       has_open & has_enclosed ~ "Remove",
       has_semi ~ "Semi-open",
-      TRUE ~ NA_character_
+      .default = NA_character_
     )
   ) %>% filter(Action != "Remove") %>% 
   rename(Exposure = Action) %>% 
@@ -695,7 +704,7 @@ Eye_size_tbl5 <- Eye_size_tbl4 %>%
 
 # Combine Ft_final -------------------------------------------------
 # Merge with functional traits database
-Ft_final <- Ft_df2 %>%
+Ft_final <- Ft_df3 %>%
   full_join(
     Elev_final[,c("Species_ayerbe", "Elev_range_final", "Source_comb_elev")]
   ) %>% 
