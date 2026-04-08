@@ -14,6 +14,7 @@
 # Load libraries
 library(readxl)
 library(tidyverse)
+library(naniar)
 library(janitor)
 library(sf)
 library(chron)
@@ -25,7 +26,7 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-#source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 
 ## Load data and custom functions
 Bird_pcs_all <-  read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
@@ -33,7 +34,7 @@ Tax_df <- read_csv("Derived/Excels/Taxonomy/Taxonomy.csv") #%>%
 #mutate(Avibase.ID = str_sub(concept_id_avilist, 1, 8)) # Match with Avonet
 
 # Avonet list  ------------------------------------------------------------
-# See metadata tab in Excel for information on what each column contains
+# See metadata tab in Excel (.xlsx) for information on what each column contains
 # Bring in here as this is used to create Tax_df
 Traits_path <- "../Datasets_external/Avonet_Data/TraitData/"
 filesAvo <- list.files(path = Traits_path, pattern = ".xlsx")
@@ -76,10 +77,24 @@ names(Ft_df)
 Ft_df2 <- Ft_df %>%
   select(-c(Sequence, Avibase.ID)) %>%
   mutate(
+    Migration = case_when(
+      Migration == 1 ~ "Sedentary",
+      Migration == 2 ~ "Partial",
+      Migration == 3 ~ "Long_distance"
+    ),
+    Habitat.Density = case_when(
+      Habitat.Density == 1 ~ "Dense",
+      Habitat.Density == 2 ~ "Semi_open",
+      Habitat.Density == 3 ~ "Open"
+    ),
     Habitat.Density = as.factor(Habitat.Density),
     Migration = as.factor(Migration),
     across(c(ends_with("tude"), "Range.Size"), as.numeric)
   ) %>%
+  # Create habitat type, forest vs non-forest
+  mutate(Forest_bin = if_else(
+    Habitat %in% c("Forest", "Woodland", "Riverine"), "Forest", "Non-forest"
+  )) %>%
   mutate(across(where(is.numeric), \(x) round(x, 2))) 
 
 # Examine a few key traits
@@ -435,7 +450,9 @@ Gen_length2 <- Tax_df %>% distinct(Species_bl) %>%
 Gen_length2 %>%
   ggplot() + geom_histogram(aes(x = gen_length))
 
-## Clutch size
+
+# Nesting -----------------------------------------------------------------
+# >Clutch size ------------------------------------------------------------
 scrape <- read_csv("Derived/Excels/Traits/clutch_size_migrants_30.csv") %>% 
   rename(Scientific.name = scientific_name)
 # First & last authors from Bird Life , so assuming that they use birdlife taxonomy
@@ -464,6 +481,156 @@ Gen_length2 %>%
   ggplot(aes(x = gen_length, y = Clutch)) +
   geom_point() +
   geom_smooth(method = "lm")
+
+# >Nest type --------------------------------------------------------------
+# Nest type data from Sheard, Catherine, et al. "Nest traits for the world's birds" Global Ecology and Biogeography 33.2 (2024): 206-214.
+Nesting_path <- "../Datasets_external/Sheard_et_al_geb_Nesting_traits_2023"
+Nesting_sheard1 <- read_csv(paste0(Nesting_path, "/Dataset-S1.csv")) %>%
+  clean_names() %>%
+  distinct(species_scientific_name, veg_type) %>% 
+  filter(!is.na(veg_type) & veg_type != c("no info"))
+Nesting_sheard2 <- read_csv(paste0(Nesting_path, "/Dataset-S2.csv")) %>%
+  clean_names()
+
+# Replace 'unknown' (u) with NA, turn numeric, join with 'veg_type' from Nesting_sheard1
+Nesting <- Nesting_sheard2 %>% 
+  replace_with_na_all(condition = ~.x == "u") %>%
+  select(species_scientific_name, starts_with("str"), starts_with("loc")) %>%
+  mutate(across(.cols = -species_scientific_name, as.numeric)) %>% 
+  left_join(Nesting_sheard1) %>% 
+  distinct()
+
+# Subset with species observed
+Nesting2 <- Tax_df %>% 
+  left_join(Nesting, by = join_by("Species_bl" == "species_scientific_name")) %>%
+  select(Species_ayerbe,  starts_with("str"), starts_with("loc"), veg_type)
+
+# >>Nest structure --------------------------------------------------------
+Nest_str <- Nesting2 %>%
+  select(Species_ayerbe, starts_with("str")) %>%
+  pivot_longer(
+    cols = -c(Species_ayerbe), 
+    names_to = "Nest_structure", 
+    values_to = "Binary"
+  ) %>% 
+  filter(Binary == 1) %>%
+  select(-Binary) %>%
+  mutate(Nest_structure = str_remove(Nest_structure, "str_")) %>% 
+  distinct()
+
+# >>Nest location ---------------------------------------------------------
+Nest_loc <- Nesting2 %>%
+  select(Species_ayerbe, starts_with("loc"), veg_type) %>%
+  pivot_longer(
+    cols = -c(Species_ayerbe, veg_type),
+    names_to = "Nest_location", 
+    values_to = "Binary"
+  ) %>% 
+  filter(Binary == 1) %>%
+  select(-Binary) %>%
+  mutate(Nest_location = str_remove(Nest_location, "loc_"),
+         veg_type = ifelse(Nest_location == "veg", veg_type, NA), 
+         veg_type = str_to_sentence(veg_type)) %>% 
+  relocate(Nest_location, .before = veg_type)
+
+## Location == "veg" is some combination of bush, tree, or reed
+Nest_loc2 <- Nest_loc %>% 
+  # Recode Bush + uncertain stuff as just Bush
+  mutate(veg_type = ifelse(
+    str_detect(veg_type, "Bush, uncertain"), "Bush", veg_type
+    ))
+
+# Of the options that contain bush but not tree..
+Nest_loc2 %>% filter(
+  str_detect(veg_type, "Bush|bush") & !str_detect(veg_type, "Tree|tree")
+) %>% pull(veg_type) %>% unique()
+# Relabel these as 'Bush'
+Label_bush <- c("Bush", "Bush, reed")
+# Relabel
+Nest_loc3 <- Nest_loc2 %>% mutate(Nest_location = ifelse(
+    veg_type %in% Label_bush, "bush", Nest_location
+    )) %>% distinct(Species_ayerbe, Nest_location)
+Num_nest_types <- Nest_loc3 %>% 
+  count(Species_ayerbe, sort = T, name = "N_nest_locs") 
+# Of the species with only one nest type, how is nest location distributed?
+Sing_nest_loc <- Num_nest_types %>% 
+  filter(N_nest_locs == 1) %>% 
+  pull(Species_ayerbe)
+Nest_loc3 %>% filter(Species_ayerbe %in% Sing_nest_loc) %>% 
+  #filter(Nest_location == "tree_hole") %>% view()
+  tabyl(Nest_location)
+
+Nest_loc4 <- Nest_loc3 %>% left_join(Num_nest_types)
+# These two species nest in >1 habitat but both are ground / bush
+Spp_bush_ground <- c("Arremonops tocuyensis", "Geothlypis philadelphia")
+Nest_loc4 %>% filter(Species_ayerbe %in% Spp_bush_ground)
+
+Nest_loc5 <- Nest_loc4 %>% mutate(Ground_bush = case_when(
+  N_nest_locs == 1 & Nest_location %in% c("ground", "bush") ~ TRUE,
+  Species_ayerbe %in% Spp_bush_ground ~ TRUE,
+  .default = FALSE
+)) %>% distinct(Species_ayerbe, Ground_bush, N_nest_locs)
+
+# >>Nest exposure ---------------------------------------------------------
+# Exposure_comb_key is classification of exposure (open, semi-open, enclosed) based on combinations of nest location and nest structure
+Exposure_comb_key <- read_csv("Derived/Excels/Traits/Nest_exposure.csv")
+# Combine structure and location 
+Nesting_comb <- Nest_loc4 %>% 
+  full_join(Nest_str) %>% 
+  left_join(Exposure_comb_key) %>% 
+  # Hard code exposure if clearly 'Enclosed'
+  mutate(Exposure = case_when( 
+    Nest_location %in% c("tree_hole", "earth_hole") ~ "Enclosed", 
+    Nest_structure %in% c("dome", "dome_and_tube", "ex_w_nest", "excavation", "cavity_mod") ~ "Enclosed",
+    .default = Exposure
+    ))
+# Some species have multiple exposures
+Spp_to_classify <- Nesting_comb %>% 
+  distinct(Species_ayerbe, Exposure) %>% 
+  filter(!is.na(Exposure)) %>% 
+  count(Species_ayerbe, sort = T) %>% 
+  filter(n > 1) %>% 
+  pull(Species_ayerbe)
+
+# Classify these conservatively, removing the species if it has both 'Open' & 'Enclosed', and otherwise classifying as 'Semi-open'
+Spp_classified <- Nesting_comb %>%
+  filter(Species_ayerbe %in% Spp_to_classify) %>%
+  group_by(Species_ayerbe) %>%
+  summarise(
+    has_open = any(Exposure == "Open"),
+    has_enclosed = any(Exposure == "Enclosed"),
+    has_semi = any(Exposure == "Semi-open"),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    Action = case_when(
+      has_open & has_enclosed ~ "Remove",
+      has_semi ~ "Semi-open",
+      TRUE ~ NA_character_
+    )
+  ) %>% filter(Action != "Remove") %>% 
+  rename(Exposure = Action) %>% 
+  select(Species_ayerbe, Exposure)
+
+# Create exposure classification where each species has a single row
+Nest_exposure <- Nesting_comb %>% 
+  filter(!Species_ayerbe %in% Spp_to_classify) %>% 
+  bind_rows(Spp_classified) %>% 
+  distinct(Species_ayerbe, Exposure) %>% 
+  filter(!is.na(Exposure))
+
+## Combine
+# Join final location tbl with exposure tbl
+Nesting_final <- Nest_loc5 %>% full_join(Nest_exposure) %>% 
+  rename(Nest_ground_bush = Ground_bush, 
+         Nest_exposure = Exposure)
+
+## STILL TO DO - NEED TO KNOW IF BREEDING IN COLOMBIA vs MIGRATORY 
+if(FALSE){
+  Ft_final %>% filter(Migration != "Sedentary") %>% 
+    distinct(Species_ayerbe, Migration) %>% 
+    arrange(Migration)
+}
 
 # Eye_size ----------------------------------------------------------------
 # Load in data
@@ -541,7 +708,8 @@ Ft_final <- Ft_df2 %>%
     by = join_by("Species_bl" == "Scientific.name")
     ) %>% 
   full_join(iucn_status) %>%
-  full_join(Gen_length2)
+  full_join(Gen_length2) %>% 
+  full_join(Nesting_final)
 
 # Save & export -----------------------------------------------------------
 stop()
