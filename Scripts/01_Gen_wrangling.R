@@ -101,7 +101,7 @@ df_birds <- map(df_birds, function(x) {
         Ano == 2019 ~ "19",
         Ano == 2022 ~ "22",
         Ano == 2024 ~ "24",
-        Ano == 2026 ~ "26"
+        Ano %in% c(2025, 2026) ~ "25-26"
       )
     )
 }) ### GAICA did not record date for 74 Recorridos libres
@@ -215,32 +215,46 @@ df_birds_red <- map(df_birds_red, \(df) {
 })
 
 # >Dataset specific operations -------------------------------------------
-## Merge 58 points that have a single predominant habitat type from Andrea's dataset and standardize according to SCR terminology
+## GAICA distancia did not record the predominant local landcover type with each point count, so I classified them using Google Earth. 
+Aaron_class <- read_xlsx("Data/Habitats/Gaica_distancia_habitat_class.xlsx",
+                         sheet = "Classification")
 
-Andrea_class <- read_xlsx("Data/Habitats/Habitat_match_unillanos.xlsx") %>%
-  mutate(Habitat = case_when(
-    habitat_unillanos %in% c("PA", "CV") ~ "Ssp",
-    habitat_unillanos == "Bo" ~ "Bosque",
-    habitat_unillanos == "PT" ~ "Pastizales",
-    .default = habitat_unillanos
+# Format
+Gaica_dist_hab <- Aaron_class %>% 
+  rename(Habitat_andrea = Habitat) %>% 
+  mutate(
+    Habitat_aaron = coalesce(Aaron_habitat, Audrey_habitat),
+    row = row_number()) %>% 
+  mutate(Aaron_sub = case_when(
+    Habitat_aaron == "Arboles dispersos" ~ "Arboles dispersos", 
+    Habitat_aaron == "Cerca viva" ~ "Cerca viva",
+    .default = Aaron_sub
   )) %>%
-  rename(Id_punto_muestreo_original = ID_punto_muestreo_ORIGINAL) %>%
-  filter(
-    if_all(c(Habitat, ID_punto_muestreo_FINAL, habitat_unillanos), ~ !is.na(.))
-    ) %>% mutate(habitat_unillanos = case_when(
-      habitat_unillanos == "PA" ~ "Arboles dispersos",
-      habitat_unillanos == "CV" ~ "Cerca viva",
-      habitat_unillanos %in% c("Bosque", "Pastizales") ~ NA
-    )) %>%
-  distinct(Id_punto_muestreo_original, Habitat, habitat_unillanos)
+  mutate(Habitat_aaron = case_when(
+    Habitat_aaron == "Arboles dispersos" ~ "Ssp", 
+    Habitat_aaron == "Cerca viva" ~ "Ssp",
+    .default = Habitat_aaron
+  ))
+
+# Roughly half of the points are classified differently than Andrea. 
+Gaica_dist_hab %>% mutate(
+  Same = Habitat_aaron == Habitat_andrea
+) %>% filter(!Same)
+
+# GAICA distancia methodology did not select point count locations to isolate a single habitat type, so some point counts had multiple covers and were classified as "Mosaic" (n = 20)
+Gaica_dist_hab %>% filter(Habitat_aaron == "Mosaic")
+
+# Select relevant columns 
+Gaica_dist_hab2 <- Gaica_dist_hab %>% 
+  mutate(Id_muestreo = paste0("G-", Id_muestreo_no_dc)) %>% 
+  select(Id_muestreo, Habitat_aaron, Aaron_sub)
 
 # Join Gaica distancia with Andrea's dataset 
-df_birds_red$Gaica_dist <- df_birds_red$Gaica_dist %>%
-  left_join(Andrea_class) %>% 
-  mutate(Habitat_sub_ut = NA_character_,
-         Habitat_sub_ut = coalesce(Habitat_sub_ut, habitat_unillanos)) %>% 
-  select(-habitat_unillanos)
-
+df_birds_red$Gaica_dist <- df_birds_red$Gaica_dist %>% 
+  left_join(Gaica_dist_hab2) %>% 
+  mutate(Habitat_ut = Habitat_aaron,
+         Habitat_sub_ut = Aaron_sub) %>% 
+  select(-c(Habitat_aaron, Aaron_sub))
 
 # Change rows with 'Vuelo' to Tipo_registro so Estrato_vertical is no longer needed
 df_birds_red$Gaica_dist <- df_birds_red$Gaica_dist %>% 
@@ -782,10 +796,8 @@ Pc_hab_ano <- Bird_pcs_all %>%
 
 # Each point count has a single Habitat_ut except for Gaica distancia points
 Pc_hab_ano2 <- Pc_hab_ano %>%
-  mutate(Habitat_ut = case_when(
-    Uniq_db == "Gaica distancia" ~ Habitat,
-    str_detect(Habitat_ut, "Bosque|bosque") ~ "Bosque",
-    .default = Habitat_ut
+  mutate(Habitat_ut = ifelse(
+    str_detect(Habitat_ut, "Bosque|bosque"), "Bosque", Habitat_ut
   ),
   Habitat_sub = case_when(
     Id_group %in% c("UBCG-MB-R-OQ", "UBC-MB-M-LBR") ~ "Maduro", 
@@ -801,23 +813,17 @@ Pc_hab_ano2 <- Pc_hab_ano %>%
       str_detect(Id_muestreo, "OQ_") ~ "Bosque",
       Habitat_ut == "Bosque ripario" ~ "Bosque",
       .default = Habitat_ut
-      ),
-    # Create Habitat (consolidated) column & replace multiple habitat types with 'Mosaic'
-    Habitat = if_else(Uniq_db == "Gaica distancia" & is.na(Habitat),
-      "Mosaic", Habitat_ut)
-  )
-
-stop()
+    )
+  ) %>% rename(Habitat = Habitat_ut)
 
 # Remove year
 Pc_hab <- Pc_hab_ano2 %>% distinct(pick(-Ano))
 
 # NOTE:: 1 row for each Id_muestreo
-Pc_hab %>% #filter(Uniq_db == "Ubc gaica dom") %>%
-  distinct(Ecoregion, Id_muestreo_no_dc, Habitat) %>%
-  filter(Habitat == "Ssp") %>%
+Pc_hab %>% 
+  distinct(Ecoregion, Id_muestreo_no_dc, Habitat, Habitat_sub) %>%
+  #filter(Habitat_ut == "Ssp") %>%
   count(Id_muestreo_no_dc, sort = T)
-  #filter(Ecoregion == "Piedemonte")
 
 # >Pc_date ----------------------------------------------------------------
 # Inclusion of date, time, and Ano_grp
@@ -835,7 +841,7 @@ Pc_date2 <- Rep_dfs %>%
     Uniq_db == "Gaica mbd" & Ano_grp == "13-14" ~ "Ronald Fernandez-Gomez, Yuri Rosero-Mora", 
     Uniq_db == "Gaica mbd" & Ano_grp == "16-17" ~ "Yuri Rosero-Mora, Robert Rodriguez", 
     Uniq_db == "Ubc mbd" & Ano_grp == "22" & is.na(Registrado_por) ~ "Aaron Alexander Skinner, Santiago Lugo-Enciso",
-    Uniq_db == "Ubc mbd" & Ano_grp == "26" ~ "Santiago Lugo-Enciso",
+    Uniq_db == "Ubc mbd" & Fecha > as.Date("2026-01-01") ~ "Santiago Lugo-Enciso",
     .default = Registrado_por
   ))
 
@@ -1034,7 +1040,10 @@ Covs_main_ubc <- df_birds_red$Ubc_meta22 %>%
   distinct(Id_muestreo, Fecha, Hora, Cigarras, Ruido, Vacas_menos_50) %>% 
   rename(Noise = Ruido, Cows_50m = Vacas_menos_50) %>%
   mutate(
-    Cows_50m = if_else(Cows_50m == "Si", "Yes", Cows_50m), 
+    Cows_50m = case_when(
+      Cows_50m == "Si" ~ "Yes",
+      .default = Cows_50m
+    ),
     Noise = case_when(
       Noise == "Ninguno" ~ "None",
       Noise == "Ligero" ~ "Light",
@@ -1045,7 +1054,7 @@ Covs_main_ubc <- df_birds_red$Ubc_meta22 %>%
 
 Event_covs_ubc22 <- df_metadata$Ubc_meta22 %>% 
   rename_with(.fn = ~str_remove(.x, "Observacion_climatica_")) %>% 
-  rename(Rain = Lluvia, Winds = Viento, Clouds = Nubes) %>%
+  rename(Rain = lluvia, Winds = viento, Clouds = nubes) %>%
   Cap_snake()
 
 Event_covs_ubc26 <- df_metadata$Ubc_meta26 %>%
@@ -1068,23 +1077,16 @@ standardize_weather <- function(df, Clouds1){
     distinct(Id_muestreo, Fecha, Pc_start, Noise, Clima, Cows_50m)
 }
 
-Event_covs_ubc22 %>% standardize_weather(Clouds1 = FALSE)
 Covs_ubc_gaica2 <- Covs_ubc_gaica %>% standardize_weather(Clouds1 = TRUE)
-Event_covs_ubc26 %>% standardize_weather(Clouds1 = TRUE)
-
 
 ## Final set of event (survey) covariates 
-# For UBC & GAICA 2024 data
-Event_covs_ug <- Covs_ubc_gaica2 
-
-Event_covs_ubc22 <- df_metadata$Ubc_meta22 %>% 
+Event_covs_ubc <- Event_covs_ubc22 %>% 
   left_join(Covs_main_ubc) %>% 
-  rename(Pc_start = Hora) %>%
-  distinct(Id_muestreo, Fecha, Pc_start, Noise, Clima, Cows_50m) %>% 
-  mutate(Cows_50m = if_else(is.na(Cows_50m), "No", Cows_50m))
+  bind_rows(Event_covs_ubc26) %>%
+  standardize_weather(Clouds1 = TRUE)
 
-# Combined event covariates for 2021 and 2024 (ubc & gaica) field seasons 
-Event_covs_ubc_ug <- bind_rows(Event_covs_ubc, Event_covs_ug)
+# Combined event covariates for 2021, 2024 (ubc & gaica), and 2026 field seasons 
+Event_covs_ubc_ug <- bind_rows(Event_covs_ubc, Covs_ubc_gaica2)
 
 # >Merge with Pc_date -----------------------------------------------------
 Event_covs_all <- Pc_date9 %>%
@@ -1095,11 +1097,6 @@ Event_covs_all <- Pc_date9 %>%
   ) %>%
   mutate(Clima = coalesce(Clima, Clima.new)) %>%
   select(-Clima.new)
-
-Event_covs_all %>% 
-  distinct(Id_muestreo, Clima, Fecha, Pc_start, Noise, Cows_50m) %>% 
-  filter(!is.na(Clima)) %>% 
-  view()
 
 ## Testing - Did this work? YES
 # These are points that are in Event_covs_ubc_ug and not in Pc_date9. These are practice points, points that we did not survey but took some measurements (e.g. habitat), etc. 
@@ -1216,7 +1213,6 @@ if(FALSE) { # This process is slow
 # Plot
 # ggplot() + geom_sf(data = mpio_sf)
 
-
 # Check files -------------------------------------------------------------
 # Event covariates of point counts (not including landcover or landscape habitat information) - 2727  point count surveys
 nrow(Event_covs_pcs)
@@ -1234,7 +1230,7 @@ Site_covs %>%
 
 # Save & export -----------------------------------------------------------
 stop() 
-rm(list = ls()[!(ls() %in% c("Bird_pcs_all", "Birds_comb5", "Pc_date9", "Pc_hab", "Pc_locs", "df_birds", "df_metadata", "df_meta", "df_birds_red", "Mes_mod", "Pc_locs_mult", "Pc_locs_sf", "Envi_df2", "Prec_df", "Prec_daily", "Rep_dfs"))])
+rm(list = ls()[!(ls() %in% c("Bird_pcs_all", "Site_covs", "Event_covs_pcs", "Birds_comb5", "Pc_date9", "Pc_hab", "Pc_locs", "df_birds", "df_metadata", "df_meta", "df_birds_red", "Mes_mod", "Pc_locs_mult", "Pc_locs_sf", "Envi_df2", "Prec_df", "Prec_daily", "Rep_dfs"))])
 #save.image(paste0("Rdata/the_basics_", format(Sys.Date(), "%m.%d.%y"), ".Rdata"))
 #save.image("Rdata/the_basics_09.15.25.Rdata") # Manual
 
