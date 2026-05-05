@@ -75,9 +75,8 @@ Ft_df %>% count(Species_ayerbe, sort = T)
 # Format & remove extraneous columns
 names(Ft_df)
 Ft_df2 <- Ft_df %>%
-  select(-c(Sequence, Avibase.ID)) %>%
   mutate(
-    Migration = case_when(
+    Migration_avo = case_when(
       Migration == 1 ~ "Sedentary",
       Migration == 2 ~ "Partial",
       Migration == 3 ~ "Long_distance"
@@ -88,14 +87,15 @@ Ft_df2 <- Ft_df %>%
       Habitat.Density == 3 ~ "Open"
     ),
     Habitat.Density = as.factor(Habitat.Density),
-    Migration = as.factor(Migration),
+    Migration_avo = as.factor(Migration_avo),
     across(c(ends_with("tude"), "Range.Size"), as.numeric)
   ) %>%
   # Create habitat type, forest vs non-forest
   mutate(Forest_bin = if_else(
     Habitat %in% c("Forest", "Woodland", "Riverine"), "Forest", "Non-forest"
   )) %>%
-  mutate(across(where(is.numeric), \(x) round(x, 2))) 
+  mutate(across(where(is.numeric), \(x) round(x, 2))) %>% 
+  select(-c(Sequence, Avibase.ID, Migration))
 
 # Examine a few key traits
 lapply(Ft_df2[17:21], table)
@@ -103,12 +103,49 @@ lapply(Ft_df2[17:21], table)
 # Forest (= tall tree-dominated vegetation with more or less closed canopy, including palm forest)
 
 # Birdbase ----------------------------------------------------------------
-
+# Extract specialization traits from Birdbase
 Birdbase <- read_excel("../Datasets_external/BIRDBASE v2025.1 Sekercioglu et al. Final.xlsx", skip = 1) %>% clean_names()
-Birdbase2 <- Birdbase %>% 
-  select(avi_list_v1_2025, primary_diet, db, hb, esi)
-Ft_df3 <- Ft_df2 %>% left_join(Birdbase2, by = join_by("Species_avilist_25" == "avi_list_v1_2025")) %>%
-  select(-Species_avilist_25) %>%
+# ESI =  log10(100/[dietary breadth x habitat breadth]); a maximum of 2 for the most specialized species that only feed on one major food group and live in one major type of habitat. 
+
+Birdbase_specialization <- Birdbase %>% 
+  select(avi_list_v1_2025, primary_diet, db, hb, esi) %>% 
+  rename(Diet_breadth = db, 
+         Habitat_breadth = hb, 
+         Ecological_specialization = esi)
+
+# Movement 
+Birdbase_move <- Birdbase %>% 
+  select(avi_list_v1_2025, mig,	alt, irreg,	disp, sed) %>% 
+  mutate(Migration_bb = case_when(
+    mig == 1 ~ "Migratory",
+    alt == 1 ~ "Altitudinal",
+    irreg == 1 ~ "Irregular",
+    sed == 1 | disp == 1 ~ "Sedentary"
+  )) %>% 
+  select(avi_list_v1_2025, Migration_bb)
+
+Birdbase_clutch <- Birdbase %>% 
+  select(avi_list_v1_2025, clutch_min, clutch_max) %>% 
+  rowwise() %>%
+  mutate(clutch_mean = mean(c(clutch_min, clutch_max), na.rm = TRUE)) %>% 
+  ungroup()
+
+Ft_df3 <- Ft_df2 %>% 
+  left_join(Birdbase_specialization, 
+            by = join_by("Species_avilist_25" == "avi_list_v1_2025")) %>%
+  left_join(Birdbase_move, 
+            by = join_by("Species_avilist_25" == "avi_list_v1_2025")) %>% 
+  left_join(Birdbase_clutch,
+            by = join_by("Species_avilist_25" == "avi_list_v1_2025"))
+
+# NOTE: All species in birdbase that are NA are sedentary
+Ft_df3 %>% select(starts_with("Migration")) %>% 
+  filter(is.na(Migration_bb)) %>% 
+  distinct()
+# Set to Sedentary where NA
+Ft_df4 <- Ft_df3 %>% 
+  mutate(Migration_bb = ifelse(is.na(Migration_bb), "Sedentary", Migration_bb)) %>%
+  select(-c(Species_avilist_25)) %>%
   distinct() 
 
 # Elevational ranges ------------------------------------------------------
@@ -636,9 +673,12 @@ Nesting_final <- Nest_loc5 %>% full_join(Nest_exposure) %>%
 
 ## STILL TO DO - NEED TO KNOW IF BREEDING IN COLOMBIA vs MIGRATORY 
 if(FALSE){
-  Ft_final %>% filter(Migration != "Sedentary") %>% 
-    distinct(Species_ayerbe, Migration) %>% 
-    arrange(Migration)
+  Ft_final %>% 
+    left_join(Tax_df[,c("Species_ayerbe", "Species_avilist_25")]) %>%
+    filter(Migration %in% c("Migratory", "Irregular")) %>% 
+    distinct(Species_ayerbe, Species_avilist_25, Migration) %>% 
+    mutate(Breeds_col = " ") %>%
+    write_csv("Derived/Excels/Traits/Breeds_in_Colombia.csv")
 }
 
 # Eye_size ----------------------------------------------------------------
@@ -704,7 +744,7 @@ Eye_size_tbl5 <- Eye_size_tbl4 %>%
 
 # Combine Ft_final -------------------------------------------------
 # Merge with functional traits database
-Ft_final <- Ft_df3 %>%
+Ft_final <- Ft_df4 %>%
   full_join(
     Elev_final[,c("Species_ayerbe", "Elev_range_final", "Source_comb_elev")]
   ) %>% 
@@ -718,10 +758,14 @@ Ft_final <- Ft_df3 %>%
     ) %>% 
   full_join(iucn_status) %>%
   full_join(Gen_length2) %>% 
-  full_join(Nesting_final)
+  full_join(Nesting_final) %>% 
+  distinct()
 
 # Save & export -----------------------------------------------------------
 stop()
+
+# 369 rows × 7 cols
+Ft_final %>% Na_rows_cols()
 
 # Export functional traits file as csv 
 Ft_final %>%
