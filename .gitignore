@@ -19,22 +19,33 @@
 *.DS_Store
 *.pdf
 
-# Ignore specific folders
+# Recreatable / raw folders — not tracked
 Data/
 Rdata/
 Derived/
 Derived_geospatial/
 Figures/
+Rendered/
 Simulating_data_Claire/
-Data_paper/*
-!Data_paper/Scripts
-Data_paper/Scripts/*
-!Data_paper/Scripts/qmd
-Data_paper/Scripts/qmd/*
-!Data_paper/Scripts/qmd/Data_paper_ecology.qmd
-!Data_paper/Scripts/Data_paper_ecology_figs.R
-# Static figures the manuscript embeds that no script here regenerates
-!Data_paper/Figures_static
+
+# Data-paper supporting material kept locally (not part of the DataS1 deposit)
+Suppfiles/style-guide/
+
+# DataS1/ is the deposit and IS tracked, but *.xlsx is ignored globally above:
+!DataS1/Column_definitions_final.xlsx
+
+# Quarto / LaTeX render byproducts, scoped to Scripts/qmd/ so they can never
+# shadow real sources (Suppfiles/title.tex, _extensions/**)
+Scripts/qmd/*_files/
+Scripts/qmd/*_cache/
+Scripts/qmd/*.tex
+Scripts/qmd/*.aux
+Scripts/qmd/*.bbl
+Scripts/qmd/*.blg
+Scripts/qmd/*.log
+Scripts/qmd/*.spl
+Scripts/qmd/*.rmarkdown
+Scripts/qmd/*.pdf
 
 # Working docs (session notes / migration plan, not the science)
 Project_notes.md

@@ -1,0 +1,129 @@
+affiliations:
+  - id: ubc
+    name: University of British Columbia
+    department: Department of Zoology
+    city: Vancouver
+    region: BC
+    country: Canada
+
+  - id: tnc col
+    name: The Nature Conservancy
+    city: Bogotá
+    region: Cundinamarca
+    country: Colombia
+
+  - id: humboldt 
+    name: Alexander von Humboldt Biological Resources Research Institute
+    city: Bogotá
+    region: Cundinamarca
+    country: Colombia
+    
+  - id: unillanos 
+    name: Universidad de los Llanos
+    city: Villavicencio
+    region: Meta
+    country: Colombia
+    
+  - id: gaica
+    name: Asociación GAICA
+    city: Pasto
+    region: Nariño
+    country: Colombia
+    
+  - id: cipav
+    name: Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria (CIPAV)
+    city: Cali
+    region: Valle del Cauca
+    country: Colombia
+    
+  - id: ecotropico
+    name: Ecotropico
+    city: Bogotá
+    region: Cundinamarca
+    country: Colombia
+    
+  - id: tnc us
+    name: The Nature Conservancy
+    city: Fort Collins
+    region: Colorado
+    country: United States of America
+
+author:
+  - name: Aaron Skinner
+    email: skinnerayayron93@gmail.com
+    affiliations:
+      - ref: ubc
+    attributes:
+      corresponding: true
+      
+  - name:	Adriana Hurtado
+    affiliations: 
+    - ref: ecotropico
+    
+  - name:	Juanita Herrera
+    affiliations: 
+    - ref: ecotropico
+      
+  - name:	Robert Rodriguez-Caicedo
+    affiliations: 
+    - ref: gaica
+      
+  - name:	Yuri Rosero-Mora
+    affiliations: 
+      - ref: gaica
+ 
+  - name:	Santiago Lugo-Enciso
+    affiliations: 
+      - ref: unillanos
+
+  #- name: Jose Manuel Ochoa-Quintero
+    #affiliations:
+     # - ref: humboldt
+     
+  #- name: Maria Jimena Esquivel
+   # affiliations:
+    #  - ref: humboldt 
+      
+  - name: Andrea Morales-Roza
+    affiliations:
+      - ref: unillanos
+
+  - name: Evelyn Alvarez-Daza
+    affiliations:
+      - ref: unillanos
+      
+  #- name: Sergio Montoya-Arango
+   # affiliations:
+    #  - ref: unillanos
+      
+  - name: Alexander Velasquez 
+    affiliations: 
+      - ref: cipav
+      
+  - name: Amadeo Perdomo 
+    affiliations: 
+      - ref: cipav
+      
+  - name: Julian Chara
+    affiliations: 
+      - ref: cipav
+
+  - name: Diego Lizcano 
+    affiliations: 
+      - ref: tnc col
+
+  - name: Tomas Walschburger
+    affiliations:
+      - ref: tnc col
+
+  - name: Juliana Delgado
+    affiliations:
+      - ref: tnc col
+      
+  - name: Claire Kremen
+    affiliations:
+      - ref: ubc
+      
+  - name: Christina Kennedy
+    affiliations:
+      - ref: tnc us
