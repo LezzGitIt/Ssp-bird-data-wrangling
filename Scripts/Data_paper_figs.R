@@ -31,16 +31,16 @@ Pc_locs_sf <- st_read("Derived_geospatial/shp/Pc_locs.gpkg")
 Pc_locs_dc_sf <- st_read("Derived_geospatial/shp/Pc_locs_dc.gpkg")
 
 # Load in raw abundance data
-Bird_pcs_all <- read_csv("Data_paper/DataS1/Bird_pcs_all.csv")
-Bird_pcs_analysis <- read_csv("Data_paper/DataS1/Bird_pcs_analysis.csv")
-Taxonomy <- read_csv(file = "Data_paper/DataS1/Taxonomy.csv")
-Fn_traits <- read_csv(file = "Data_paper/DataS1/Functional_traits.csv") %>% 
+Bird_pcs_all <- read_csv("DataS1/Bird_pcs_all.csv")
+Bird_pcs_analysis <- read_csv("DataS1/Bird_pcs_analysis.csv")
+Taxonomy <- read_csv(file = "DataS1/Taxonomy.csv")
+Fn_traits <- read_csv(file = "DataS1/Functional_traits.csv") %>% 
   select(-Match_type)
-Site_covs <- read_csv(file = "Data_paper/DataS1/Site_covs.csv")
-Event_covs <- read_csv(file = "Data_paper/DataS1/Event_covs.csv")
+Site_covs <- read_csv(file = "DataS1/Site_covs.csv")
+Event_covs <- read_csv(file = "DataS1/Event_covs.csv")
 Prec_df <- read_csv(file = "Derived/Excels/Prec_df.csv")
 
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
 
 # Fig1: Sampling map ------------------------------------------------------
 ### Create map showing point count locations on informative background (elevation)
@@ -188,7 +188,7 @@ Col_alt_map +
     size = guide_legend(title = "Number of \npoint counts"),
     shape = guide_legend(title = "Data collector")
   )
-ggsave("Data_paper/Figures/Map_sampling/Sampling_map.png", bg = "white", width = 4)
+ggsave("Figures/Map_sampling/Sampling_map.png", bg = "white", width = 4)
 
 ## Delete in final version
 explore <- FALSE
@@ -244,7 +244,7 @@ ggplot(data = SA) +
   geom_sf(data = SA[SA$adm0_a3 == "COL", ], linewidth = 2, color = "black") #+
   #layer_spatial(st_bbox(Pc_locs_jit), color = "red")
 
-ggsave("Data_paper/Figures/Map_sampling/South_america_grayscale.png", bg = "white", dpi = 300)
+ggsave("Figures/Map_sampling/South_america_grayscale.png", bg = "white", dpi = 300)
 
 # Combine inset map + South America map in powerpoint
 
@@ -313,7 +313,7 @@ Pc_temporal_plot <- ggplot(data = Pc_date_p, aes(x = factor(Ano), y = Mes)) +
         #legend.key.size = unit(x = c(1,.5), units = "cm")  
 
 # Save plot
-ggsave("Data_paper/Figures/Pc_month_year_day_ecoregion.png", bg = "white", width = 12)
+ggsave("Figures/Pc_month_year_day_ecoregion.png", bg = "white", width = 12)
 
 # Fig3: Environmental vars histogram --------------------------------------
 # Boxplots for Elevation, temp, & precipitation
@@ -343,7 +343,7 @@ for (i in c(1:3)) {
   # scale_x_discrete(labels = ecoreg_labs)
 }
 ggarrange(p[[1]], p[[2]], p[[3]], nrow = 1, common.legend = T, labels = "AUTO")
-ggsave("Data_paper/Figures/Envi_vars.png", bg = "white", width = 10)
+ggsave("Figures/Envi_vars.png", bg = "white", width = 10)
 
 
 # Fig4a: Rainfall density plota -------------------------------------------
@@ -383,7 +383,7 @@ ggplot(Prec_ecor, aes(x = Mes, y = Prec, color = Ecoregion)) +
   scale_x_continuous(breaks = c(0, 2, 4, 6, 8, 10, 12)) +
   labs(x = "Month", y = "Precipitation (mm)") + 
   theme(legend.position = "right")
-ggsave("Data_paper/Figures/Rainfall/Prec_smoothed.png", bg = "white", 
+ggsave("Figures/Rainfall/Prec_smoothed.png", bg = "white", 
        width = 8, height = 5)
 
 # Fig4b: Precipitation with sampling dates ---------------------------------
@@ -450,11 +450,11 @@ Plot_prec_samp <- function(regions = "All", dyn_occ = FALSE, facet = TRUE){
 # Plot regions with potential for dynamic occupancy modeling. This plot goes into Powerpoint and then draw arrows to connect sets of points 
 # NOTE: Would likely want to remove Bajo Magdalena
 Plot_prec_samp(regions = c("Piedemonte", "Bajo magdalena", "Cafetera"), dyn_occ = TRUE, facet = FALSE)
-ggsave("Data_paper/Figures/Rainfall/Prec_sampling.png", bg = "white")
+ggsave("Figures/Rainfall/Prec_sampling.png", bg = "white")
 
 # Faceted plot, with all data collectors and all regions shown 
 Plot_prec_samp(regions = "All", dyn_occ = FALSE, facet = TRUE)
-ggsave("Data_paper/Figures/Rainfall/Prec_sampling_faceted.png", bg = "white")
+ggsave("Figures/Rainfall/Prec_sampling_faceted.png", bg = "white")
 
 # Fig 5 -------------------------------------------------------
 ## Bar plots of species with the highest counts and observed at the greatest number of unique point count locations (i.e., localities)
@@ -534,7 +534,7 @@ p2 <- Species_summary %>%
   plot_layout(guides = "collect") & 
   theme(legend.position = "top")
 
-ggsave("Data_paper/Figures/Species_counts_localities.png",
+ggsave("Figures/Species_counts_localities.png",
        bg = "white", width = 15, height = 10)
 
 # Supplementary figs ------------------------------------------------------
@@ -588,7 +588,7 @@ Num_pcs_farm_db %>%
   ) 
 #quants <- quantile(Pc_per_farm$n, probs = c(0, .1, .9, 1))
 
-ggsave("Data_paper/Figures/Pc_per_farm_db.png", bg = "white")
+ggsave("Figures/Pc_per_farm_db.png", bg = "white")
 
 # Data sets ---------------------------------------------------------------
 # >Metadata tbls -----------------------------------------------------------
@@ -634,7 +634,7 @@ Cols_metadata_l <- list(Bird_abu = Bird_abu_meta, Site_covs = Site_covs_meta, Ev
 # >Export  ------------------------------------------------------
 
 # Save the metadata list for each Excel included in repository
-saveRDS(Cols_metadata_l, file = "Data_paper/Rdata/Cols_metadata_l.rds") 
+saveRDS(Cols_metadata_l, file = "Rdata/Cols_metadata_l.rds") 
 
 stop()
 

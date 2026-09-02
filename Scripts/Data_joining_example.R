@@ -23,7 +23,7 @@ names(Data) <- str_remove(File_names, ".csv")
 # Explore -----------------------------------------------------------------
 # The datasets were split such that information is minimally repeated between datasets. This helps understand the structure of the datasets, such that the number of rows represent something meaningful. E.g.
 map_dbl(Data, nrow)
-# There are 19,540 bird observations before filtering, 15,794 bird observations after removing flyovers or species observed outside of the point count radius (see 'Data_filtering_analysis.R' script), 2,691 point count surveys, 587 species, and 496 unique survey locations.
+# There are 19,540 bird observations before filtering, 15,794 bird observations after removing flyovers or species observed outside of the point count radius (see 'Data_filtering_example.R' script), 2,691 point count surveys, 587 species, and 496 unique survey locations.
 
 # The taxonomy dataframe doesn't have as clear of an interpretation because of taxonomic lumps and splits. However, if you take the unique species names according to Ayerbe's taxonomy, you see again that there are 617 unique species observed. 
 nrow(distinct(Data$Taxonomy, Species_ayerbe))

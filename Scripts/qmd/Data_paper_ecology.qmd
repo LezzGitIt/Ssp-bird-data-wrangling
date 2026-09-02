@@ -54,7 +54,7 @@ library(kableExtra)
 # Load in data 
 Pc_locs_sf <- st_read("Derived_geospatial/shp/Pc_locs.gpkg", quiet = TRUE)
 
-path <- "Data_paper/DataS1"
+path <- "DataS1"
 File_names <- list.files(path)
 
 Data <- map(File_names, \(sheet){
@@ -63,7 +63,7 @@ Data <- map(File_names, \(sheet){
 names(Data) <- str_remove(File_names, ".csv")
 
 # Load functions
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
 ```
 
 ```{r}
@@ -119,7 +119,7 @@ The `r Tot_pc_prty` point count surveys were sampled 1–15 times total, with `r
 #| tbl-cap: File names, number of observations per .csv file, and their size in megabytes. 
 
 # Specify the path to the directory
-directory_path <- "Data_paper/DataS1" # Replace with your actual directory path
+directory_path <- "DataS1" # Replace with your actual directory path
 
 # Get information about all files and extract the size of each file
 file_info <- file.info(list.files(path = directory_path, full.names = TRUE))
@@ -128,7 +128,7 @@ file_sizes <- file_info$size
 # Short descriptions of each file 
 Short_descriptions <- tibble(
   File_name = c("Bird_pcs_all.csv", "Bird_pcs_analysis.csv", "Event_covs.csv", "Functional_traits.csv", "Site_covs.csv", "Taxonomy.csv"),
-  Description =  c("All point count observations", "Subset of ‘Bird_pcs_all.csv’ (see 'Data_filtering_analysis.R')", "Information about each survey, including date, start time, and detection covariates", "Functional traits of all species observed in the project", "Unchanging covariates of each point count location", "Taxonomic equivalents including BirdLife, BirdTree, and eBird/Clements")
+  Description =  c("All point count observations", "Subset of ‘Bird_pcs_all.csv’ (see 'Data_filtering_example.R')", "Information about each survey, including date, start time, and detection covariates", "Functional traits of all species observed in the project", "Unchanging covariates of each point count location", "Taxonomic equivalents including BirdLife, BirdTree, and eBird/Clements")
 )
 
 # Number of observations in each data set
@@ -637,9 +637,9 @@ Units of measurement associated with each variable
 
 ### Data type
 
-Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see 'Data_exploration_joins.R'). The `Bird_abundances` and `Event_covs` data sets have the join keys `Id_muestreo` and `Id_muestreo_no_dc`. The `Site_covs` data set has the join key `Id_muestreo_no_dc`. The `Bird_pcs_all`, `Taxonomy`, and `Functional_traits` data sets all share the join key `Species_ayerbe`.
+Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see 'Data_joining_example.R'). The `Bird_abundances` and `Event_covs` data sets have the join keys `Id_muestreo` and `Id_muestreo_no_dc`. The `Site_covs` data set has the join key `Id_muestreo_no_dc`. The `Bird_pcs_all`, `Taxonomy`, and `Functional_traits` data sets all share the join key `Species_ayerbe`.
 
-For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird_pcs_analysis` data set because it is just a subset of `Bird_pcs_all`. Specifically, `Bird_pcs_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see 'Data_filtering_analysis.R'). Similarly, definitions of the join keys (`Field_names`) are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see the 'Column_definitions_final.xlsx', particularly the 'Column_content_definition' column, for additional information about variables. Within the .csv files, missing values are shown as blank cells `" "`.
+For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird_pcs_analysis` data set because it is just a subset of `Bird_pcs_all`. Specifically, `Bird_pcs_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see 'Data_filtering_example.R'). Similarly, definitions of the join keys (`Field_names`) are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see the 'Column_definitions_final.xlsx', particularly the 'Column_content_definition' column, for additional information about variables. Within the .csv files, missing values are shown as blank cells `" "`.
 
 ```{r}
 #| label: Print-table-fn
@@ -666,7 +666,7 @@ Print_tbl <- function(df, join_df = NULL, remove_field = NULL){
 ```{r}
 #| label: Load-defs
 
-path <- "Data_paper/Column_definitions_final.xlsx"
+path <- "DataS1/Column_definitions_final.xlsx"
 Sheet_names <- excel_sheets(path)
 Covs_defs <- map(excel_sheets(path), \(sheet){
   read_excel(path = path, sheet = sheet) %>% select(-Column_content_definition)
@@ -676,7 +676,7 @@ names(Covs_defs) <- Sheet_names
 names(Data$Event_covs)
 
 # Bring in metadata list
-Cols_metadata_l <- readRDS("Data_paper/Rdata/Cols_metadata_l.rds")
+Cols_metadata_l <- readRDS("Rdata/Cols_metadata_l.rds")
 ```
 
 ```{r}

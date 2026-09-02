@@ -1,14 +1,16 @@
-## It seems like the yml file can control certain things (directories, toc, etc.) but doesn't work for other things (chunk_output_type). In summary, the _yml file is important still. 
+# Project-level Quarto config for the data-paper manuscript (Scripts/qmd/).
+# The manuscript uses format: elsevier-pdf (from _extensions/), which inherits
+# the `pdf` settings below (incl. the custom Suppfiles/title.tex partial).
 
 project:
   type: default
   execute-dir: project
-  output-dir: Derived/PDF/
-format: 
+  output-dir: Rendered/
+format:
   pdf:
     pdf-engine: lualatex
     toc: true
-    toc-depth: 3 
+    toc-depth: 3
     author-affiliations: true
     template-partials:
       - Suppfiles/title.tex
@@ -19,13 +21,5 @@ format:
         \renewcommand*{\Authand}{, }
         \renewcommand*{\Authands}{, }
         \renewcommand\Affilfont{\small}
-    #lof: true
-    #lot: true
-editor:
-  root-dir: "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Colombia-SCR-Rd3"
-editor_options: 
+editor_options:
   chunk_output_type: console
-  date: today
-  date-format: long
-date: today
-date-format: long
