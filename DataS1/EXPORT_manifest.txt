@@ -1,0 +1,12 @@
+DataS1 export manifest
+exported_at: 2026-09-02T16:40:00-0700
+pipeline_commit: 1dbe7bf
+
+file,source,rows
+Bird_pcs_all.csv,Derived/Excels/Bird_pcs/Bird_pcs_all.csv,20959
+Bird_pcs_dist.csv,Derived/Excels/Bird_pcs/Bird_pcs_dist.csv,20918
+Bird_pcs_analysis.csv,Derived/Excels/Bird_pcs/Bird_pcs_analysis.csv,17193
+Event_covs.csv,Derived/Excels/Event_covs.csv,2996
+Functional_traits.csv,Derived/Excels/Traits/Functional_traits.csv,587
+Site_covs.csv,Derived/Excels/Site_covs.csv,504
+Taxonomy.csv,Derived/Excels/Taxonomy/Taxonomy.csv,591
