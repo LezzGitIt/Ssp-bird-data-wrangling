@@ -61,8 +61,6 @@ Data <- map(File_names, \(sheet){
 })
 names(Data) <- str_remove(File_names, ".csv")
 
-Data$Functional_traits <- Data$Functional_traits %>% select(-Match_type) 
-
 # Load functions
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
 ```
@@ -78,7 +76,7 @@ Num_fam <- length(unique(Data$Taxonomy$Family_gbif))
 Tot_pc <- nrow(Data$Event_covs)
 Tot_pc_prty <- prettyNum(Tot_pc, big.mark = ",")
 Num_ft <- Data$Functional_traits %>% 
-  select(-c(Species_ayerbe, Source, Source_elev)) %>% 
+  select(-c(Species_ayerbe, Source_elev)) %>% 
   ncol()
 Num_farms <- unique(Data$Site_covs$Id_gcs) %>% length()
 
@@ -107,13 +105,13 @@ Bird communities are structured by a mix of local and landscape level processes.
 
 Here we present the 'Bird diversity in working landscapes of Colombia' dataset, collating and standardizing data across `r Tot_pc_prty` surveys at `r Num_sites` unique point count locations from 2013 - 2024. We recorded `r Num_obs_prty` bird observations of `r Num_spp` species in `r Num_fam` families across five distinct ecoregions, including tropical dry forest, Andean montane forest, and the plains of the Orinoco river basin (@fig-sampling-map). The most speciose orders were Passeriformes, Apodiformes, Piciformes, Psittaciformes, and Accipitriformes (@fig-phylogeny), and the species that were both widespread and abundant tended to thrive in highly dynamic and heterogeneous landscapes (e.g., *Tyrannus melancholicus, Cyanocorax violaceus, Bubulcus ibis, Milvago chimachima,* and *Crotophaga ani*; @fig-abund-widespread-spp).
 
-![The locations of 496 point count sites in 73 farms across five ecoregions in Colombia. Colombia is extremely topographically diverse, with the Andes mountain range trifurcating into three distinct 'cordilleras', in addition to smaller 'sierras' (e.g., Sierra Nevada de Santa Marta) that are critical for understanding bird distributions in Colombia. In between the cordilleras lie two major river valleys, the Cauca and Magdalena (labeled in red). Major rivers also run off the Eastern slope of the Andes into the plains and eventually into the Amazon. The shape of the symbol corresponds to the data collector, and the size corresponds to the number of point counts within a quarter degree squared grid cell. Note that a small jitter was applied to all points, and a larger jitter was applied to points in the Piedemonte region to improve visibility. Elevation was log-transformed to emphasize altitudinal gradients at lower elevations.\
+![The locations of 504 point count sites in 73 farms across five ecoregions in Colombia. Colombia is extremely topographically diverse, with the Andes mountain range trifurcating into three distinct 'cordilleras', in addition to smaller 'sierras' (e.g., Sierra Nevada de Santa Marta) that are critical for understanding bird distributions in Colombia. In between the cordilleras lie two major river valleys, the Cauca and Magdalena (labeled in red). Major rivers also run off the Eastern slope of the Andes into the plains and eventually into the Amazon. The shape of the symbol corresponds to the data collector, and the size corresponds to the number of point counts within a quarter degree squared grid cell. Note that a small jitter was applied to all points, and a larger jitter was applied to points in the Piedemonte region to improve visibility. Elevation was log-transformed to emphasize altitudinal gradients at lower elevations.\
 \
 COLLABORATORS: Does anyone have a shapefile of the rio Cesar? Also, is it correct that the unlabed river in the northeast is the Catatumbo River?](../Figures/Map_sampling/TNC_Field_Map_Final.png){#fig-sampling-map}
 
 The `r Tot_pc_prty` point count surveys were sampled 1–15 times total, with `r round(Per_3_visits, 0)`% of locations visited $\geq$ 3 times within a closed sampling period, enabling estimation of detection probabilities through hierarchical models. Land-use landcover types surveyed include mature forest, forest fragments, riparian forest, crops, intensive pasture, several types of silvopasture, and heterogeneous mosaics (i.e., no single dominant landcover type). This dataset permits analyses of bird diversity patterns and community composition across land-use gradients, especially the effects of silvopastoral practices on biodiversity in tropical working landscapes. We also provide complementary datasets of taxonomic equivalents (BirdLife, BirdTree, and eBird / Clements), functional traits, site covariates, and survey covariates (@tbl-file-info), facilitating a variety of research questions and analytical approaches. For example, one could examine the interacting effects of local management practices and climate, while controlling for phylogenetic non-independence, to understand silvopasture's influence on functional diversity and ecosystem service provisioning. Importantly, the longitudinal nature of these data allow for analyses of population trends or colonization/extinction dynamics, which is critical for conservation practitioners [@leesRoadmapIdentifyingFilling2020].
 
-![Phylogenetic relationships of 568 species observed in our data set. There were 24 orders, of which 17 are shown using grayscale representative species (downloaded from phylopic). The number of species in each order is listed in parentheses.](../Figures/Phylogeny_equal_sizes.png){#fig-phylogeny}
+![Phylogenetic relationships of 568 species observed in our data set. There were 25 orders, of which 19 are shown using grayscale representative species (downloaded from phylopic). The number of species in each order is listed in parentheses.](../Figures/Phylogeny_equal_sizes.png){#fig-phylogeny}
 
 ```{r}
 #| label: tbl-file-info
@@ -217,9 +215,9 @@ Colombia, Bajo Magdalena, Ecorregion Cafetera, Valle del rio Cesar, Piedemonte, 
 
 ### Site description
 
--   Site type: Descriptive (e.g., short-grass prairie, blackwater stream, etc.)\
-    \
-    Sampling was conducted in five broad ecoregions: The coffee region, Boyacá and Santander, Piedemonte, Bajo Magdalena, and el Rio Cesar (@fig-sampling-map). Colombia is a tropical country with extreme topographic complexity but little temperature variation throughout the year. Thus, climate and seasonality are primarily defined by elevation and rainfall patterns (@fig-envi-boxplots). Rainfall is unimodal closer to the equator (e.g., our sites in the Piedemonte region are closer to unimodal) and generally bimodal further from the equator (@fig-prec-smooth), although local topography complicates these patterns.
+- Site type: Descriptive (e.g., short-grass prairie, blackwater stream, etc.)\
+  \
+  Sampling was conducted in five broad ecoregions: The coffee region, Boyacá and Santander, Piedemonte, Bajo Magdalena, and el Rio Cesar (@fig-sampling-map). Colombia is a tropical country with extreme topographic complexity but little temperature variation throughout the year. Thus, climate and seasonality are primarily defined by elevation and rainfall patterns (@fig-envi-boxplots). Rainfall is unimodal closer to the equator (e.g., our sites in the Piedemonte region are closer to unimodal) and generally bimodal further from the equator (@fig-prec-smooth), although local topography complicates these patterns.
 
 ![Elevation, average temperature, and average precipitation of each point count location within five ecoregions. Note that elevation and average yearly temperature are almost perfectly inversely correlated in our data. A jitter was applied to aid in visualization.](../Figures/Envi_vars.png){#fig-envi-boxplots}
 
@@ -232,7 +230,7 @@ Rio Cesar:]{.underline} A dry river valley nestled between the imposing Sierra N
 
 ![In Colombia, precipitation is one of the primary determinants of the distribution of biodiversity. Rainfall is bimodal throughout most of Colombia, although often becomes unimodal closer to the equator. Curves show the 30-year average precipitation at our sampling sites, grouped by ecoregion. Curves were fit using generalized additive model smoothers fit separately by ecoregion, with a cyclic cubic regression spline and basis dimension k = 12 to capture monthly periodicity.](../Figures/Rainfall/Prec_smoothed.png){#fig-prec-smooth width="700"}
 
--   Geography: Location (e.g., latitude/longitude), size
+- Geography: Location (e.g., latitude/longitude), size
 
 ```{r}
 #| label: Geo-extent
@@ -306,51 +304,51 @@ Hab_sub_tbl <- Create_hab_tbl(col = Habitat_sub)
 
 `r Tot_pc_prty` point counts were conducted in five primary habitats (e.g. forest) and eight sub-habitat types (e.g., riparian forest). After each primary habitat or sub-habitat type we list the number of unique point count locations (n):
 
--   Forest (Total n = `r Hab_tbl$Bosque` point counts)
+- Forest (Total n = `r Hab_tbl$Bosque` point counts)
 
-    -   Forest fragments (n = `r Hab_sub_tbl$Secundario`): Small fragments embedded in cattle ranching landscapes. Forest fragments were generally \< 5 ha, although many were connected to other forested elements in the landscape. Surveys were conducted on the forest edge, either inside the forest (\<50 m from the edge) or just outside the forest (\<15 m outside the forest), although this was not recorded systematically.
+  - Forest fragments (n = `r Hab_sub_tbl$Secundario`): Small fragments embedded in cattle ranching landscapes. Forest fragments were generally \< 5 ha, although many were connected to other forested elements in the landscape. Surveys were conducted on the forest edge, either inside the forest (\<50 m from the edge) or just outside the forest (\<15 m outside the forest), although this was not recorded systematically.
 
-    -   Riparian forest (n = `r Hab_sub_tbl$Ripario`): Gallery forests on either side of a stream or river
+  - Riparian forest (n = `r Hab_sub_tbl$Ripario`): Gallery forests on either side of a stream or river
 
-    -   Mature forest (n = `r Hab_sub_tbl$Maduro`): Taller, older, and larger contiguous forests. 10 of these points were in the Ecorregion Cafetera (9 in the ecological reserve Otún Quimbaya, 1 in Reserva El Hatico) and 2 were in a large intact forest in the Piedemonte.
+  - Mature forest (n = `r Hab_sub_tbl$Maduro`): Taller, older, and larger contiguous forests. 10 of these points were in the Ecorregion Cafetera (9 in the ecological reserve Otún Quimbaya, 1 in Reserva El Hatico) and 2 were in a large intact forest in the Piedemonte.
 
-    -   \[COLLABORATORS\]: How do we want to define 'mature' forest? In the 'Habitat_sub' column I set everything to 'Secondary' unless it was specified in the data that it was a riparian forest or a mature forest. However, there may be other forests surveyed that could be considered mature.
+  - \[COLLABORATORS\]: How do we want to define 'mature' forest? In the 'Habitat_sub' column I set everything to 'Secondary' unless it was specified in the data that it was a riparian forest or a mature forest. However, there may be other forests surveyed that could be considered mature.
 
--   Silvopasture (Total n = `r Hab_tbl$Ssp`): Silvopastoral systems consist of a variety of practices and range across a spectrum regarding the diversity and intensity of practices implemented. For example, silvopastural systems can be tree (and grass) monocultures planted to be homogeneous in spacing and age, or, alternatively, they can be highly-productive, diverse polycultures composed of remnant vegetation and naturally recruited tree species [@cubbageComparingSilvopastoralSystems2012]. See @murgueitioNativeTreesShrubs2011, @calleStrategyScalingUpIntensive2013, and @cubbageComparingSilvopastoralSystems2012 to better understand the full extent of management practices that can be incorporated in silvopastoral systems. In our bird sampling efforts, the project differentiated between several types of silvopasture:
+- Silvopasture (Total n = `r Hab_tbl$Ssp`): Silvopastoral systems consist of a variety of practices and range across a spectrum regarding the diversity and intensity of practices implemented. For example, silvopastural systems can be tree (and grass) monocultures planted to be homogeneous in spacing and age, or, alternatively, they can be highly-productive, diverse polycultures composed of remnant vegetation and naturally recruited tree species [@cubbageComparingSilvopastoralSystems2012]. See @murgueitioNativeTreesShrubs2011, @calleStrategyScalingUpIntensive2013, and @cubbageComparingSilvopastoralSystems2012 to better understand the full extent of management practices that can be incorporated in silvopastoral systems. In our bird sampling efforts, the project differentiated between several types of silvopasture:
 
-    -   Dispersed trees (n = `r Hab_sub_tbl$Arboles_dispersos`): Trees integrated directly into the pasture where cows graze, providing shade as well as direct forage in some cases
+  - Dispersed trees (n = `r Hab_sub_tbl$Arboles_dispersos`): Trees integrated directly into the pasture where cows graze, providing shade as well as direct forage in some cases
 
-    -   Live fences (n = `r Hab_sub_tbl$Cerca_viva`): Linear rows of trees that serve to reduce wind and the drying of grass forage, as well as to divide paddocks.
+  - Live fences (n = `r Hab_sub_tbl$Cerca_viva`): Linear rows of trees that serve to reduce wind and the drying of grass forage, as well as to divide paddocks.
 
-    -   Shrub live fences (n = `r Hab_sub_tbl$Setos`): Linear rows of shrubs used to divide paddocks and provide direct forage for cattle.
+  - Shrub live fences (n = `r Hab_sub_tbl$Setos`): Linear rows of shrubs used to divide paddocks and provide direct forage for cattle.
 
-    -   Multi-species fodder banks (n = `r Hab_sub_tbl$Banco_de_forraje`): Forage that is cut and transported to paddocks for consumption.
+  - Multi-species fodder banks (n = `r Hab_sub_tbl$Banco_de_forraje`): Forage that is cut and transported to paddocks for consumption.
 
-    -   Intensive SPS (n = `r Hab_sub_tbl$Intensivo`): Incorporation of several of the aforementioned practices, including high densities of fodder shrubs, a variety of native grasses for direct foraging by cattle, and tropical trees for timber or fruit.
+  - Intensive SPS (n = `r Hab_sub_tbl$Intensivo`): Incorporation of several of the aforementioned practices, including high densities of fodder shrubs, a variety of native grasses for direct foraging by cattle, and tropical trees for timber or fruit.
 
--   Intensive pasture (n = `r Hab_tbl$Pastizales`): Monoculture cattle ranching systems that are generally hotter, drier, and more homogenous than the other habitat types surveyed.
+- Intensive pasture (n = `r Hab_tbl$Pastizales`): Monoculture cattle ranching systems that are generally hotter, drier, and more homogenous than the other habitat types surveyed.
 
--   Heterogeneous mosaics (n = `r Hab_tbl$Mosaic`): A mix of all other habitat types, particularly where there was no single dominant landcover type within the 50-m fixed radius.
+- Heterogeneous mosaics (n = `r Hab_tbl$Mosaic`): A mix of all other habitat types, particularly where there was no single dominant landcover type within the 50-m fixed radius.
 
--   Crops (n = `r Hab_tbl$Cultivos`): Other agricultural systems unrelated to rearing cattle.
+- Crops (n = `r Hab_tbl$Cultivos`): Other agricultural systems unrelated to rearing cattle.
 
 ![Example landscape on a cattle ranching farm surveyed in the Piedemonte Ecoregion. Red circles represent the location of 50-m radius point counts. Four common habitat types surveyed in the project are labeled.](../Figures/Example_landscape/Example_landscape.pdf)
 
--   Geology, landform: Soils, slope/elevation/aspect, terrain/physiography, geology/lithology
+- Geology, landform: Soils, slope/elevation/aspect, terrain/physiography, geology/lithology
 
-    At high elevations (Coffee region, Boyacá and Santander), steep slopes generate thin, rocky, volcanic soils that underlie deeply dissected river valleys. These steep slopes grade into rolling, soil-mantled landscapes in the foothills and into the alluvial lowlands of Bajo Magdalena and the Piedemonte. El Valle de Rio Cesar is characterized by thin, rocky, and often saline soils. Elevation and topography shape soil development as well as local climate and vegetation patterns.
+  At high elevations (Coffee region, Boyacá and Santander), steep slopes generate thin, rocky, volcanic soils that underlie deeply dissected river valleys. These steep slopes grade into rolling, soil-mantled landscapes in the foothills and into the alluvial lowlands of Bajo Magdalena and the Piedemonte. El Valle de Rio Cesar is characterized by thin, rocky, and often saline soils. Elevation and topography shape soil development as well as local climate and vegetation patterns.
 
--   Watersheds, hydrology: Size, boundaries, receiving streams, etc.
+- Watersheds, hydrology: Size, boundaries, receiving streams, etc.
 
-    See the 'Site type' section.
+  See the 'Site type' section.
 
--   Site history: Site management practices, disturbance history, etc.\
-    \
-    Excluding the 'mature forest' sites, point counts were embedded in highly dynamic landscapes. Cattle ranching was the predominant agricultural activity on the farms we sampled, although other crops (e.g., palm oil, avocado, citrus, coffee) were found in some ecoregions. Most of the riparian forest and forest fragments were young (\<30 years old, although age varied among farms and regions), and the forests were often disturbed by humans (cutting for lumber, hunting, etc.). Fencing to prevent the intrusion of cattle into forests and streams was common on some farms / regions, and rare in others.
+- Site history: Site management practices, disturbance history, etc.\
+  \
+  Excluding the 'mature forest' sites, point counts were embedded in highly dynamic landscapes. Cattle ranching was the predominant agricultural activity on the farms we sampled, although other crops (e.g., palm oil, avocado, citrus, coffee) were found in some ecoregions. Most of the riparian forest and forest fragments were young (\<30 years old, although age varied among farms and regions), and the forests were often disturbed by humans (cutting for lumber, hunting, etc.). Fencing to prevent the intrusion of cattle into forests and streams was common on some farms / regions, and rare in others.
 
--   Climate: Descriptive summary of site climatic characteristics
+- Climate: Descriptive summary of site climatic characteristics
 
-    See previous sections, particularly the 'Site type' section.
+  See previous sections, particularly the 'Site type' section.
 
 ### Experimental or sampling design:
 
@@ -522,13 +520,13 @@ Status of data quality assurance checking
 
 \[ECOTROPICO\] - In collaboration with the data collectors, AAS, AH, and JH took extensive quality-control checks. Primarily, this consisted of cross-checking data collected in the field against the stated methodologies from each data set (see 'Birds_SSP_Colombia_Detailed_methodologies' file). For example, we confirmed the empirical sampling dates and times against the reported point count schedules. Additional quality assurance procedures included:
 
--   Taxonomy - Species names were compared against the Fernando Ayerbe’s 2018 fieldguide [@ayerbe2018guia].
+- Taxonomy - Species names were compared against the Fernando Ayerbe’s 2018 fieldguide [@ayerbe2018guia].
 
--   Distributions - Species observations were compared against distributional ranges [@velezDistributionBirdsColombia2021] and elevational ranges [@quinteroGlobalElevationalDiversity2018; @freemanInterspecificCompetitionLimits2022].
+- Distributions - Species observations were compared against distributional ranges [@velezDistributionBirdsColombia2021] and elevational ranges [@quinteroGlobalElevationalDiversity2018; @freemanInterspecificCompetitionLimits2022].
 
--   Geospatial - Point count coordinates were verified to ensure that 1) the coordinates aligned with the reported department, 2) the proximity of point counts within an `Id_group` was reasonable (\< 2 km), and that 3) minimum point count spacing was consistent with that specified in the methodology.
+- Geospatial - Point count coordinates were verified to ensure that 1) the coordinates aligned with the reported department, 2) the proximity of point counts within an `Id_group` was reasonable (\< 2 km), and that 3) minimum point count spacing was consistent with that specified in the methodology.
 
--   Habitat verification - Descriptive habitat types were standardized and cross-referenced with Google Earth imagery to confirm correspondence; discrepancies within \<50 m were considered acceptable given potential GPS error \[To do - Indicate inconsistencies in the Excel somehow\]
+- Habitat verification - Descriptive habitat types were standardized and cross-referenced with Google Earth imagery to confirm correspondence; discrepancies within \<50 m were considered acceptable given potential GPS error \[To do - Indicate inconsistencies in the Excel somehow\]
 
 With the help of data collectors, AAS standardized the taxonomy according to the AOS–SACC (see 'Taxonomy.csv'). The location of species observed during point counts were then compared to species distribution shapefiles that contained 1890 species (\~97% of species in Colombia) to identify potential erroneous misidentifications [@velezDistributionBirdsColombia2021]. Given the strong influence that topography has on species distributions in Colombia, we also compared species' observed elevations to elevational ranges reported in [@quinteroGlobalElevationalDiversity2018; @freemanInterspecificCompetitionLimits2022], using data from Colombia or other Andean countries where possible. All species observed outside of the species distributional range, or at an elevation \>150 meters above or below the elevational range found in the literature, were sent to the original data collector for review. Data collectors made recommendations for each species in question, falling into three categories: 1) the species identification and spatial information was correct (suggesting a range expansion), 2) the species was misidentified or wrongly transcribed and should be changed to a different species, or 3) if uncertain, the species should be removed from the database.
 
@@ -674,6 +672,8 @@ Covs_defs <- map(excel_sheets(path), \(sheet){
 })
 names(Covs_defs) <- Sheet_names
 
+names(Data$Event_covs)
+
 # Bring in metadata list
 Cols_metadata_l <- readRDS("Data_paper/Rdata/Cols_metadata_l.rds")
 ```
@@ -784,7 +784,7 @@ Electronic reprints, lists of publications resulting from or related to the stud
 #| label: Tax-row-summary
 #| tbl-cap: The number of families, genera, and species found within each order. Orders are listed by ascending diversity of families, genera, and then species. 
 
-Tax_summary <- read_csv("Derived/Excels/Tax_summary.csv")
+Tax_summary <- read_csv("Derived/Excels/Taxonomy/Tax_summary.csv")
 
 Total_row <- Tax_summary %>%
   summarise(across(where(is.numeric), sum, na.rm = TRUE)) %>% 
@@ -825,15 +825,15 @@ I am grateful to Camila Gómez, Nick Bayly, and several students at the Universi
 
 # Questions - collaborators
 
--   All co-authors:
+- All co-authors:
 
-    -   The 5 'ecoregions'
-        -   It seems like 'Boyacá & Santander' isn't really an 'ecoregion' in the way that the others are. For example, Bajo Magdalena refers to part of a river valley, valle de rio cesar defines a river valley, whereas Boyacá & Santander are geopolitical departments. Should we change to something defined by topography? I think 'cordillera oriental' wouldn't be specific enough, but something along those lines?
-        -   To a lesser extent, the 'Ecoregion cafetera' seems similar given that this name comes from the predominant crop (agricultural) / cultural similarities. This ecoregion is also 3x larger than the next largest ecoregion and covers \~3100 m of altitude, including points in both the Cauca and Magdalena river valleys as well as the cordillera central. Consider breaking up into smaller ecoregions?
-        -   Should we change the 'Piedemonte' to 'Piedemonte llanero' to be more specific?
-    -   Can folks provide their best guesses generally (I'm sure it varies by region) regarding the history of forest fragments and riparian forests in these landscapes? I remember there was a law implemented requiring a vegetative buffer to be left around waterways? Was this law national? When was it implemented? How big is the vegetative buffer ?
-    -   I have elected to have multiple data sets with 'join keys' (i.e. the columns that are repeated in multiple data sets to allow joining of different data) to connect them, instead of 1-2 datasets with more columns and row repetition. I think this structure is helpful as it makes the data structure more explicit (e.g., there are 496 unique sites, there are 2,691 unique point count surveys). Was structuring the data this way intuitive for you?
-    -   Column names: Decide whether English or Spanish
-    -   Are there additional columns that you feel are important to include in this dataset?
+  - The 5 'ecoregions'
+    - It seems like 'Boyacá & Santander' isn't really an 'ecoregion' in the way that the others are. For example, Bajo Magdalena refers to part of a river valley, valle de rio cesar defines a river valley, whereas Boyacá & Santander are geopolitical departments. Should we change to something defined by topography? I think 'cordillera oriental' wouldn't be specific enough, but something along those lines?
+    - To a lesser extent, the 'Ecoregion cafetera' seems similar given that this name comes from the predominant crop (agricultural) / cultural similarities. This ecoregion is also 3x larger than the next largest ecoregion and covers \~3100 m of altitude, including points in both the Cauca and Magdalena river valleys as well as the cordillera central. Consider breaking up into smaller ecoregions?
+    - Should we change the 'Piedemonte' to 'Piedemonte llanero' to be more specific?
+  - Can folks provide their best guesses generally (I'm sure it varies by region) regarding the history of forest fragments and riparian forests in these landscapes? I remember there was a law implemented requiring a vegetative buffer to be left around waterways? Was this law national? When was it implemented? How big is the vegetative buffer ?
+  - I have elected to have multiple data sets with 'join keys' (i.e. the columns that are repeated in multiple data sets to allow joining of different data) to connect them, instead of 1-2 datasets with more columns and row repetition. I think this structure is helpful as it makes the data structure more explicit (e.g., there are 496 unique sites, there are 2,691 unique point count surveys). Was structuring the data this way intuitive for you?
+  - Column names: Decide whether English or Spanish
+  - Are there additional columns that you feel are important to include in this dataset?
 
 # References {.unnumbered}

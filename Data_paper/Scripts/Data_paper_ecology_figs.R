@@ -29,6 +29,7 @@ load("Rdata/NE_layers_Colombia.Rdata")
 #load("Rdata/the_basics_07.18.25.Rdata")
 
 Pc_locs_sf <- st_read("Derived_geospatial/shp/Pc_locs.gpkg")
+Pc_locs_dc_sf <- st_read("Derived_geospatial/shp/Pc_locs_dc.gpkg")
 
 # Load in raw abundance data
 Bird_pcs_all <- read_csv("Data_paper/DataS1/Bird_pcs_all.csv")
@@ -93,7 +94,7 @@ rivers_co2 <- rivers_co %>%
 # >Point formatting -------------------------------------------------------
 ## Point counts within 0.25 degree grid cells 
 # With ~500 point counts in concentrated regions there is too much overlap to clearly visualize what is going on. Instead, I calculate the number of point counts within .25 degrees cells and return the rounded coordinates for plotting
-Pc_locs_round <- Pc_locs_sf %>%
+Pc_locs_round <- Pc_locs_dc_sf %>%
   st_drop_geometry() %>%
   mutate(Latitud_rd = mround(Latitud, .25), 
          Longitud_rd = mround(Longitud, .25)) %>%
@@ -146,7 +147,8 @@ jitter_within_boundary <- function(sf_points, boundary_poly, jitter_factor, max_
 }
 
 # Apply minor jitter to all points outside of Piedemonte 
-Pc_locs_gen <- Pc_locs_round %>% filter(Ecoregion != "Piedemonte") %>% 
+Pc_locs_gen <- Pc_locs_round %>% 
+  filter(Ecoregion != "Piedemonte") %>% 
   jitter_within_boundary(boundary_poly = neCol, jitter_factor = .02)
 
 ## Bind the Piedemonte points with points from all other regions
