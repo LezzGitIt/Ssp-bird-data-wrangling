@@ -10,9 +10,15 @@
 # 4) Sampling periods distinct -- Alternative code to identify target point counts. Fortunately, I arrived at the same set of target point counts with both sets of code. This code is much less efficient
 # 5) ANLA permit needed for SELVA
 
+Expenses <- read_xlsx("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Field_Work/Resurvey_2024_2025/Bureaucratic_documents/Trip_2025/Expenses/Expenses_field2025.xlsx") %>% clean_names()
+
+Expenses %>% filter(!is.na(category)) %>%
+  summarize(Total_spent = 
+              sum(expense_usd, na.rm = TRUE), .by = category
+           )
+
 
 # Libraries & data -------------------------------------------------------------
-load("Rdata/the_basics_11.21.24.Rdata")
 
 library(tidyverse)
 library(cowplot)
@@ -23,6 +29,10 @@ library(conflicted)
 ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
+
+Event_covs <- read_csv("Derived/Excels/Event_covs.csv")
+Site_covs <- read_csv("Derived/Excels/Site_covs.csv")
+Pc_locs_dc <- vect("Derived_geospatial/shp/Pc_locs_dc.gpkg")
 
 # DynOcc Targets --------------------------------------------------------
 # Identify how many distinct sampling periods each point count location has #
@@ -163,12 +173,93 @@ PCs_GMB_M %>%
 
 # 54 pts land use gradient ------------------------------------------------
 # 18 effective days of field work
-Bird_pcs %>% filter(Uniq_db == "UNILLANOS MBD") %>% 
+Event_covs_pcs %>% left_join(Site_covs) %>%
+  filter(Uniq_db == "Unillanos mbd") %>% 
   distinct(Nombre_finca, Id_muestreo) %>%
   count(Nombre_finca)
 
+## Resurvey with Santiago
+Resurvey_santi <- Bird_pcs_all %>% 
+  filter(Uniq_db %in% c("Ubc gaica mbd", "Unillanos mbd") & Ecoregion == "Piedemonte") %>% 
+  st_as_sf(coords = c("Longitud", "Latitud"), crs = 4326) %>%
+  distinct(Id_muestreo, Nombre_institucion, Id_gcs, Nombre_finca, geometry) 
+
+# Visualize map
+Resurvey_santi %>% ggplot() + 
+  geom_sf(aes(color = Nombre_institucion))
+
+# Export 50m buffers
+Resurvey_santi %>% #filter(Nombre_institucion == "Unillanos") %>%
+  st_transform("EPSG:3116") %>%
+  st_buffer(dist = 50) %>% 
+  #st_transform("EPSG:4686") %>%
+  #st_write(
+  # driver='kml', dsn="Derived_geospatial/kml/Resurvey_santi_50m_buff.kml"
+  #)
+  write_sf("Derived_geospatial/kml/Resurvey_santi_50m_buff.gpx", driver = "GPX", dataset_options = "GPX_USE_EXTENSIONS=YES")
+
+# Export Google Earth file 
+Resurvey_santi %>%
+  arrange(Nombre_institucion, Id_muestreo) %>%
+  rename(
+    name = Id_muestreo,
+    Institucion = Nombre_institucion # ,
+    # Farm = Nombre_finca_mixed
+  ) %>%
+  st_write(
+    driver='kml', dsn="Derived_geospatial/kml/Resurvey_santi.kml", layer = "Resurvey_santi"
+  )
+
+## Additional surveys Santiago
+# In January of 2026 Santiago surveyed the 54 Unillanos points + 12 Gaica points (in Andorra). There are additional points that Santiago could survey, particularly in La cristalina / El Porvenir
+Cristalina_porvenir <- Pc_locs_dc %>% left_join(Site_covs) %>%
+  filter(Nombre_finca == "La cristalina"  | Id_group %in% c("G-MB-M-EPO1", "UBCG-MB-M-EPO1")) %>% 
+  distinct(Id_muestreo_no_dc, Habitat) %>% 
+  arrange(Id_muestreo_no_dc)
+
+# Export 
+Cristalina_porvenir %>% 
+  writeVector(filename = "Derived_geospatial/shp/Cristalina_porvenir.gpkg")
+Cristalina_porvenir %>% 
+  writeVector("Derived_geospatial/kml/Cristalina_porvenir.kml", filetype="KML")
+Cristalina_porvenir %>% buffer(50) %>% 
+  writeVector("Derived_geospatial/kml/Cristalina_porvenir_buffers.kml", filetype="KML")
+
+# 2025 visit ecoregions ---------------------------------------------------
+## Visit in the field 2025
+# Create Valledupar point as sf object (note: lon, lat)
+Valledupar <- st_sfc(st_point(c(-73.2500, 10.4833)), crs = 4326)
+
+# Calculate distance (in meters by default)
+Dist_valledupar <- Pc_locs_sf %>% 
+  filter(Ecoregion == "Rio cesar") %>%
+  mutate(Dist_Valledupar_km = st_distance(., Valledupar) / 1000) %>% 
+  arrange(Dist_Valledupar_km)
+
+Dist_valledupar2 <- Dist_valledupar %>% 
+  left_join(Site_covs[,c("Id_muestreo_no_dc", "Id_gcs")]) %>% 
+  select(-Nombre_institucion) %>% 
+  relocate(Id_gcs, Dist_Valledupar_km, .after = Id_muestreo_no_dc)
+
+st_write(Dist_valledupar2, "Derived_geospatial/shp/Dist_valledupar.gpkg", layer = "Dist_valledupar")
+
+## Bajo Magdalena
+Pc_locs_sf %>% 
+  filter(Ecoregion == "Bajo magdalena") %>% 
+  select(-Nombre_institucion) %>% 
+  st_write("Derived_geospatial/shp/Bajo_magdalena_pts.gpkg", 
+           layer = "Bajo_magdalena_pts")
+
+## Boyaca santander
+Pc_locs_sf %>% 
+  filter(Ecoregion == "Boyaca santander") %>% 
+  select(-Nombre_institucion) %>% 
+  filter(Id_gcs %in% c(2492, 2921)) %>% 
+  pull(Id_muestreo)
+#st_write("Derived_geospatial/shp/Boyaca_santander_pts.gpkg", layer = "Boyaca_santander_pts")
+
 # Miscellaneous -----------------------------------------------------------
-# >Sampling periods distinct ------------------------------------------------------------
+# >Sampling periods distinct --------------------------------------------------
 ## NOTE:: This is old code that is not nearly as efficient as what is currently in DW_Bird_pcs. Fortunately we also arrive at the same answer this way!
 
 # Identify how many distinct sampling periods each point count location has #

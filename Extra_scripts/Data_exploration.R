@@ -26,7 +26,7 @@ conflicts_prefer(hms::hms)
 load("Rdata/the_basics_09.15.25.Rdata")
 load("Rdata/Taxonomy_12.29.24.Rdata")
 load("Rdata/Traits_elev_11.14.24.Rdata")
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
 
 # Checking habitat types Natalia ------------------------------------------
 df_birds_red$Gaica_dist %>% left_join(Andrea) %>%
@@ -51,7 +51,6 @@ Bird_pcs %>% filter(Id_muestreo == "G-MB-M-EPO1_03")  %>%
 
 # Change G-MB-M-EPO1_03 to 2013 / 2024 coords
 # Check into EPO1_03(1) as well
-
 
 # Understand data ---------------------------------------------------------
 # Examine NAs using naniar package 
@@ -564,25 +563,19 @@ Pc_hab %>% st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"),
 
 # >Metadata ---------------------------------------------------------------
 ## Examine the consistency between the metadata files & the bird database files 
-## Check if there are any IDs that are in bird data but not in metadata, and vice versa
-view_mismatch <- function(df){
-  df %>% select(Id_muestreo, Fecha, Hora) %>% distinct() %>% 
-    filter(!str_detect(Id_muestreo, "LIBRE|RED"))
-}
-
-# Create a nested list with points that don't have a match on ID, date, & time
-# NOTE:: All UBC_Gaica points have times at start of point count & 5 minutes into point count, thus I remove these points from 
-birds_metadata_l <- map2(df_birds_red[-c(1, 4:6)], df_metadata[-c(1, 4:6)], 
-                         \(bird, meta) {
-  meta <- meta %>% filter(!is.na(Hora) & Spp_obs == 1)
-  only_in_bird <- anti_join(bird, meta, by = c("Id_muestreo", "Fecha", "Hora")) %>% view_mismatch()
-  only_in_meta <- anti_join(meta, bird, by = c("Id_muestreo", "Fecha", "Hora")) %>% view_mismatch()
-  list(only_in_bird = only_in_bird, only_in_meta = only_in_meta)
+# Check if there are any IDs that are in bird data but not in metadata, and vice versa. Create list with points that don't have a match on ID, date, & time
+map2(df_birds_red, df_metadata, \(birds, meta){
+  birds2 <- birds %>%
+    select(
+      Id_muestreo, Fecha, Hora
+    ) %>% distinct()
+  meta <- meta %>% distinct(Id_muestreo, Fecha, Hora, Spp_obs)
+  comb <- meta %>% full_join(birds2)
+    comb %>% anti_join(birds2) %>%
+      filter(!str_detect(Id_muestreo, "LCR|JB|LCA") & # In metadata file but 0 (or 1) accompanying PC
+               !str_detect(Id_muestreo, "ECOR|PORT|Practica") & # Ensayo days
+               Spp_obs != 0) # Points where no species were observed
 })
-birds_metadata_l$Gaica_dist
-map(birds_metadata_l, \(list){
-  list %>% bind_rows(.id = "Found") 
-}) 
 
 # This can help identify the reason that points from birds_metadata_l appear here... Loop through each row, where each row represents a point count without a match for ID, date, & time
 map(1:nrow(birds_metadata_l$Gaica_mbd$only_in_meta), \(row){
@@ -613,9 +606,26 @@ map2(df_birds_red, df_metadata, \(bird, meta) {
 })
 
 # >Times ------------------------------------------------------------------
+## Logical check that examines whether the End time of a given point count (Id_muestreo) is after the start time of any other different point count on the same day. 
+Prob_pts <- Event_covs %>% 
+  mutate(Pc_end = as_hms(Pc_start + Pc_length)) %>%
+  arrange(Uniq_db, Fecha, Pc_start) %>% 
+  group_by(Uniq_db, Fecha) %>%
+  mutate(prev_end = dplyr::lag(Pc_end),
+         Problem = if_else(!is.na(prev_end) & Pc_start < prev_end,
+                           "Yes", "No")) %>% 
+  filter(Problem == "Yes") %>% 
+  ungroup()
+# Ignore GAICA distancia points 
+Prob_pts %>% filter(Uniq_db != "Gaica distancia")
+# Example
+Birds_comb4 %>% filter(Id_group == "C-MB-S-V") %>% 
+  distinct(Fecha, Id_muestreo, Pc_start, Pc_length)
+
 ## For CIPAV & GAICA distancia, the metadata files include the start and end time for each point.. Examine to see if the the start and end time from metadata matches with the bird database
 df_se <- map(df_birds_red[c(1,2)], \(df){ #se = start end
-  df %>% mutate(AM_PM = ifelse(Hora > as_hms("14:00:00"), "Afternoon", "Morning")) %>% 
+  df %>% 
+    mutate(AM_PM = ifelse(Hora > as_hms("14:00:00"), "Afternoon", "Morning")) %>% 
     group_by(Id_muestreo, Fecha, AM_PM) %>% 
     mutate(start = min(Hora), 
            end = max(Hora), 
@@ -650,7 +660,7 @@ map2(df_se, df_metadata[c(1,2)], \(se, meta){
 
 ## Examine the difference in times for a given point count on the same day
 # Code is old, but still useful as this is for ALL databases (not just CIPAV & GAICA)
-Hora_dif_df <- Bird_pcs %>% 
+Hora_dif_df <- Bird_pcs_all %>% 
   # NOTE:: Some points are surveyed 2x on the same day
   # GAICA distancia surveyed some points in the AM & PM, whereas UBC & UniLlanos sampled same points between 1.5 & 3 hours apart in some cases
   mutate(
@@ -1143,8 +1153,127 @@ map(UBC_hatico, \(df){
   df %>% distinct(Registrado_por)
 })
 
+# Testing Ubc Santi 2026 ----------------------------------------------------
+# >Bird observation data --------------------------------------------------
+df_birds$Ubc_meta26
+
+#Create dataframe with just Ubc gaica
+Ubc_meta26 <- Bird_pcs_all %>% 
+  filter(Nombre_institucion == "Ubc" & Ano == 2026 & Nombre_finca != "El hatico")
+ubc_meta26_ids <- unique(Ubc_meta26$Id_muestreo)
+
+##Create dataframe of names to compare column names
+# Extract names from each data frame in UBC_gaica
+UBC_meta26 <- df_birds$Ubc_meta26
+name_list <- names(UBC_meta26)
+
+# Adjust the lengths of each list of names, filling with NA where needed
+adjusted_names <- lapply(name_list, function(x) {
+  length(x) <- max(sapply(name_list, length)) #Fill with NAs 
+  return(x)
+})
+
+# Combine them using cbind
+combined_names <- do.call(cbind, adjusted_names)
+
+# View result
+data.frame(combined_names) %>%
+  mutate(TF = apply(., 1, function(row) all(row == row[1])))
+
+#Examine values in each column
+lapply(UBC_meta26, unique)
+
+## Ensure all point count IDs are specified correctly
+# Extract PC IDs not including those by Ubc gaica to compare against
+PCids <- Bird_pcs_all %>% filter(Nombre_institucion != "Ubc") %>% 
+  pull(Id_muestreo) %>% 
+  unique()
+# Expected result: Point counts from Otun Quimbaya & "G-MB-M-EPO1_03_(1)" have no match
+prob_ids <- ubc_meta26_ids %in% PCids
+unique(ubc_meta26_ids[!prob_ids])
+
+## Spatial
+# Determine if there are differences in Lat / long within a single ID
+# Expected result: Should be 0 rows 
+UBC_meta26 %>%
+  distinct(Id_muestreo, Latitud_decimal, Longitud_decimal) %>% 
+  #filter(Id_muestreo %in% c("G-MB-Q-PORT_01", "G-MB-Q-LCA_09"))
+  #rename(name = Id_muestreo) %>%
+  #st_as_sf(coords = c("Longitud_decimal", "Latitud_decimal"), crs = 4326, remove = F) %>%
+  #st_write(driver='kml', dsn = paste0("Derived_geospatial/kml/GAICA_2024_", format(Sys.Date(), "%m.%d.%y"), ".kml"))
+  group_by(Id_muestreo) %>%
+  reframe(diff = round(diff(Latitud_decimal), 10))
+
+## Examine Ubc GAICA to identify any spatial errors
+Id_spat_errors <- function(Eco_reg){
+  Pc_locs_sf %>% 
+    filter(Ecoregion == Eco_reg & Uniq_db == "Ubc gaica dom") %>% # Piedemonte
+    filter(Id_muestreo != "G-MB-M-EPO1_03_(1)" & Id_group != "OQ") %>%
+    ggplot() + 
+    geom_sf() + 
+    ggrepel::geom_text_repel(aes(label = Id_muestreo, geometry = geometry
+    ), stat = "sf_coordinates")
+}
+Id_spat_errors(Eco_reg = "Cafetera") 
+Id_spat_errors(Eco_reg = "Piedemonte")
+# For OQ,change Id_group != "OQ" to == "OQ" in function
+Id_spat_errors(Eco_reg = "Cafetera") 
+
+## Examine species present 
+Ayerbe_all_spp <- list.files(path = "../Geospatial_data/Ayerbe_shapefiles_1890spp", pattern = "\\.dbf$")
+Ayerbe_all_spp <- substr(Ayerbe_all_spp, 1, nchar(Ayerbe_all_spp) - 4)
+ubc_meta26_spp <- UBC_meta26 %>% pull(Nombre_cientifico_final_ayerbe_2018) %>% 
+  unique()
+TF <- ubc_meta26_spp %in% Ayerbe_all_spp
+prob_spp <- ubc_meta26_spp[!TF]
+# Expected result: "Leptotila verreauxi"
+Nombre_cientifico_original <- prob_spp[!str_detect(prob_spp, "sp")]
+
+# Split species name & compare to genus & species 
+# Expected result: 0 rows 
+UBC_meta26 %>%
+  mutate(
+    Genus = str_split_i(Nombre_cientifico_final_ayerbe_2018, " ", i = 1),
+    Genus_equal = Genus == Genero,
+    Species = str_split_i(Nombre_cientifico_final_ayerbe_2018, " ", i = 2),
+    Species_equal = Species == Epiteto_especifico
+    ) %>%
+  select(Genus_equal, Nombre_cientifico_final_ayerbe_2018, Genero, Species_equal, Epiteto_especifico) %>% 
+  filter(Genus_equal == FALSE | Species_equal == FALSE) %>% 
+  distinct(Nombre_cientifico_final_ayerbe_2018, Genero, Epiteto_especifico)
+
+## Examine difference in times within same day 
+# Expected result: There are 3 point counts with times > 5 minutes 
+Pc_date9 %>% filter(Uniq_db == "Ubc mbd") %>% 
+  filter(!Pc_length %in% c(as_hms("00:05:00"), as_hms("00:00:00"))) %>% 
+  distinct(Id_muestreo, Fecha, Pc_start, Pc_length)
+# 4 and.6 minutes? 
+Bird_pcs_all %>% filter(Id_muestreo == "U-MB-M-A_04" & Ano > 2025) %>% 
+  distinct(Fecha, Hora)
+
+Pc_date9 %>% count(Id_muestreo, Fecha, Pc_start, sort = T) %>% 
+  filter(n > 1)
+
+# Identify sampling points that have multiple habitat types. 
+# Expected result: 0 rows
+UBC_meta26 %>% pull(Habitat_og) %>% unique()
+UBC_meta26 %>% distinct(Id_muestreo, Habitat_og) %>% 
+  count(Id_muestreo) %>% 
+  filter(n > 1)
+
+#Identify problematic orders & families
+TF_order <- UBC_meta26$Orden %in% Tax_df$Order
+TF_family <- UBC_meta26$Familia %in% Tax_df$Family
+
+# Expected result: None
+UBC_meta26[!TF_family,] %>% pull(Familia) %>% unique() 
+
+# Consistency in Registrado_por 
+# Expected result: "Santiago Lugo-Enciso"
+unique(UBC_meta26$Registrado_por)
+
 # >Metadata ---------------------------------------------------------------
-UBC_hatico_metadata <- df_metadata$Ubc_hatico
+UBC_meta26_metadata <- df_metadata$Ubc_meta26
 
 # Adjust the lengths of each list of names, filling with NA where needed
 adjusted_names <- lapply(name_list_metadata, function(x) {
@@ -1164,29 +1293,40 @@ combined_names %>%
 
 # Ensure that all point counts were sampled on 3 different days & that metadata file is consistent with that
 # Expected result: Only OQ practica was sampled on a single day
-UBC_hatico %>% distinct(Id_muestreo, Fecha) %>% 
-  count(Id_muestreo) %>% 
+bd <- UBC_meta26 %>% distinct(Id_muestreo, Fecha) %>% 
+  count(Id_muestreo, sort = T) %>%
   filter(n != 3)
 
-## Identify points where we did not survey 
-# Expected result: Should return the points where we did not survey
-  UBC_hatico_metadata %>% filter(is.na(Spp_obs)) %>% 
-    distinct(Id_muestreo, Spp_obs)
+md <- UBC_meta26_metadata %>% 
+  filter(Spp_obs != 0) %>%
+  distinct(Id_muestreo, Fecha) %>% 
+  count(Id_muestreo, sort = T) %>%
+  filter(n != 3) 
+# Expected result: 0 rows
+bd %>% anti_join(md)
 
-#Do all 'percent' rows sum to 100%?
-# Expected result: 0 rows (except for OQ practica)
-  UBC_hatico_metadata %>% select(starts_with("percent")) %>%
-    mutate(Sum = rowSums(across(everything()), na.rm = T)) %>% 
-    filter(Sum != 100)
+# Do all 'percent' rows sum to 100%?
+# Expected result: 0 rows
+  UBC_meta26_metadata %>%
+    mutate(Sum = rowSums(across(starts_with("percent")), na.rm = T)) %>% 
+    filter(Sum != 100) %>% 
+    select(Id_muestreo, starts_with("percent"))
+    view()
+    
+UBC_meta26_metadata %>% distinct(Id_muestreo, Habitat_predominante) %>% 
+  count(Id_muestreo) %>% 
+  filter(n > 1)
 
-# Look for inconsistencies in habitat types
-  UBC_hatico_metadata %>%
-    select(contains("Habitat"), starts_with("percent"))
+# Look for inconsistencies in habitat types between categorical and % classifications
+  UBC_meta26_metadata %>%
+    select(Id_muestreo, contains("Habitat"), starts_with("percent")) %>% 
+    arrange(Habitat_predominante) %>% 
+    view()
 
 # Ensure that the water features are not changing day to day 
-  UBC_hatico_metadata %>% distinct(Id_muestreo, Cuerpo_de_agua) %>% 
+  UBC_meta26_metadata %>% distinct(Id_muestreo, Cuerpo_de_agua) %>% 
     count(Id_muestreo) %>% 
-    filter(n > 1)
+    filter(n > 1) 
 
 # Miscellaneous -----------------------------------------------------------
 # Andrea habitat ----------------------------------------------------------

@@ -294,3 +294,47 @@ create.extension.file(df = Birds_all3, var1 = Id_muestreo, tbl = FALSE,
 # Call function to create Excel 
 create.extension.file(df = Birds_all3, var1 = Id_group, tbl = FALSE,
                       output_name = "Farms_Meta_Outreach_Id_group", output_type = "Excel")
+
+# Farm names from FEDEGAN -------------------------------------------------
+#578
+Birds_comb4 %>% filter(Id_gcs == 578)
+Birds_comb4 %>% 
+  filter(Nombre_finca %in% c("La renuncia", "El girasol") & Departamento == "Atlantico") %>% 
+  pull(Id_gcs) %>% unique()
+
+Ids_mult_farms <- Birds_comb4 %>% 
+  distinct(Id_gcs, Nombre_finca) %>% 
+  count(Id_gcs, sort = T) %>% 
+  filter(n > 1) %>% 
+  pull(Id_gcs)
+
+Birds_comb4 %>% 
+  distinct(Id_gcs, Nombre_finca) %>% 
+  filter(Id_gcs %in% Ids_mult_farms) %>% 
+  arrange(Id_gcs)
+
+Birds_comb4 %>% filter(Id_gcs == "Ref_La luisa") %>% pull(Id_muestreo) %>% unique()
+
+
+Birds_comb4 %>% filter(Nombre_finca == "La herradura") %>% distinct(Id_gcs, Nombre_institucion, Nombre_finca, Ecoregion, Nombre_finca_mixed, Latitud, Longitud) 
+
+#1053
+Birds_comb4 %>% filter(Id_gcs %in% c(1053)) %>% 
+  distinct(Id_gcs, Nombre_institucion, Nombre_finca, Ecoregion, Nombre_finca_mixed, Latitud, Longitud) %>% view()
+Birds_comb4 %>% filter(Nombre_finca == "Cielo lirio" & Ecoregion == "Bajo magdalena") %>% distinct(Id_gcs, Nombre_institucion, Nombre_finca, Nombre_finca_mixed, Latitud, Longitud) #%>% 
+pull(Id_gcs) %>% unique()
+Birds_comb4 %>% filter(Id_gcs %in% c(2206)) %>% 
+  distinct(Id_gcs, Nombre_institucion, Nombre_finca, Ecoregion, Nombre_finca_mixed, Latitud, Longitud)
+
+#259 and 1732
+Birds_comb4 %>% filter(Id_gcs %in% c(259, 1732)) %>% 
+  distinct(Id_gcs, Nombre_institucion, Nombre_finca, Ecoregion, Nombre_finca_mixed)
+
+Birds_comb4 %>% 
+  filter(
+    Nombre_institucion %in% c("Ubc", "Ubc gaica") & Ecoregion == "Piedemonte"
+  ) %>% 
+  distinct(Id_gcs, Id_group, Nombre_finca) %>% 
+  arrange(Nombre_finca) %>%
+  as.data.frame() %>%
+  write.xlsx("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Outreach/Outreach_farmers/Excels/Consolidate_id_gcs.xlsx", row.names = FALSE)
