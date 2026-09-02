@@ -1,5 +1,5 @@
 ## PhD birds in silvopastoral landscapes ##
-## Data wrangling 07 -- Final wrangling to filter 'Bird_pcs_dist.csv' to generate 'Bird_pcs_analysis.csv', which is the subset of observations within the fixed point count radius (50m) and that used the habitat (e.g. excluding flyovers)
+## Data wrangling 08 -- Final wrangling to filter 'Bird_pcs_dist.csv' to generate 'Bird_pcs_analysis.csv', which is the subset of observations within the fixed point count radius (50m) and that used the habitat (e.g. excluding flyovers)
 
 ## Description: These are the steps we took to prepare the analysis file for our purposes; however, these are only suggestions and should be modified according to the needs of your analysis
 
@@ -10,8 +10,8 @@ library(conflicted)
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-Bird_pcs_dist <- read_csv(file = "Data_paper/DataS1/Bird_pcs_dist.csv")
-Taxonomy <- read_csv(file = "Data_paper/DataS1/Taxonomy.csv")
+Bird_pcs_dist <- read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_dist.csv")
+Taxonomy <- read_csv(file = "Derived/Excels/Taxonomy/Taxonomy.csv")
 
 # General formatting ---------------------------------------------------------
 # Format point count data for downstream analyses 
@@ -72,14 +72,21 @@ Bird_pcs_analysis6 %>% filter(if_any(everything(), is.na)) # No NAs in any rows
 Bird_pcs_analysis7 <- Bird_pcs_analysis6 %>% 
   summarize(Count = sum(Count), .by = -Count)
 
+Bird_pcs_analysis6 %>% filter(Fecha > "2025-12-22") %>% 
+  count(Id_muestreo, Fecha, Species_ayerbe, sort = T )
+
 # Reduce impact of outliers ---------------------------------------------
 # Lessen the magnitude of 4 outliers with counts > 50 individuals
 Bird_pcs_analysis <- Bird_pcs_analysis7 %>% 
   mutate(Count = ifelse(Count > 50, 50, Count)) 
 
+Site_covs <- read_csv(file = "Derived/Excels/Site_covs.csv")
+Bird_pcs_analysis %>% left_join(Site_covs) %>% 
+  summarize(N_ecor = n_distinct(Ecoregion), .by = Species_ayerbe) %>% 
+  arrange(desc(N_ecor))
+
 # Export ------------------------------------------------------------------
 stop()
-Bird_pcs_analysis %>% 
+Bird_pcs_analysis %>%
   select(-Species_ayerbe_) %>% 
-  relocate(Registrado_por, .after = Count) #%>% 
-  #write_csv("Derived/Excels/Bird_pcs/Bird_pcs_analysis.csv")
+  write_csv("Derived/Excels/Bird_pcs/Bird_pcs_analysis.csv")
