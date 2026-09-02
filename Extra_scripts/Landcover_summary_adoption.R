@@ -35,7 +35,7 @@ conflicts_prefer(dplyr::filter)
 
 # Load data ---------------------------------------------------------------
 load("Rdata/the_basics_11.21.24.Rdata")
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
 
 # Grab project's official BD_UT3 file
 LC <- read_xlsx("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/SCR_data/Base de datos UT_v3.xlsx", sheet = "Base UT", col_names = TRUE)

@@ -15,7 +15,7 @@
 load("Rdata/the_basics_12.24.24.Rdata")
 load("Rdata/Taxonomy_11.14.24.Rdata")
 load("Rdata/Traits_elev_11.14.24.Rdata")
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
 
 # Bring in libraries
 library(tidyverse)
