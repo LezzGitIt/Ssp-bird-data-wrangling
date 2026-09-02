@@ -26,7 +26,7 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
 
 ## Load data and custom functions
 Bird_pcs_all <-  read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
@@ -499,8 +499,6 @@ Gen_length2 %>%
 
 # Nesting -----------------------------------------------------------------
 # >Clutch size ------------------------------------------------------------
-scrape <- read_csv("Derived/Excels/Traits/clutch_size_migrants_30.csv") %>% 
-  rename(Scientific.name = scientific_name)
 # First & last authors from Bird Life , so assuming that they use birdlife taxonomy
 Life_history <- bird20t %>% 
   filter(Scientific.name %in% Tax_df$Species_bl) %>% 
@@ -508,9 +506,6 @@ Life_history <- bird20t %>%
   select(Scientific.name, Mean.clutch.size, Survival, Age.at.first.breeding, Max.longevity) %>% 
   rename(Clutch = Mean.clutch.size) %>% 
   mutate(across(Clutch:Max.longevity, as.numeric))
-
-Life_history %>% right_join(scrape) %>% 
-  select(Scientific.name, contains("clutch"))
 
 # Inspect missingness
 gg_miss_var(Life_history)
