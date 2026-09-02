@@ -2,16 +2,16 @@
 title: Bird diversity in working landscapes of Colombia 
 subtitle: Data paper
 date: last-modified
-bibliography: ../PhD.bib
+bibliography: ../../Suppfiles/PhD.bib
 # If you do not want code to show... echo: false
 execute: 
  echo: false
  #include: false
  message: false
  warning: false 
-metadata-files: 
-  - ../authors.yml
-  - ../abstract_keywords.yml
+metadata-files:
+  - ../../Suppfiles/authors.yml
+  - ../../Suppfiles/abstract_keywords.yml
 format: 
   elsevier-pdf:
     include-in-header:
@@ -107,11 +107,11 @@ Here we present the 'Bird diversity in working landscapes of Colombia' dataset, 
 
 ![The locations of 504 point count sites in 73 farms across five ecoregions in Colombia. Colombia is extremely topographically diverse, with the Andes mountain range trifurcating into three distinct 'cordilleras', in addition to smaller 'sierras' (e.g., Sierra Nevada de Santa Marta) that are critical for understanding bird distributions in Colombia. In between the cordilleras lie two major river valleys, the Cauca and Magdalena (labeled in red). Major rivers also run off the Eastern slope of the Andes into the plains and eventually into the Amazon. The shape of the symbol corresponds to the data collector, and the size corresponds to the number of point counts within a quarter degree squared grid cell. Note that a small jitter was applied to all points, and a larger jitter was applied to points in the Piedemonte region to improve visibility. Elevation was log-transformed to emphasize altitudinal gradients at lower elevations.\
 \
-COLLABORATORS: Does anyone have a shapefile of the rio Cesar? Also, is it correct that the unlabed river in the northeast is the Catatumbo River?](../Figures/Map_sampling/TNC_Field_Map_Final.png){#fig-sampling-map}
+COLLABORATORS: Does anyone have a shapefile of the rio Cesar? Also, is it correct that the unlabed river in the northeast is the Catatumbo River?](../../Figures/Map_sampling/TNC_Field_Map_Final.png){#fig-sampling-map}
 
 The `r Tot_pc_prty` point count surveys were sampled 1–15 times total, with `r round(Per_3_visits, 0)`% of locations visited $\geq$ 3 times within a closed sampling period, enabling estimation of detection probabilities through hierarchical models. Land-use landcover types surveyed include mature forest, forest fragments, riparian forest, crops, intensive pasture, several types of silvopasture, and heterogeneous mosaics (i.e., no single dominant landcover type). This dataset permits analyses of bird diversity patterns and community composition across land-use gradients, especially the effects of silvopastoral practices on biodiversity in tropical working landscapes. We also provide complementary datasets of taxonomic equivalents (BirdLife, BirdTree, and eBird / Clements), functional traits, site covariates, and survey covariates (@tbl-file-info), facilitating a variety of research questions and analytical approaches. For example, one could examine the interacting effects of local management practices and climate, while controlling for phylogenetic non-independence, to understand silvopasture's influence on functional diversity and ecosystem service provisioning. Importantly, the longitudinal nature of these data allow for analyses of population trends or colonization/extinction dynamics, which is critical for conservation practitioners [@leesRoadmapIdentifyingFilling2020].
 
-![Phylogenetic relationships of 568 species observed in our data set. There were 25 orders, of which 19 are shown using grayscale representative species (downloaded from phylopic). The number of species in each order is listed in parentheses.](../Figures/Phylogeny_equal_sizes.png){#fig-phylogeny}
+![Phylogenetic relationships of 568 species observed in our data set. There were 25 orders, of which 19 are shown using grayscale representative species (downloaded from phylopic). The number of species in each order is listed in parentheses.](../../Figures/Phylogeny_equal_sizes.png){#fig-phylogeny}
 
 ```{r}
 #| label: tbl-file-info
@@ -154,7 +154,7 @@ file_names_and_sizes %>%
     column_spec(2, width = "8cm")
 ```
 
-![The most abundant and widespread bird species in the project (before filtering species). The total count refers to the summed count across all surveys, and localities refers to the number of unique point count locations where the species was detected at least once (total = 496).](../Figures/Species_counts_localities.png){#fig-abund-widespread-spp}
+![The most abundant and widespread bird species in the project (before filtering species). The total count refers to the summed count across all surveys, and localities refers to the number of unique point count locations where the species was detected at least once (total = 496).](../../Figures/Species_counts_localities.png){#fig-abund-widespread-spp}
 
 # Class I. Data Set Descriptors
 
@@ -219,7 +219,7 @@ Colombia, Bajo Magdalena, Ecorregion Cafetera, Valle del rio Cesar, Piedemonte, 
   \
   Sampling was conducted in five broad ecoregions: The coffee region, Boyacá and Santander, Piedemonte, Bajo Magdalena, and el Rio Cesar (@fig-sampling-map). Colombia is a tropical country with extreme topographic complexity but little temperature variation throughout the year. Thus, climate and seasonality are primarily defined by elevation and rainfall patterns (@fig-envi-boxplots). Rainfall is unimodal closer to the equator (e.g., our sites in the Piedemonte region are closer to unimodal) and generally bimodal further from the equator (@fig-prec-smooth), although local topography complicates these patterns.
 
-![Elevation, average temperature, and average precipitation of each point count location within five ecoregions. Note that elevation and average yearly temperature are almost perfectly inversely correlated in our data. A jitter was applied to aid in visualization.](../Figures/Envi_vars.png){#fig-envi-boxplots}
+![Elevation, average temperature, and average precipitation of each point count location within five ecoregions. Note that elevation and average yearly temperature are almost perfectly inversely correlated in our data. A jitter was applied to aid in visualization.](../../Figures/Envi_vars.png){#fig-envi-boxplots}
 
 [The Andes:]{.underline} The coffee region and Boyacá and Santander reside in the Andes, a region defined by complex topography, highly regional microclimates, and extreme elevational and climatic gradients over short horizontal distances. The Andes trifurcate into three distinct 'cordilleras' and two major intermontane valleys, the Cauca Valley between the Western and Central cordilleras, and the Magdalena valley between the Central and Western Andes. The eastern slopes of the cordilleras tend to be wetter than the western slopes (although the western side of the westernmost cordillera is an exception due to its proximity to the Choco), and there are small rain shadows at lower elevations in the valley floors. Topographic complexity and highly regional microclimates have resulted in high bird diversity, including a large influx of migrants in the winter months. Note that our sites in the coffee region span both the Magdalena and Cauca river valleys, as well as the Western and Central cordilleras, whereas our sites in Boyacá and Santander are only in the Eastern cordillera.\
 [Piedemonte:]{.underline} On the East side of the Eastern-most chain of the Andes is the 'Piedemonte' (foothills) region, a complex transition zone between the Andes and the flat plains (i.e. los Llanos) to the East. Heavy rainfall on the Eastern slope of the Andes results in many rivers and gallery forests dissecting the landscape as they flow East towards the plains and south towards Amazonia. Little forest remains and cattle ranching is the predominant agricultural activity of the region. The birds of the Piedemonte are quite diverse as it is a mix of Andean and Llanos birds, with some widespread Amazonian birds reaching our sampling sites.\
@@ -228,7 +228,7 @@ Rio Cesar:]{.underline} A dry river valley nestled between the imposing Sierra N
 \
 \[COLLABORATORS\]: I never visited the sites in Rio Cesar or Bajo magdalena, so I'm unsure exactly what I should highlight to differentiate our sampling sites in these regions. Also, I've combined the treatment of the coffee region and Boyacá and Santander for now, as both of these regions are defined by the Andes. I'm open to other suggestions though.
 
-![In Colombia, precipitation is one of the primary determinants of the distribution of biodiversity. Rainfall is bimodal throughout most of Colombia, although often becomes unimodal closer to the equator. Curves show the 30-year average precipitation at our sampling sites, grouped by ecoregion. Curves were fit using generalized additive model smoothers fit separately by ecoregion, with a cyclic cubic regression spline and basis dimension k = 12 to capture monthly periodicity.](../Figures/Rainfall/Prec_smoothed.png){#fig-prec-smooth width="700"}
+![In Colombia, precipitation is one of the primary determinants of the distribution of biodiversity. Rainfall is bimodal throughout most of Colombia, although often becomes unimodal closer to the equator. Curves show the 30-year average precipitation at our sampling sites, grouped by ecoregion. Curves were fit using generalized additive model smoothers fit separately by ecoregion, with a cyclic cubic regression spline and basis dimension k = 12 to capture monthly periodicity.](../../Figures/Rainfall/Prec_smoothed.png){#fig-prec-smooth width="700"}
 
 - Geography: Location (e.g., latitude/longitude), size
 
@@ -332,7 +332,7 @@ Hab_sub_tbl <- Create_hab_tbl(col = Habitat_sub)
 
 - Crops (n = `r Hab_tbl$Cultivos`): Other agricultural systems unrelated to rearing cattle.
 
-![Example landscape on a cattle ranching farm surveyed in the Piedemonte Ecoregion. Red circles represent the location of 50-m radius point counts. Four common habitat types surveyed in the project are labeled.](../Figures/Example_landscape/Example_landscape.pdf)
+![Example landscape on a cattle ranching farm surveyed in the Piedemonte Ecoregion. Red circles represent the location of 50-m radius point counts. Four common habitat types surveyed in the project are labeled.](../../Figures/Example_landscape/Example_landscape.pdf)
 
 - Geology, landform: Soils, slope/elevation/aspect, terrain/physiography, geology/lithology
 
@@ -438,7 +438,7 @@ a.  Data collection period, frequency, etc.: Information necessary to understand
 
     Excluding the point counts conducted by CIPAV (which were surveyed only once), `r Per_three_plus`% of point count locations were sampled at least 3 times within a closed sampling period. Within a closed sampling period it is assumed that there are no births, deaths, immigration, or emigration, and thus the true (but latent) abundance does not change. Sampling 3 or more times in a closed sampling period allows for modeling detectability, and ultimately more robust estimates of occupancy and abundance [@mackenzieEstimatingSiteOccupancy2003].
 
-![The temporal distribution of point count sampling across 5 ecoregions, where the shape of the points indicates unique point count locations within a given ecoregion. For example, in El Piedemonte GAICA resampled the same point count locations in October of 2016 and March of 2017 (depicted as crosses). Each point represents a date that point counts were sampled, with point count locations resampled across sampling periods in four ecoregions (Bajo Magdalena, Cafetera, Piedemonte, Rio Cesar). Note that contractors did not survey point count locations sampled by other contractors, with the exception of 54 point counts sampled in 2019 by UniLlanos and in 2022 by UBC (depicted as diamonds).](../Figures/Pc_month_year_day_ecoregion.png){#fig-temporal-sampling}
+![The temporal distribution of point count sampling across 5 ecoregions, where the shape of the points indicates unique point count locations within a given ecoregion. For example, in El Piedemonte GAICA resampled the same point count locations in October of 2016 and March of 2017 (depicted as crosses). Each point represents a date that point counts were sampled, with point count locations resampled across sampling periods in four ecoregions (Bajo Magdalena, Cafetera, Piedemonte, Rio Cesar). Note that contractors did not survey point count locations sampled by other contractors, with the exception of 54 point counts sampled in 2019 by UniLlanos and in 2022 by UBC (depicted as diamonds).](../../Figures/Pc_month_year_day_ecoregion.png){#fig-temporal-sampling}
 
 ### Research methods
 
@@ -468,7 +468,7 @@ a.  Field/laboratory: Description or reference to standard field/laboratory meth
 
     The Piedemonte ecoregion had the most comprehensive sampling, with about half of the total point count locations (n = `r Pc_piedemonte`) sampled there. All other ecoregions were surveyed at `r min(Ecor_pc_no_pdm$n)` – `r max(Ecor_pc_no_pdm$n)` unique locations.\
 
-![Each data set has bird information from point counts clustered within farms. Each point represents a farm and the x-axis conveys the number of unique point count locations at each farm. The colors correspond to the number of repeat surveys at each point count, rounded to the nearest whole number. The number of distinct farms within each data set is printed to the right of each boxplot. Note that this text is to the left of the most heavily sampled farm in the 'Unillanos mbd' and 'Ubc mbd' data sets (24 point counts) for display reasons.](../Figures/Pc_per_farm_db.png){#fig-pc-farm-db}
+![Each data set has bird information from point counts clustered within farms. Each point represents a farm and the x-axis conveys the number of unique point count locations at each farm. The colors correspond to the number of repeat surveys at each point count, rounded to the nearest whole number. The number of distinct farms within each data set is printed to the right of each boxplot. Note that this text is to the left of the most heavily sampled farm in the 'Unillanos mbd' and 'Ubc mbd' data sets (24 point counts) for display reasons.](../../Figures/Pc_per_farm_db.png){#fig-pc-farm-db}
 
 a.  Instrumentation: Description and model/serial numbers\
     \
