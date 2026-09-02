@@ -1,35 +1,93 @@
-# Silvopasture and Bird Diversity in Colombia
+# Bird diversity in working landscapes of Colombia
 
-This repository contains the data wrangling code associated with my PhD dissertation, examining the impact of silvopasture on bird taxonomic and functional diversity in fragmented landscapes of Colombia. The project aims to explore how local landcover and land-use impact bird diversity, and how these relationships are moderated by landscape and environmental factors.
+This repository holds (1) the **data-wrangling pipeline** that assembles the
+Sustainable Cattle Ranching (SCR) bird point-count data into clean, covariate-linked
+tables, and (2) the **Ecology data paper** ("Bird diversity in working landscapes of
+Colombia") built from those tables.
 
-## Project Overview
+The project uses data from 500+ unique point count locations surveyed 2013–2025
+across five Colombian ecoregions to study how silvopasture affects bird taxonomic,
+functional, and phylogenetic diversity in fragmented landscapes. Downstream
+dissertation-chapter repositories consume this repo's outputs for the analyses
+(multi-species occupancy/abundance, alpha/beta diversity, functional and
+phylogenetic diversity).
 
-As part of the Sustainable Cattle Ranching (SCR) project, this research uses data from 500+ unique point count sites collected from 2013 - 2025 to model multi-species occupancy and abundance. The code in this repository prepares the data for future analyses and links these data with important covariates  (environmental, functional traits, etc.) that aid in future analyses:
+## The dataset (`DataS1/`)
 
--Taxonomy: Standradizing taxonomy to South American Classification Committee (SACC) 2018 taxonomy, and matching with BirdLife and BirdTree. 
--Functional traits: Predominantly from Avonet
--Land-use land-cover: Classification of manually digitized landcover in 300m buffers around point count centroids
--Phylogeny: Using Hackett (2008) backbone
+`DataS1/` is the curated deposit that accompanies the data paper:
 
-Code also compares bird observations to their known distributional and elevational ranges, and removes observations that may have been erroneous or were not made within the 50-m fixed point count radius.
+| File | Contents | Join keys |
+|---|---|---|
+| `Bird_pcs_all.csv` | every point-count observation | `Id_muestreo`, `Id_muestreo_no_dc`, `Species_ayerbe` |
+| `Bird_pcs_dist.csv` | after distributional/elevational range screening | same |
+| `Bird_pcs_analysis.csv` | analysis-ready subset (50 m radius, used the habitat) | same |
+| `Event_covs.csv` | per-survey covariates (date, time, observer, weather, land cover) | `Id_muestreo`, `Id_muestreo_no_dc` |
+| `Site_covs.csv` | per-location covariates (elevation, climate, distance to nearest farm) | `Id_muestreo_no_dc` |
+| `Taxonomy.csv` | SACC ↔ BirdLife ↔ eBird ↔ BirdTree crosswalk (Colombia) | `Species_ayerbe` |
+| `Functional_traits.csv` | per-species trait table (mainly AVONET) | `Species_ayerbe` |
+| `Column_definitions_final.xlsx` | field definitions for each table | |
 
-## Methodology
+`Scripts/Data_paper/Data_filtering_example.R` and `Data_joining_example.R` show how
+the analysis subset is derived and how the tables join — starting points, to be
+adapted to your own analysis.
 
-- **Data**: 500+ point count sites collected over a decade.
-- **Possible Analyses**: Bayesian multi-species occupancy / abundance models, alpha and beta diversity, community composition, functional / phylogenetic diversity
+The versioned deposit of record (with a DOI) is on **Dryad/Zenodo**; `DataS1/` here
+is the working copy, kept in sync with the pipeline.
 
-## Usage
+## The pipeline (`Scripts/`)
 
-If you are interested in collaborating on this project please send me an email at skinnerayayron93 [at] gmail [dot] com. The data is not available publicly at present. 
+`Scripts/01_…` through `Scripts/09_…` run in sequence; most end with a deliberate
+`stop()` before their export section. See `Project_notes.md` for the full run
+order, inputs, and outputs.
 
-## License
+| Script | Builds |
+|---|---|
+| `01_Gen_wrangling.R` | base point-count df, site/event covariates, point locations, climate |
+| `02_Taxonomy.R` | `Taxonomy.csv`, taxonomy-standardized observations |
+| `03_FT_elev.R` | `Functional_traits.csv`, elevational ranges |
+| `04_Out_range.R` | `Bird_pcs_dist.csv` (range screening) |
+| `05_Extract_lcs.R` → `06_LSM.R` → `07_wvsc.R` | digitized land cover, landscape metrics, woody-vegetation structure |
+| `08_Analysis_wrangling.R` | `Bird_pcs_analysis.csv` |
+| `09_Phylogeny.R` | pruned BirdTree phylogeny, phylogenetic-diversity metrics, phylogeny figure |
 
-Feel free to use, modify, and distribute this code however you wish. No restrictions apply.
+## Reproducing the manuscript
 
-## Acknowledgments
+Requires a populated `Derived/` and `Derived_geospatial/` (run the pipeline first),
+the Elsevier Quarto extension, and `lualatex`.
 
-Thank you to the Sustainable Cattle Ranching project and to my advisors for providing data and helping me understand cattle ranching in Colombia. Thank you to the NGO SELVA for sponsoring a year long Fulbright grant in Colombia, where they provided logistical and conceptual guidance, as well as providing important training towards identification and manipulation of the Colombian avifauna. A special thanks to my advisors at UBC and TNC for providing funding, professional guidance, and both academic and personal support.
+```r
+# 1. Install the journal format (once)
+#    quarto add quarto-journals/elsevier      # already vendored in _extensions/
+
+# 2. Build the figures + metadata the manuscript embeds
+source("Scripts/Data_paper/Data_paper_figs.R")
+
+# 3. Render
+#    quarto render Scripts/qmd/Data_paper_ecology.qmd
+```
+
+Output lands flat in `Rendered/` (`Data_paper_ecology.pdf` and `.docx`).
+
+## Repository layout
+
+```
+Scripts/        01–09 pipeline; Data_paper/ (figure + example scripts); qmd/ (manuscript)
+DataS1/         curated deposit (tracked)
+Suppfiles/      bibliography, author/affiliation metadata, title-page partial
+_extensions/    Elsevier Quarto format
+Figures_static/ manuscript figures no script regenerates (sampling map, example landscape, phylogeny)
+Figures/        script-generated figures (gitignored, rebuilt by Data_paper_figs.R)
+Data/ Derived/ Derived_geospatial/ Rdata/   raw + recreatable (gitignored)
+docs/           methodology notes, feedback, planning docs (gitignored)
+```
 
 ## Contact
 
-For more information or questions, please contact skinnerayayron93 [at] gmail [dot] com
+The data are not yet public. To collaborate, email skinnerayayron93 [at] gmail [dot] com.
+
+## Acknowledgments
+
+Thanks to the Sustainable Cattle Ranching project and my advisors for providing data
+and context on cattle ranching in Colombia; to the NGO SELVA for hosting a Fulbright
+year in Colombia with logistical, conceptual, and taxonomic training; and to my
+advisors at UBC and TNC for funding and guidance.
