@@ -47,7 +47,7 @@ conflicts_prefer(hms::hms)
 
 # Load Rdata & useful themes / functions script
 # load("Rdata/the_basics_02.27.25.Rdata")
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
 
 # Load bird obs & meta data ---------------------------------------------------
 files <- list.files(path = "Data/Aves", pattern = "^A.*xlsx$") # Add |D after A if you want Monroy/Skinner data too
@@ -378,7 +378,7 @@ df_birds_red$Ubc_meta26 <- df_birds_red$Ubc_meta26 %>%
   filter(!Fecha %in% as.Date(c("2026-01-05")))
 
 ## Natalia put in lots of work to check and improve upon GAICA's recordings database, particularly she added all of the 'Cf' (confirmed) species
-path <- "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Mentorship/Natalia"
+path <- "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/PhD/Mentorship/Natalia"
 files <- list.files(path, pattern = ".xlsx")
 Site_names <- c("Valle_de_cocora", "Otun_quimbaya")
 Grabaciones_natalia_l <- map2(files, Site_names, \(file_name, sites){
@@ -553,6 +553,7 @@ Birds_comb3 <- Birds_comb2 %>%
     # CHECK:: There is only one ID_predio for each row in the 4 "ID_pr" columns
     Row_sum = rowSums(across(starts_with("Id_pr")), na.rm = T),
     Same = Id_gcs == Row_sum,
+    # Distance (m) from the point to the nearest GCS farm; each farm is a 'full' (digitized property polygon) OR a 'buffer' (buffer around a farm point), never both, and the two distance columns are mutually exclusive (and NA together), so their rowSum returns the single real distance and is 0 whenever the point falls inside a farm
     Distancia_farm = rowSums(across(starts_with("Distancia_pr")))
   ) %>%
   mutate(
@@ -572,17 +573,28 @@ Birds_comb4 <- Birds_comb3 %>%
   fill(Latitud, Longitud, .direction = "downup") %>% 
   ungroup()
 
-# 2 manual adjustments - In Google Earth the 50m buffers showed the correct location, but the points were changed by GAICA in a revision. Change points back to the (approximate) centroid of the 50m buffer. 
-Birds_comb5 <- Birds_comb4 %>% 
+# 2 manual adjustments - In Google Earth the 50m buffers showed the correct location, but the points were changed by GAICA in a revision. Change points back to the (approximate) centroid of the 50m buffer.
+Birds_comb5 <- Birds_comb4 %>%
   mutate(Latitud = case_when(
     Id_muestreo_no_dc == "MB-M-EPO1_03" ~ 3.8285,
-    Id_muestreo_no_dc == "MB-M-EPO1_03_(1)" ~ 3.8293, 
+    Id_muestreo_no_dc == "MB-M-EPO1_03_(1)" ~ 3.8293,
     .default = Latitud
-  ), 
+  ),
   Longitud = case_when(
     Id_muestreo_no_dc == "MB-M-EPO1_03" ~ -73.842,
-    Id_muestreo_no_dc == "MB-M-EPO1_03_(1)" ~ -73.8417, 
+    Id_muestreo_no_dc == "MB-M-EPO1_03_(1)" ~ -73.8417,
     .default = Longitud
+  ))
+
+# Distancia_farm fixes for the 4 point counts GCS gave conflicting distances (best estimate from a sibling-point analysis, pending confirmation from the data collectors)
+# LH_02-B: one 2016 visit logged 0 but every other visit and the neighbouring points read ~413. LP_02: 1823 is geometrically impossible given LP_03 (150 m away, 2018 m). LP_04: 1823 fits the La Pradera cluster better than the alternative 1630. EG_01: GCS placed it inside the farm in 2016 at the same coordinates it read 119 m outside in 2013.
+Birds_comb5 <- Birds_comb5 %>%
+  mutate(Distancia_farm = case_when(
+    Id_muestreo_no_dc == "MB-M-LH_02-B" ~ 413,
+    Id_muestreo_no_dc == "MB-G-LP_02" ~ 2142.932,
+    Id_muestreo_no_dc == "MB-G-LP_04" ~ 1823.472,
+    Id_muestreo_no_dc == "MB-A-EG_01" ~ 0,
+    .default = Distancia_farm
   ))
 
 # Bird_pcs_all  ---------------------------------------------------------------
@@ -1160,10 +1172,20 @@ Envi_df2 <- Envi_df %>%
   as_tibble()
 
 # >Site covs --------------------------------------------------------------
-Site_covs <- Bird_pcs_all %>% 
-  distinct(Id_muestreo_no_dc, Id_gcs, Nombre_finca) %>% 
+### Distance (m) to the nearest GCS farm, one value per point count location
+# max() over Id_muestreo_no_dc collapses the ~25 sites whose GCS distance varies slightly across records (reprojection noise) and carries the distance from early surveys onto later UBC re-surveys of the same point; result is rounded to whole metres (sub-metre precision is spurious given GPS error)
+# Only clusters GCS never processed stay NA -- Otun Quimbaya and El Hatico points 05-12; the 4 sites GCS gave conflicting distances are corrected upstream in Birds_comb5
+Distancia_farm_site <- Bird_pcs_all %>%
+  group_by(Id_muestreo_no_dc) %>%
+  summarise(Distancia_farm = round(suppressWarnings(max(Distancia_farm, na.rm = TRUE))), .groups = "drop") %>%
+  mutate(Distancia_farm = na_if(Distancia_farm, -Inf))
+
+Site_covs <- Bird_pcs_all %>%
+  distinct(Id_muestreo_no_dc, Id_gcs, Nombre_finca) %>%
   left_join(Envi_df2) %>%
-  relocate(Id_group_no_dc, .before = Id_muestreo_no_dc)
+  left_join(Distancia_farm_site) %>%
+  relocate(Id_group_no_dc, .before = Id_muestreo_no_dc) %>%
+  relocate(Distancia_farm, .after = Nombre_finca)
 
 # >Precipitation ----------------------------------------------------------
 # Extract data & create df where each row is a point count and there are 12 'prec' columns, one for each month
@@ -1221,12 +1243,12 @@ Event_covs_pcs %>% Na_rows_cols(cols_inc = -c(Noise, Clima, Cows_50m))
 
 # Site covariates - There are 504 unique locations, so all of these are stable irrespective of which data collector
 nrow(Site_covs)
-# Should be no NAs
-Site_covs %>% 
+# Should be no NAs -- Distancia_farm is filled across years within Id_muestreo_no_dc, so only the never-surveyed-by-GCS clusters stay NA (Otun Quimbaya, and El Hatico points 05-12 added by UBC in 2025)
+Site_covs %>%
   filter(Id_group_no_dc != "MB-R-OQ") %>% # OQ doesn't have Id_gcs
   # No sub_ut for these habitat types
-  filter(!Habitat %in% c("Cultivos", "Mosaic", "Pastizales")) %>% 
-  Na_rows_cols(id_cols = c(Id_muestreo_no_dc))
+  filter(!Habitat %in% c("Cultivos", "Mosaic", "Pastizales")) %>%
+  Na_rows_cols(cols_inc = -Distancia_farm, id_cols = c(Id_muestreo_no_dc))
 
 # Save & export -----------------------------------------------------------
 stop() 
