@@ -43,9 +43,13 @@ Scripts/qmd/*.aux
 Scripts/qmd/*.bbl
 Scripts/qmd/*.blg
 Scripts/qmd/*.log
+Scripts/qmd/*.toc
+Scripts/qmd/*.out
 Scripts/qmd/*.spl
 Scripts/qmd/*.rmarkdown
 Scripts/qmd/*.pdf
+Scripts/qmd/*.cls
+Scripts/qmd/*.bst
 
 # Working docs (session notes / migration plan, not the science)
 Project_notes.md
