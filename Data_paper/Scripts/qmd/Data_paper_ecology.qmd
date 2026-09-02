@@ -26,7 +26,8 @@ format:
       name: Journal Name
       formatting: preprint
       cite-style: authoryear
-editor: visual 
+  docx: default
+editor: visual
 editor_options: 
   chunk_output_type: console
 ---
