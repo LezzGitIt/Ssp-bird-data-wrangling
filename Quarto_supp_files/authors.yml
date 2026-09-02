@@ -1,0 +1,17 @@
+# Difficulty rendering in PDF, adding everything to the 'name' tag is a workaround 
+
+author:
+  - name: Aaron Skinner
+    email: skinnerayayron93@gmail.com
+    attributes:
+        corresponding: true
+    affiliations:
+      - name: University of British Columbia, Vancouver, BC, Canada
+
+  - name: Christina Kennedy
+    affiliations:
+      - name: The Nature Conservancy
+
+  - name: Claire Kremen
+    affiliations:
+      - name: University of British Columbia
