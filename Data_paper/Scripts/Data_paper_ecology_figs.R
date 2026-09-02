@@ -3,7 +3,6 @@
 # Load libraries -------------------------------------------------
 # Libraries
 library(readxl)
-library(xlsx)
 library(tidyverse)
 library(sf)
 library(hms)
@@ -638,15 +637,6 @@ Cols_metadata_l <- list(Bird_abu = Bird_abu_meta, Site_covs = Site_covs_meta, Ev
 saveRDS(Cols_metadata_l, file = "Data_paper/Rdata/Cols_metadata_l.rds") 
 
 stop()
-# Export Excel but write the definitions manually in Excel
-if(FALSE){
-  Bird_abu_meta %>% 
-    select(Field_name) %>% 
-    mutate(Definition = NA) %>% 
-    data.frame() %>%
-    xlsx::write.xlsx(file = "Data_paper/Column_definitions.xlsx", showNA = FALSE,
-                     row.names = FALSE, sheetName = "Bird_abundances.csv")
-}
 
 # EXTRAS ------------------------------------------------------------------
 # >Spatial maps -----------------------------------------------------------
