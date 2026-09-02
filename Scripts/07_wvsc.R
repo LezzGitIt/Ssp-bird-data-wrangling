@@ -11,12 +11,18 @@
 # 2) Canopy height - Height (in decimeters) of trees / shrubs > 2m 
 # 3) Change - Not using at present
 
-## Contents
+## Script contents
 # Bring in .tif files 
 # For both the 1) Canopy cover and 2) Canopy height files... 
 # -Create buffers of appropriate size (e.g. 1000m)
 # -Crop and mask large .tif files using buffers for improved processing speed
 # -Extract raster information within each buffer
+
+# To do  ------------------------------------------------------------------
+
+## Conduct scale of effect analysis
+# Start with 5, then get more fine scale as needed 
+Buffers_soe <- seq(from = 1000, to = 5000, by = 1000)
 
 # Load libraries & data ---------------------------------------------------
 ## Load libraries
@@ -29,6 +35,7 @@ library(cowplot)
 ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
 
 ## Load data
 Event_covs_lsm <- read_csv("Derived/Excels/Event_covs_lsm.csv")
@@ -38,7 +45,7 @@ Pc_locs <- vect("Derived_geospatial/shp/Pc_locs.gpkg")
 Years <- c("2013", "2014", "2016", "2017", "2019", "2022", "2024")
 
 # Generate files? ---------------------------------------------------------
-# These are large spatial files, and cropping and masking takes a long time, so I have exported 1km buffers around point counts which are much faster to work with. If loading these buffers then set generate == FALSE
+# These are large spatial files, and cropping and masking takes a long time, so I have exported 1km buffers around point counts which are much faster to work with. If loading the buffers then set generate == FALSE, if working with the raw .tif files set generate == TRUE
 generate <- FALSE
 
 if(generate){
@@ -61,7 +68,7 @@ if(generate){
 # WVSC 2010-2024 ----------------------------------------------------------
 # >Cover ------------------------------------------------------------------
 # Buffer of 1000m to serve as an indicator of landscape forest cover
-Locs_1k <- Pc_locs %>% buffer(1000) 
+Locs_1k <- Pc_locs %>% buffer(1000) # 5000m
 # Example buffers for plotting
 Ex_pts <- Pc_locs %>% filter(Id_group_no_dc == "MB-M-LRO1")
 Ex_buff_1k <- Locs_1k %>% filter(Id_group_no_dc == "MB-M-LRO1")
@@ -149,8 +156,9 @@ Height_tbl2 <- Height_tbl %>%
 ## Join 
 # The WSVC data only goes through 2024, so that is the closest we can get for the points collected in 2025 and 2026
 Recent_pts <- Event_covs_lsm %>% 
-  filter(Ano %in% c(2025)) %>% # 2026
-  pull(Id_muestreo)
+  filter(Ano %in% c(2025, 2026)) %>% # 2026
+  pull(Id_muestreo) %>% 
+  unique()
 Event_covs_lsm2 <- Event_covs_lsm %>% 
   mutate(Ano = ifelse(Id_muestreo %in% Recent_pts, 2024, Ano)) %>%
   left_join(Cover_tbl) %>%
@@ -168,6 +176,13 @@ Event_covs_lsm2 %>% ggplot() +
 
 Event_covs_lsm2 %>% ggplot() + 
   geom_histogram(aes(x = Canopy_cover))
+
+# >Check ------------------------------------------------------------------
+Event_covs_lsm2 %>% 
+  Na_rows_cols(
+    id_cols = Id_muestreo, 
+    cols_inc = -c(Registrado_por, Noise, Clima, Cows_50m, forest_typ)
+  )
 
 # Export ------------------------------------------------------------------
 stop()
