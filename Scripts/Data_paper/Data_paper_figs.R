@@ -34,8 +34,7 @@ Pc_locs_dc_sf <- st_read("Derived_geospatial/shp/Pc_locs_dc.gpkg")
 Bird_pcs_all <- read_csv("DataS1/Bird_pcs_all.csv")
 Bird_pcs_analysis <- read_csv("DataS1/Bird_pcs_analysis.csv")
 Taxonomy <- read_csv(file = "DataS1/Taxonomy.csv")
-Fn_traits <- read_csv(file = "DataS1/Functional_traits.csv") %>% 
-  select(-Match_type)
+Fn_traits <- read_csv(file = "DataS1/Functional_traits.csv")
 Site_covs <- read_csv(file = "DataS1/Site_covs.csv")
 Event_covs <- read_csv(file = "DataS1/Event_covs.csv")
 Prec_df <- read_csv(file = "Derived/Excels/Prec_df.csv")
@@ -431,13 +430,13 @@ Plot_prec_samp <- function(regions = "All", dyn_occ = FALSE, facet = TRUE){
   
   Plot_prec2 <- Plot_prec + 
     geom_line(data = Prec_ecor, aes(x = Mes, y = Prec)) +
-    scale_x_continuous(breaks = c(0, 2, 4, 6, 8, 10, 12)) +
+    scale_x_continuous(breaks = c(0, 2, 4, 6, 8, 10, 12, 14)) +
     labs(
       x = "Month", y = "Precipitation (mm)",
       title = "30-year average rainfall by department"
     ) +
     guides(shape = guide_legend(title = "Year")) + 
-    scale_shape_manual(values = c(0, 1, 2, 3, 4, 5, 6)) 
+    scale_shape_manual(values = c(0, 1, 2, 3, 4, 5, 6, 7)) 
   
   if(facet == TRUE){
     Plot_prec2 <- Plot_prec2 + facet_wrap(~Ecoregion)
