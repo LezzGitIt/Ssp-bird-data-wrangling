@@ -314,7 +314,7 @@ Pc_temporal_plot <- ggplot(data = Pc_date_p, aes(x = factor(Ano), y = Mes)) +
         #legend.key.size = unit(x = c(1,.5), units = "cm")  
 
 # Save plot
-ggsave("Data_paper/Figures/02_Pc_month_year_day_ecoregion.png", bg = "white", width = 12)
+ggsave("Data_paper/Figures/Pc_month_year_day_ecoregion.png", bg = "white", width = 12)
 
 # Fig3: Environmental vars histogram --------------------------------------
 # Boxplots for Elevation, temp, & precipitation
@@ -535,7 +535,7 @@ p2 <- Species_summary %>%
   plot_layout(guides = "collect") & 
   theme(legend.position = "top")
 
-ggsave("Data_paper/Figures/Species_counts_localities_wide.png", 
+ggsave("Data_paper/Figures/Species_counts_localities.png",
        bg = "white", width = 15, height = 10)
 
 # Supplementary figs ------------------------------------------------------
@@ -589,7 +589,7 @@ Num_pcs_farm_db %>%
   ) 
 #quants <- quantile(Pc_per_farm$n, probs = c(0, .1, .9, 1))
 
-#ggsave("Data_paper/Figures/Pc_per_farm_db.png", bg = "white")
+ggsave("Data_paper/Figures/Pc_per_farm_db.png", bg = "white")
 
 # Data sets ---------------------------------------------------------------
 # >Metadata tbls -----------------------------------------------------------
