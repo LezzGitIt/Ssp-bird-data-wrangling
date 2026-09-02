@@ -28,6 +28,8 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
+source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
+
 # Load data ---------------------------------------------------------------
 ## Bring in data 
 # NOTE: This is just point counts
@@ -65,8 +67,9 @@ Avilist_all <- read_excel(paste0(path, "AviList-v2025-11Jun-short.xlsx"))
 
 # Taxonomic / transcription changes ---------------------------------------
 # Bring in taxonomic equivalents from manual review of species observed with Nick and data collectors (GAICA and CIPAV)
-Tax_equivalents <- read_csv("Data/Taxonomic_changes.csv") %>% 
+Tax_equivalents <- read_csv("Data/Tax_transcrip_changes.csv") %>% 
   select(starts_with("Species"), Departamentos_afectados)
+Tax_equivalents
 
 # Match bird observations with taxonomic equivalents and create Species_ayerbe column
 Bird_pcs_all_spp2 <- Bird_pcs_all_spp %>%
@@ -240,7 +243,7 @@ Tax_df8 <- Tax_df7 %>%
             by = join_by("latin_name_avilist" == "Scientific_name"))
 
 # Tax_df_final ------------------------------------------------------------
-# Reorder the columns
+# Reorder and rename columns
 Tax_df_final <- Tax_df8 %>% 
   relocate(c(Order, Family), .before = "latin_name_sacc") %>%
   relocate(c(starts_with("concept_id"), starts_with("common_name")), 
@@ -268,11 +271,12 @@ Tax_df_final %>% filter(Species_sacc_18 != Species_ayerbe | is.na(Species_sacc_1
 
 # Export ------------------------------------------------------------------
 stop()
-Tax_df_final %>% write_csv("Derived/Excels/Taxonomy/Taxonomy_all.csv")
+
+Tax_df_final %>% write_csv("Derived/Excels/Taxonomy/Taxonomy.csv")
 Bird_pcs_all_spp2 %>% 
   filter(Species_ayerbe %in% Tax_df_final$Species_ayerbe) %>% 
   relocate(c(Species_ayerbe, Count), .after = Species_original) %>% 
-  select(-c(contains("Departamento"), Species_original)) %>% 
+  select(-c(contains("Departamento"), Species_original)) %>%
   write_csv("Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
 
 # EXTRAS ------------------------------------------------------------------
