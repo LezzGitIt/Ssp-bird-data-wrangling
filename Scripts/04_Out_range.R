@@ -14,14 +14,7 @@
 ## NOTES:: I have made two versions of this script: 01a_Spp_dist_comb & 01b_Spp_dist_sep. This script (01a_Spp_dist_comb) produces combined outputs from all data collectors (e.g., for me to work on, to review with Nick), whereas 01b_Spp_dist_sep produces outputs specific to each unique database (e.g., if giving products to data collector for their review). Previously there were a few places where code had to be changed (found by searching): "IF data collector" (followed by 'merged' or 'separate').
 
 # Libraries & data --------------------------------------------------------
-## Load data
-Bird_pcs_all <-  read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
-Bird_pcs_in_range <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_in_range.csv")
-Elev_ranges <- read_csv(file = "Derived/Excels/Elev_ranges_all_sources.csv")
-Site_covs <- read_csv(file = "Derived/Excels/Site_covs.csv")
-Event_covs <- read_csv(file = "Derived/Excels/Event_covs.csv")
-
-# Bring in libraries
+# Load libraries
 library(tidyverse)
 library(cowplot)
 library(raster)
@@ -39,21 +32,29 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
+## Load data
+Bird_pcs_all <-  read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
+Bird_pcs_dist <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_dist.csv")
+Elev_ranges <- read_csv(file = "Derived/Excels/Elev_ranges_all_sources.csv")
+Site_covs <- read_csv(file = "Derived/Excels/Site_covs.csv")
+Event_covs_pcs <- read_csv(file = "Derived/Excels/Event_covs_pcs.csv")
+
 # Select Bird_df ----------------------------------------------------------
 # Data frame
-#Bird_df <- Bird_pcs_all
-Bird_df <- Bird_pcs_in_range
+Bird_df <- Bird_pcs_all
+#Bird_df <- Bird_pcs_dist
+nrow(Bird_pcs_dist)
 
 # File name for pdf if printing
-file_name <- "Out_range_after_adjustment"
-#file_name <- "Out_range_before_adjustment"
+#file_name <- "Out_range_after_adjustment"
+file_name <- "Out_range_before_adjustment"
 
 # Elev out of range ------------------------------------------------------------
 # Look for possible species misidentifications or other errors in the data
 spp_obs_sf <- Bird_df %>%
   mutate(Species_ayerbe = ifelse(Species_ayerbe == "Machaeropterus striolatus", "Machaeropterus regulus", Species_ayerbe)) %>% 
   left_join(Site_covs) %>% 
-  left_join(Event_covs) %>%
+  left_join(Event_covs_pcs) %>%
   st_as_sf(coords = c("Long", "Lat"), crs = 4326, remove = F) %>%
   select(-c(Habitat, Habitat_sub, Tot_prec))
 
@@ -332,6 +333,9 @@ dist_plots[sapply(dist_plots, is.null)] <- NULL
 #  dev.off()
 #}
 
+# PDF with maps -----------------------------------------------------------
+## Print PDF file with 9 plots per page
+
 # IF data collectors merged.. Run this
 # Select a species with all 5 data collectors and create a fake plot w/ a legend to extract.
 p_legend <- ggplot(data = aspp_obs_sf$`Amazona ochrocephala`) +
@@ -340,14 +344,12 @@ p_legend <- ggplot(data = aspp_obs_sf$`Amazona ochrocephala`) +
   scale_size_continuous(limits = c(150, 1800), range = c(2, 10))
 # Extract legend and insert it into the last slot of the list
 legend <- ggpubr::get_legend(p_legend)
+# Insert legend into next open slot in list
 dist_plots[[length(dist_plots) + 1]] <- legend
 # Test
 #dist_plots[[1]]
 
-# PDF with maps -----------------------------------------------------------
-#Print PDF file with 9 plots per page
-
-if(TRUE){
+if(FALSE){
   pdf(file = paste0("Derived/Fuera_rango/Maps/", file_name, format(Sys.Date(), "%m.%d.%y"), ".pdf"), width = 8.5, height = 11, bg = "white")
   print(marrangeGrob(grobs = dist_plots, ncol = 3, nrow = 3, layout_matrix = matrix(1:9, 3, 3, TRUE)))
   dev.off() 
@@ -355,14 +357,13 @@ if(TRUE){
 stop() 
 
 # Remove / change species -------------------------------------------------
-## Using the PDF maps generated in this script, the data collectors (GAICA), Nick and I assessed how likely each species observation was outside of range. We based this on the distinctiveness of the species, the presence of similar species (especially congeners), and the presence or absence of major barriers (e.g., mountains).
+## Using the PDF maps generated in this script, the data collectors (GAICA), Nick and I assessed how likely each species observation was outside of range. We based this on the distinctiveness of the species, the presence of similar species (especially congeners), and the presence or absence of major geographical barriers (e.g., mountains).
 
 # Manually generated list of species to remove / change
 Remove_change <- read_csv("Derived/Excels/Spp_remove_change.csv") %>% 
   select(-c(Editor, Observaciones)) %>% 
   # Create 1 row per department
   separate_rows(Departamentos_afectados, sep = ",\\s*") 
-Remove_change %>% filter(Species_ayerbe == "Henicorhina leucophrys")
 
 # Add department information for each bird observation
 Bird_pcs_all2 <- Bird_pcs_all %>%
@@ -440,9 +441,10 @@ Bird_pcs_all4 %>% filter(Species_ayerbe == "Myiarchus apicalis") %>%
   tabyl(Departamento) # In correct departments
 
 # Export ------------------------------------------------------------------
-Bird_pcs_export <- Bird_pcs_all4 %>% 
+Bird_pcs_export <- Bird_pcs_all4 %>%
   select(-c(Species_cambiado, Recomendacion, contains("Departamento")))
-#Bird_pcs_export %>% write_csv("Derived/Excels/Bird_pcs/Bird_pcs_in_range.csv")
+# Export bird point counts taking into account their distributions
+Bird_pcs_export %>% write_csv("Derived/Excels/Bird_pcs/Bird_pcs_dist.csv")
 
 # EXTRAS ------------------------------------------------------------------
 # I left this code as these were previously important steps in the workflow. The three components are 1) examining Robert & Yuri's recommendations for the species outside of known distribution, and 2) confirming the observations / distributions for the three species that had no matches with Ayerbe (2018) taxonomy
@@ -524,16 +526,19 @@ spp_path <- map(missing_spp, \(miss_spp){
 # OLD
 ## Visually check a few species whose ranges couldn't be found in Ayerbe 2018 using eBird range maps
 View(ebirdst_runs)
+
 # Bring in eBird range maps
-bichaw_path <- ebirdst_download(species = "Accipiter bicolor", pattern = "range_raw_lr") # Smallest files, can get smoothed if needed for aesthetics
-bichaw_range <- load_ranges(bichaw_path, resolution = "lr", smoothed = F)
-whtdov_path <- ebirdst_download(species = "Leptotila verreauxi", pattern = "range_raw_lr") # Smallest files, can get smoothed if needed for aesthetics
-whtdov_range <- load_ranges(whtdov_path, resolution = "lr", smoothed = F)
+bichaw_path <- ebirdst_download_status(species = "Astur bicolor", download_ranges = TRUE, pattern = "range_raw_9km") # Smallest files, can get smoothed if needed for aesthetics
+bichaw_range <- load_ranges("Astur bicolor", resolution = "9km", smoothed = F)
+whtdov_path <- ebirdst_download_status(species = "Leptotila verreauxi", download_ranges = TRUE, pattern = "range_raw_9km") 
+whtdov_range <- load_ranges("whtdov", resolution = "9km", smoothed = F)
+
 
 # Plot these and confirm
 whtdov_obs <- spp_obs_sf %>% filter(Og_name == "Leptotila verreauxi")
 # If this is TRUE then all observations are within the range
 all(1:nrow(whtdov_obs) %in% st_contains(whtdov_range, whtdov_obs)[[1]])
+# Plot
 ggplot(data = whtdov_range) +
   geom_sf() +
   geom_sf(data = neCol, fill = NA, col = "green", alpha = .5) +
