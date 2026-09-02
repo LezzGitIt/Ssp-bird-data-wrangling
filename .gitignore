@@ -33,6 +33,8 @@ Data_paper/Scripts/*
 Data_paper/Scripts/qmd/*
 !Data_paper/Scripts/qmd/Data_paper_ecology.qmd
 !Data_paper/Scripts/Data_paper_ecology_figs.R
+# Static figures the manuscript embeds that no script here regenerates
+!Data_paper/Figures_static
 
 # Working docs (session notes / migration plan, not the science)
 Project_notes.md
