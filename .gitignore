@@ -37,8 +37,12 @@ Docs/
 # DataS1/ is the deposit and IS tracked, but *.xlsx is ignored globally above:
 !DataS1/Column_definitions_final.xlsx
 
+# Elsevier Quarto format — vendored third-party machinery, restored on any machine with
+# `quarto add quarto-journals/elsevier` (see README); re-bundled into the deposit at Zenodo time
+/_extensions/
+
 # Quarto / LaTeX render byproducts, scoped to Scripts/Data_paper/qmd/ so they can never
-# shadow real sources (Suppfiles/title.tex, _extensions/**)
+# shadow the real tracked Suppfiles/title.tex
 Scripts/Data_paper/qmd/*_files/
 Scripts/Data_paper/qmd/*_cache/
 Scripts/Data_paper/qmd/*.tex

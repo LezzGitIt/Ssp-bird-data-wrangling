@@ -57,8 +57,8 @@ Requires a populated `Derived/` (run the pipeline first), the Elsevier Quarto
 extension, and `lualatex`.
 
 ```r
-# 1. Install the journal format (once)
-#    quarto add quarto-journals/elsevier      # already vendored in _extensions/
+# 1. Install the journal format (once per machine; it lands in _extensions/, which is gitignored)
+#    quarto add quarto-journals/elsevier
 
 # 2. Build the figures + metadata the manuscript embeds
 source("Scripts/Data_paper/Figs.R")
@@ -77,7 +77,7 @@ Scripts/        01–08 pipeline; Data_paper/ (figure + example scripts); qmd/ (
                 _ch1_pending/ (staged for Ch1-ssp-birds)
 DataS1/         curated deposit (tracked)
 Suppfiles/      bibliography, author/affiliation metadata, title-page partial
-_extensions/    Elsevier Quarto format
+_extensions/    Elsevier Quarto format (gitignored; `quarto add quarto-journals/elsevier`)
 Figures/Static/ manuscript figures no script regenerates (sampling map, example landscape, phylogeny)
 Figures/        script-generated figures (gitignored, rebuilt by the Data_paper/ scripts)
 Data/ Derived/ Rdata/   raw + recreatable (gitignored); geospatial outputs in Derived/Geospatial/
