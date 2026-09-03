@@ -62,7 +62,7 @@ extension, and `lualatex`.
 #    quarto add quarto-journals/elsevier      # already vendored in _extensions/
 
 # 2. Build the figures + metadata the manuscript embeds
-source("Scripts/Data_paper/Data_paper_figs.R")
+source("Scripts/Data_paper/Figs.R")
 source("Scripts/Data_paper/Phylogeny_fig.R")
 
 # 3. Render
