@@ -27,8 +27,8 @@ conflicts_prefer(dplyr::filter)
 load("Rdata/NE_layers_Colombia.Rdata")
 #load("Rdata/the_basics_07.18.25.Rdata")
 
-Pc_locs_sf <- st_read("Derived_geospatial/shp/Pc_locs.gpkg")
-Pc_locs_dc_sf <- st_read("Derived_geospatial/shp/Pc_locs_dc.gpkg")
+Pc_locs_sf <- st_read("Derived/geospatial/shp/Pc_locs.gpkg")
+Pc_locs_dc_sf <- st_read("Derived/geospatial/shp/Pc_locs_dc.gpkg")
 
 # Load in raw abundance data
 Bird_pcs_all <- read_csv("DataS1/Bird_pcs_all.csv")

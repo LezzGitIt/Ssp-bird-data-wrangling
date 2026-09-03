@@ -52,7 +52,7 @@ library(kableExtra)
 #| label: Load-data-and-fns
 
 # Load in data 
-Pc_locs_sf <- st_read("Derived_geospatial/shp/Pc_locs.gpkg", quiet = TRUE)
+Pc_locs_sf <- st_read("Derived/geospatial/shp/Pc_locs.gpkg", quiet = TRUE)
 
 path <- "DataS1"
 File_names <- list.files(path)

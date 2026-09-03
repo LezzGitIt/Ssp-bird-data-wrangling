@@ -766,8 +766,8 @@ Pc_locs_sf <- st_as_sf(Pc_locs,
 
 if(FALSE){
   # Export shapefiles
-  st_write(Pc_locs_dc_sf, "Derived_geospatial/shp/Pc_locs_dc.gpkg", layer = "Pc_locs_dc")
-  st_write(Pc_locs_sf, "Derived_geospatial/shp/Pc_locs.gpkg", layer = "Pc_locs")
+  st_write(Pc_locs_dc_sf, "Derived/geospatial/shp/Pc_locs_dc.gpkg", layer = "Pc_locs_dc")
+  st_write(Pc_locs_sf, "Derived/geospatial/shp/Pc_locs.gpkg", layer = "Pc_locs")
   
   # Export reduced set of columns to kml
   Pc_locs_sf %>%
@@ -779,7 +779,7 @@ if(FALSE){
       # Farm = Nombre_finca_mixed
     ) %>%
     st_write(
-      driver='kml', dsn="Derived_geospatial/kml/Pc_locs.kml", layer = "Pc_locs"
+      driver='kml', dsn="Derived/geospatial/kml/Pc_locs.kml", layer = "Pc_locs"
     )
 }
 
@@ -1292,11 +1292,11 @@ if(FALSE){
                      showNA = FALSE, row.names = FALSE)
 }
 
-st_write(Pc_locs_sf, dsn = "Derived_geospatial/shp", layer = "Pc_locs.shp")
+st_write(Pc_locs_sf, dsn = "Derived/geospatial/shp", layer = "Pc_locs.shp")
 
 # Working Audrey----------------------------------------------------------
 # Export files for Audrey to check GAICA Dist
-Pc_locs_dc <- vect("Derived_geospatial/shp/Pc_locs_dc.gpkg") 
+Pc_locs_dc <- vect("Derived/geospatial/shp/Pc_locs_dc.gpkg") 
 Site_covs <- read_csv(file = "Derived/Excels/Site_covs.csv")
 Gaica_dist_hab <- Pc_locs_dc %>% 
   filter(Uniq_db == "Gaica distancia") %>% 
@@ -1307,14 +1307,14 @@ Gaica_dist_hab <- Pc_locs_dc %>%
 # Export kml of points 
 Gaica_dist_hab %>%
   st_write(
-    driver='kml', dsn = "Derived_geospatial/kml/Gaica_distancia.kml", 
+    driver='kml', dsn = "Derived/geospatial/kml/Gaica_distancia.kml", 
     layer = "Gaica_distancia"
   )
 # Export kml of buffers
 Gaica_dist_hab %>%
   st_buffer(50) %>%
   st_write(
-    driver='kml', dsn = "Derived_geospatial/kml/Gaica_distancia_buff.kml", 
+    driver='kml', dsn = "Derived/geospatial/kml/Gaica_distancia_buff.kml", 
     layer = "Gaica_distancia_buff"
   )
 
