@@ -52,7 +52,7 @@ library(kableExtra)
 #| label: Load-data-and-fns
 
 # Load in data 
-Pc_locs_sf <- st_read("Derived/geospatial/shp/Pc_locs.gpkg", quiet = TRUE)
+Pc_locs_sf <- st_read("Derived/Geospatial/shp/Pc_locs.gpkg", quiet = TRUE)
 
 path <- "DataS1"
 File_names <- list.files(path)
@@ -108,11 +108,11 @@ Here we present the 'Bird diversity in working landscapes of Colombia' dataset, 
 
 ![The locations of 504 point count sites in 73 farms across five ecoregions in Colombia. Colombia is extremely topographically diverse, with the Andes mountain range trifurcating into three distinct 'cordilleras', in addition to smaller 'sierras' (e.g., Sierra Nevada de Santa Marta) that are critical for understanding bird distributions in Colombia. In between the cordilleras lie two major river valleys, the Cauca and Magdalena (labeled in red). Major rivers also run off the Eastern slope of the Andes into the plains and eventually into the Amazon. The shape of the symbol corresponds to the data collector, and the size corresponds to the number of point counts within a quarter degree squared grid cell. Note that a small jitter was applied to all points, and a larger jitter was applied to points in the Piedemonte region to improve visibility. Elevation was log-transformed to emphasize altitudinal gradients at lower elevations.\
 \
-COLLABORATORS: Does anyone have a shapefile of the rio Cesar? Also, is it correct that the unlabed river in the northeast is the Catatumbo River?](../../Figures_static/Map_sampling/TNC_Field_Map_Final.png){#fig-sampling-map}
+COLLABORATORS: Does anyone have a shapefile of the rio Cesar? Also, is it correct that the unlabed river in the northeast is the Catatumbo River?](../../Figures/Static/Map_sampling/TNC_Field_Map_Final.png){#fig-sampling-map}
 
 The `r Tot_pc_prty` point count surveys were sampled 1–15 times total, with `r round(Per_3_visits, 0)`% of locations visited $\geq$ 3 times within a closed sampling period, enabling estimation of detection probabilities through hierarchical models. Land-use landcover types surveyed include mature forest, forest fragments, riparian forest, crops, intensive pasture, several types of silvopasture, and heterogeneous mosaics (i.e., no single dominant landcover type). This dataset permits analyses of bird diversity patterns and community composition across land-use gradients, especially the effects of silvopastoral practices on biodiversity in tropical working landscapes. We also provide complementary datasets of taxonomic equivalents (BirdLife, BirdTree, and eBird / Clements), functional traits, site covariates, and survey covariates (@tbl-file-info), facilitating a variety of research questions and analytical approaches. For example, one could examine the interacting effects of local management practices and climate, while controlling for phylogenetic non-independence, to understand silvopasture's influence on functional diversity and ecosystem service provisioning. Importantly, the longitudinal nature of these data allow for analyses of population trends or colonization/extinction dynamics, which is critical for conservation practitioners [@leesRoadmapIdentifyingFilling2020].
 
-![Phylogenetic relationships of 568 species observed in our data set. There were 25 orders, of which 19 are shown using grayscale representative species (downloaded from phylopic). The number of species in each order is listed in parentheses.](../../Figures_static/Phylogeny_equal_sizes.png){#fig-phylogeny}
+![Phylogenetic relationships of 568 species observed in our data set. There were 25 orders, of which 19 are shown using grayscale representative species (downloaded from phylopic). The number of species in each order is listed in parentheses.](../../Figures/Static/Phylogeny_equal_sizes.png){#fig-phylogeny}
 
 ```{r}
 #| label: tbl-file-info
@@ -333,7 +333,7 @@ Hab_sub_tbl <- Create_hab_tbl(col = Habitat_sub)
 
 - Crops (n = `r Hab_tbl$Cultivos`): Other agricultural systems unrelated to rearing cattle.
 
-![Example landscape on a cattle ranching farm surveyed in the Piedemonte Ecoregion. Red circles represent the location of 50-m radius point counts. Four common habitat types surveyed in the project are labeled.](../../Figures_static/Example_landscape/Example_landscape.png)
+![Example landscape on a cattle ranching farm surveyed in the Piedemonte Ecoregion. Red circles represent the location of 50-m radius point counts. Four common habitat types surveyed in the project are labeled.](../../Figures/Static/Example_landscape/Example_landscape.png)
 
 - Geology, landform: Soils, slope/elevation/aspect, terrain/physiography, geology/lithology
 

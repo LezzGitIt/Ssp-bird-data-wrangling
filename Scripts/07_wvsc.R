@@ -39,7 +39,7 @@ source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook
 
 ## Load data
 Event_covs_lsm <- read_csv("Derived/Excels/Event_covs_lsm.csv")
-Pc_locs <- vect("Derived/geospatial/shp/Pc_locs.gpkg")
+Pc_locs <- vect("Derived/Geospatial/shp/Pc_locs.gpkg")
 
 # Load in Woody vegetation structure and change (WVSC) file 
 Years <- c("2013", "2014", "2016", "2017", "2019", "2022", "2024")
@@ -84,7 +84,7 @@ if(generate){
 
 # Load in data that is already cropped and masked
 if(!generate){
-  path <- "Derived/geospatial/tif/wsvc"
+  path <- "Derived/Geospatial/tif/wsvc"
   Cover_mask_l <- map(Years, \(year){
     rast(paste0(path, "/Canopy_cover_1k/Cover_buff_", year, ".tif"))
   })

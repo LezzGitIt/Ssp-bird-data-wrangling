@@ -23,11 +23,16 @@
 Data/
 Rdata/
 Derived/
-Figures/
 Simulating_data_Claire/
 
-# Data-paper supporting material kept locally (not part of the DataS1 deposit)
+# Figures/ is regenerated; only Figures/Static/ (the figures no script rebuilds
+# from a bare clone) is tracked
+Figures/*
+!Figures/Static
+
+# Data-paper supporting material kept local (not part of the DataS1 deposit)
 Suppfiles/style-guide/
+Docs/
 
 # DataS1/ is the deposit and IS tracked, but *.xlsx is ignored globally above:
 !DataS1/Column_definitions_final.xlsx
@@ -79,7 +84,6 @@ vignettes/*.pdf
 .Renviron
 
 # pkgdown site
-docs/
 
 # translation temp files
 po/*~

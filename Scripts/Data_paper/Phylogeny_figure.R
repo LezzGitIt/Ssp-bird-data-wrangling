@@ -1,6 +1,6 @@
 ## PhD birds in silvopastoral landscapes ##
 ## Data paper -- phylogeny figure + per-order taxonomy summary table
-## Prunes the BirdTree phylogeny to the observed species and produces the two data-paper deliverables: Figures_static/Phylogeny_equal_sizes.png and Derived/Excels/Taxonomy/Tax_summary.csv. The phylogenetic-diversity metrics that used to live here moved to Scripts/_ch1_pending/Phylogenetic_diversity.R (bound for Ch1-ssp-birds).
+## Prunes the BirdTree phylogeny to the observed species and produces the two data-paper deliverables: Figures/Static/Phylogeny_equal_sizes.png and Derived/Excels/Taxonomy/Tax_summary.csv. The phylogenetic-diversity metrics that used to live here moved to Scripts/_ch1_pending/Phylogenetic_diversity.R (bound for Ch1-ssp-birds).
 
 ## Contents:
 # 1) Taxonomy: use Taxonomy.csv to switch to BirdTree names
@@ -9,7 +9,7 @@
 # 4) Summary table: families / genera / species per order -> Tax_summary.csv
 # 5) MRCA: most recent common ancestor per order (for plotting)
 # 6) Phylopic: download / curate one silhouette per order
-# 7) Visualize: circular phylogeny -> Figures_static/Phylogeny_equal_sizes.png
+# 7) Visualize: circular phylogeny -> Figures/Static/Phylogeny_equal_sizes.png
 
 ## TO DO: incorporate all 1000 BirdTree trees (maxCladeCred, phangorn) rather than the single pre-pulled tree.
 
@@ -232,7 +232,7 @@ Phylo_plot <- ggtree(phylo_obs, layout='circular', aes(color = Family)) %<+%
                 barsize = 0) + # auto-rotates text radially
   theme(plot.margin = margin(30, 30, 20, -40)) # Control
 
-ggsave("Figures_static/Phylogeny_equal_sizes.png", plot = Phylo_plot,
+ggsave("Figures/Static/Phylogeny_equal_sizes.png", plot = Phylo_plot,
        height = 8, width = 7.35)
 print(Phylo_plot)
 
