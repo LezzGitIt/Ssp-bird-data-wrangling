@@ -66,7 +66,7 @@ source("Scripts/Data_paper/Data_paper_figs.R")
 #    quarto render Scripts/qmd/Data_paper_ecology.qmd
 ```
 
-Output lands flat in `Rendered/` (`Data_paper_ecology.pdf` and `.docx`).
+Output (`Data_paper_ecology.pdf` and `.docx`) lands next to the qmd in `Scripts/qmd/`.
 
 ## Repository layout
 

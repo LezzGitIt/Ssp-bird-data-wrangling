@@ -27,11 +27,6 @@ Derived_geospatial/
 Figures/
 Simulating_data_Claire/
 
-# Rendered manuscript output — ignore everything except the render hooks that live here
-Rendered/*
-!Rendered/clean_stale_render_output.R
-!Rendered/flatten_rendered_pdf.R
-
 # Data-paper supporting material kept locally (not part of the DataS1 deposit)
 Suppfiles/style-guide/
 
@@ -52,6 +47,7 @@ Scripts/qmd/*.out
 Scripts/qmd/*.spl
 Scripts/qmd/*.rmarkdown
 Scripts/qmd/*.pdf
+Scripts/qmd/*.docx
 Scripts/qmd/*.cls
 Scripts/qmd/*.bst
 
