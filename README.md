@@ -36,7 +36,7 @@ is the working copy, kept in sync with the pipeline.
 
 ## The pipeline (`Scripts/`)
 
-`Scripts/01_…` through `Scripts/09_…` run in sequence; most end with a deliberate
+`Scripts/01_…` through `Scripts/08_…` run in sequence; most end with a deliberate
 `stop()` before their export section. See `Project_notes.md` for the full run
 order, inputs, and outputs.
 
@@ -79,10 +79,10 @@ Scripts/        01–08 pipeline; Data_paper/ (figure + example scripts); qmd/ (
 DataS1/         curated deposit (tracked)
 Suppfiles/      bibliography, author/affiliation metadata, title-page partial
 _extensions/    Elsevier Quarto format
-Figures_static/ manuscript figures no script regenerates (sampling map, example landscape, phylogeny)
+Figures/Static/ manuscript figures no script regenerates (sampling map, example landscape, phylogeny)
 Figures/        script-generated figures (gitignored, rebuilt by the Data_paper/ scripts)
-Data/ Derived/ Rdata/   raw + recreatable (gitignored); geospatial outputs in Derived/geospatial/
-docs/           methodology notes, feedback, planning docs (gitignored)
+Data/ Derived/ Rdata/   raw + recreatable (gitignored); geospatial outputs in Derived/Geospatial/
+Docs/           methodology notes, feedback, planning docs (gitignored)
 ```
 
 ## Contact
