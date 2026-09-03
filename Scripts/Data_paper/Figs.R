@@ -462,7 +462,7 @@ ggsave("Figures/Rainfall/Prec_sampling_faceted.png", bg = "white")
 Species_summary <- Bird_pcs_all %>% 
   left_join(Site_covs) %>%
   summarize(Count = sum(as.numeric(Count), na.rm = TRUE), 
-            Localities = n_distinct(Id_muestreo),
+            Localities = n_distinct(Id_muestreo_no_dc),
             .by = c(Species_ayerbe, Ecoregion))
 
 # Custom function to generate the total number of counts or point count locations irrespective of Ecoregion 
