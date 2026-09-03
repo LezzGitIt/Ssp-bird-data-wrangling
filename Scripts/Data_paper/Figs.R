@@ -276,7 +276,7 @@ Pc_date9 <- Es_covs %>%
     TRUE ~ "Other"
   )) %>%
   # One specific case for CIPAV
-  mutate(Grp_spat = ifelse(Uniq_db == "Cipav mbd" & Ano == 17 & Ecoregion == "Boyaca Santander" & Mes == 4, "CIPAV1", Grp_spat))
+  mutate(Grp_spat = ifelse(Uniq_db == "Cipav mbd" & Ano == 17 & Ecoregion == "Cordillera oriental" & Mes == 4, "CIPAV1", Grp_spat))
 
 # Reduce # of rows to increase readability of plot
 Pc_date_p <- Pc_date9 %>% distinct( #PC_date_plot
@@ -320,7 +320,6 @@ p <- list()
 var_names <- c("Elev", "Avg_temp", "Tot_prec")
 ylab <- c("meters", "Celsius", "millimeters")
 title <- c("Elevation", "Temperature", "Precipitation")
-ecoreg_labs <- c("Bajo \nMagdalena", "Boyaca \nSantander", "Cafetera", "Piedemonte", "Rio Cesar")
 
 for (i in c(1:3)) {
   print(i)

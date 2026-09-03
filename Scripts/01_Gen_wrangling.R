@@ -188,7 +188,7 @@ df_birds_red <- map(df_birds_red, \(df){
     Ecoregion = case_when(
       Departamento %in% c("Atlantico", "Bolivar") ~ "Bajo Magdalena",
       Departamento %in% c("Cesar", "Guajira") ~ "Rio Cesar",
-      Departamento %in% c("Boyaca", "Santander") ~ "Boyaca Santander",
+      Departamento %in% c("Boyaca", "Santander") ~ "Cordillera Oriental",
       Departamento %in% c("Caldas", "Risaralda", "Tolima", "Quindio", "Valle del Cauca") ~ "Cafetera",
       Departamento == "Meta" ~ "Piedemonte",
       .default = Departamento

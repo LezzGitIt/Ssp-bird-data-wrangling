@@ -1,6 +1,6 @@
 DataS1 export manifest
-exported_at: 2026-09-02T16:40:00-0700
-pipeline_commit: 1dbe7bf
+exported_at: 2026-09-02T20:40:14-0700
+pipeline_commit: 9b1002f
 
 file,source,rows
 Bird_pcs_all.csv,Derived/Excels/Bird_pcs/Bird_pcs_all.csv,20959
