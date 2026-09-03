@@ -6,8 +6,8 @@ project:
   type: default
   execute-dir: project
   output-dir: Rendered/
-  pre-render: Scripts/clean_stale_render_output.R
-  post-render: Scripts/flatten_rendered_pdf.R
+  pre-render: Rendered/clean_stale_render_output.R
+  post-render: Rendered/flatten_rendered_pdf.R
 format:
   pdf:
     pdf-engine: lualatex

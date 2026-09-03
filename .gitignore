@@ -25,8 +25,12 @@ Rdata/
 Derived/
 Derived_geospatial/
 Figures/
-Rendered/
 Simulating_data_Claire/
+
+# Rendered manuscript output — ignore everything except the render hooks that live here
+Rendered/*
+!Rendered/clean_stale_render_output.R
+!Rendered/flatten_rendered_pdf.R
 
 # Data-paper supporting material kept locally (not part of the DataS1 deposit)
 Suppfiles/style-guide/
