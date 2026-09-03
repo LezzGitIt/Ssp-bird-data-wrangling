@@ -12,7 +12,7 @@ library(naniar)
 
 # Bring in data -----------------------------------------------------------
 # Read in the data and store in a named list
-path <- "Data_paper/DataS1"
+path <- "DataS1"
 File_names <- list.files(path)
 
 Data <- map(File_names, \(file){
@@ -23,9 +23,9 @@ names(Data) <- str_remove(File_names, ".csv")
 # Explore -----------------------------------------------------------------
 # The datasets were split such that information is minimally repeated between datasets. This helps understand the structure of the datasets, such that the number of rows represent something meaningful. E.g.
 map_dbl(Data, nrow)
-# There are 19,540 bird observations before filtering, 15,794 bird observations after removing flyovers or species observed outside of the point count radius (see 'Data_filtering_example.R' script), 2,691 point count surveys, 587 species, and 496 unique survey locations.
+# There are 20,959 bird observations before filtering, 17,193 bird observations after removing flyovers or species observed outside of the point count radius (see 'Scripts/08_Analysis_wrangling.R'), 2,996 point count surveys, 587 species, and 504 unique survey locations.
 
-# The taxonomy dataframe doesn't have as clear of an interpretation because of taxonomic lumps and splits. However, if you take the unique species names according to Ayerbe's taxonomy, you see again that there are 617 unique species observed. 
+# The taxonomy dataframe doesn't have as clear of an interpretation because of taxonomic lumps and splits. However, if you take the unique species names according to Ayerbe's taxonomy, you see again that there are 587 unique species observed.
 nrow(distinct(Data$Taxonomy, Species_ayerbe))
 
 # Examine structure of each dataframe

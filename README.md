@@ -26,12 +26,12 @@ phylogenetic diversity).
 | `Functional_traits.csv` | per-species trait table (mainly AVONET) | `Species_ayerbe` |
 | `Column_definitions_final.xlsx` | field definitions for each table | |
 
-`Scripts/Data_paper/Data_filtering_example.R` and `Data_joining_example.R` show how
-the analysis subset is derived and how the tables join — starting points, to be
-adapted to your own analysis.
+`Scripts/Data_paper/Data_joining_example.R` shows how the `DataS1/` tables join —
+a starting point, to be adapted to your own analysis. `Scripts/08_Analysis_wrangling.R`
+documents how `Bird_pcs_analysis.csv` was derived from the full observation set.
 
-The versioned deposit of record (with a DOI) is on **Dryad/Zenodo**; `DataS1/` here
-is the working copy, kept in sync with the pipeline.
+On publication, the versioned deposit of record (with a DOI) will be archived on
+**Dryad/Zenodo**; `DataS1/` here is the working copy, kept in sync with the pipeline.
 
 ## The pipeline (`Scripts/`)
 
