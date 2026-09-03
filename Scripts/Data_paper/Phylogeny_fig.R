@@ -53,6 +53,7 @@ Spp_join_bt2 <- Spp_join_bt %>%
 
 # NOTE:: Species with Species_bt repeated have multiple names for species_ayerbe, which is OK
 Spp_join_bt2 %>% count(Species_bt, sort = T)
+Spp_join_bt2 %>% filter(Species_bt == "Momotus momota")
 
 # Phylogenies we downloaded use BirdTree taxonomy and have "_" separating genus & species. Create vector of the species we observed in BirdTree taxonomy
 Spp_obs_bt <- Spp_join_bt2 %>%
@@ -67,6 +68,14 @@ Spp_obs_bt <- Spp_join_bt2 %>%
 
 # Instead of reading in 1000 trees (slow) & pruning, load in single tree that is already pruned
 phylo_obs <- read.tree(file = "Derived/Single_tree.tre")
+
+### Guard: every BirdTree name we mapped an observed species to must be a tip in the tree
+## A name in Spp_obs_bt but not in the tree is a mismatch to fix (bad crosswalk / not in this BirdTree set), not a species to silently lose
+Bt_names_missing_from_tree <- setdiff(Spp_obs_bt, phylo_obs$tip.label)
+if (length(Bt_names_missing_from_tree) > 0) {
+  stop("BirdTree names mapped from observed species but absent from the phylogeny: ",
+       paste(Bt_names_missing_from_tree, collapse = ", "))
+}
 
 # Prune tree --------------------------------------------------------------
 # Would want to factor in uncertainty of trees in analysis, so going to maintain 10 trees in a list as would have in a full analysis
