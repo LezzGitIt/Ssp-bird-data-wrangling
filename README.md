@@ -49,7 +49,7 @@ order, inputs, and outputs.
 | `05_Extract_lcs.R` → `06_LSM.R` → `07_wvsc.R` | digitized land cover, landscape metrics, woody-vegetation structure |
 | `08_Analysis_wrangling.R` | `Bird_pcs_analysis.csv` |
 
-`Scripts/Data_paper/Phylogeny_figure.R` prunes the BirdTree phylogeny and builds
+`Scripts/Data_paper/Phylogeny_fig.R` prunes the BirdTree phylogeny and builds
 the `@fig-phylogeny` plot + `Tax_summary.csv`.
 
 ## Reproducing the manuscript
@@ -63,7 +63,7 @@ extension, and `lualatex`.
 
 # 2. Build the figures + metadata the manuscript embeds
 source("Scripts/Data_paper/Data_paper_figs.R")
-source("Scripts/Data_paper/Phylogeny_figure.R")
+source("Scripts/Data_paper/Phylogeny_fig.R")
 
 # 3. Render
 #    quarto render Scripts/qmd/Data_paper_ecology.qmd

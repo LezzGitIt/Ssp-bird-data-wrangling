@@ -1,7 +1,7 @@
 ## PhD birds in silvopastoral landscapes ##
 ## Phylogenetic diversity (PD) metrics
 ## Split out of the old Scripts/09_Phylogeny.R; bound for Ch1-ssp-birds (chapter analysis, not part of the data paper).
-## Reads the pruned tree written by Scripts/Data_paper/Phylogeny_figure.R (Derived/Single_tree.tre) -- vendor a copy of that tree into Ch1 when this moves.
+## Reads the pruned tree written by Scripts/Data_paper/Phylogeny_fig.R (Derived/Single_tree.tre) -- vendor a copy of that tree into Ch1 when this moves.
 
 ## TO DO: document the purpose of the cophenetic.phylo step; incorporate all 1000 BirdTree trees (maxCladeCred).
 
