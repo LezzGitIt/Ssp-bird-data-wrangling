@@ -271,12 +271,20 @@ area_km2_ecor <- calc_km2(Pc_locs_sf, group = Ecoregion) # By ecoregion
 #| label: tbl-elev
 #| tbl-cap: Minimum and maximum elevations (m), the elevational range (m), and the area (km²) of bird sampling locations in each ecoregion.
 
-Data$Site_covs %>% 
+Data$Site_covs %>%
   summarize(Min = min(Elev, na.rm = TRUE),
-            Max = max(Elev, na.rm = TRUE), 
+            Max = max(Elev, na.rm = TRUE),
             Range = Max - Min,
-            .by = Ecoregion) %>% 
+            .by = Ecoregion) %>%
   left_join(area_km2_ecor) %>%
+  # Spanish primary name + English descriptor, matching the ecoregion list in the site description
+  mutate(Ecoregion = case_match(Ecoregion,
+    "Cafetera"            ~ "Coffee region (Central Andes)",
+    "Cordillera oriental" ~ "Cordillera Oriental (Eastern Andes)",
+    "Piedemonte"          ~ "Piedemonte (Orinoco Basin piedmont)",
+    "Bajo magdalena"      ~ "Bajo Magdalena (lower basin of the Magdalena River)",
+    "Rio cesar"           ~ "Río Cesar (Cesar river valley)"
+  )) %>%
   arrange(Range) %>%
   kable("latex", booktabs = TRUE, longtable = TRUE, escape = FALSE, align = "c") %>%
   kable_styling(latex_options = c("striped", "hold_position"),
