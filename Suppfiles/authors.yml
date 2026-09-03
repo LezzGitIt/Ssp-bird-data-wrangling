@@ -80,9 +80,9 @@ author:
     #affiliations:
      # - ref: humboldt
      
-  #- name: Maria Jimena Esquivel
-   # affiliations:
-    #  - ref: humboldt 
+  - name: Maria Jimena Esquivel
+    affiliations:
+      - ref: humboldt 
       
   - name: Andrea Morales-Rozo
     affiliations:

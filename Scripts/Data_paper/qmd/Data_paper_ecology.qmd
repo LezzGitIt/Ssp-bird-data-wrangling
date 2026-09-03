@@ -23,7 +23,7 @@ format:
        \setlength{\LTleft}{\fill}
        \setlength{\LTright}{\fill}
     journal:
-      name: Journal Name
+      name: Ecology
       formatting: preprint
       cite-style: authoryear
   docx: default
@@ -106,9 +106,7 @@ Bird communities are structured by a mix of local and landscape level processes.
 
 Here we present the 'Bird diversity in productive landscapes of Colombia' dataset, collating and standardizing data across `r Tot_pc_prty` surveys at `r Num_sites` unique point count locations from 2013 - 2026. We recorded `r Num_obs_prty` bird observations of `r Num_spp` species in `r Num_fam` families across five distinct ecoregions, including tropical dry forest, Andean montane forest, and the plains of the Orinoco river basin (@fig-sampling-map). The most speciose orders were Passeriformes, Apodiformes, Piciformes, Psittaciformes, and Accipitriformes (@fig-phylogeny), and the species that were both widespread and abundant tended to thrive in highly dynamic and heterogeneous landscapes (e.g., *Tyrannus melancholicus, Cyanocorax violaceus, Bubulcus ibis, Milvago chimachima,* and *Crotophaga ani*; @fig-abund-widespread-spp).
 
-![The locations of 504 point count sites in 73 farms across five ecoregions in Colombia. Colombia is extremely topographically diverse, with the Andes mountain range trifurcating into three distinct 'cordilleras', in addition to smaller 'sierras' (e.g., Sierra Nevada de Santa Marta) that are critical for understanding bird distributions in Colombia. In between the cordilleras lie two major river valleys, the Cauca and Magdalena (labeled in red). Major rivers also run off the Eastern slope of the Andes into the plains and eventually into the Orinoco and Amazon rivers. The shape of the symbol corresponds to the data collector, and the size corresponds to the number of point counts within a quarter degree squared grid cell. Note that a small jitter was applied to all points, and a larger jitter was applied to points in the Piedemonte region to improve visibility. Elevation was log-transformed to emphasize altitudinal gradients at lower elevations.\
-\
-COLLABORATORS: Does anyone have a shapefile of the rio Cesar? Also, is it correct that the unlabed river in the northeast is the Catatumbo River?](../../../Figures/Static/Map_sampling/TNC_Field_Map_Final.png){#fig-sampling-map}
+![The locations of 504 point count sites in 73 farms across five ecoregions in Colombia. Colombia is extremely topographically diverse, with the Andes mountain range trifurcating into three distinct 'cordilleras', in addition to smaller 'sierras' (e.g., Sierra Nevada de Santa Marta) that are critical for understanding bird distributions in Colombia. In between the cordilleras lie two major river valleys, the Cauca and Magdalena (labeled in red). Major rivers also run off the Eastern slope of the Andes into the plains and eventually into the Orinoco and Amazon rivers. The shape of the symbol corresponds to the data collector, and the size corresponds to the number of point counts within a quarter degree squared grid cell. Note that a small jitter was applied to all points, and a larger jitter was applied to points in the Piedemonte region to improve visibility. Elevation was log-transformed to emphasize altitudinal gradients at lower elevations.](../../../Figures/Static/Map_sampling/TNC_Field_Map_Final.png){#fig-sampling-map}
 
 The `r Tot_pc_prty` point count surveys were sampled 1–19 times total, with `r round(Per_3_visits, 0)`% of locations visited $\geq$ 3 times within a closed sampling period, enabling estimation of detection probabilities through hierarchical models. Land-use landcover types surveyed include mature forest, forest fragments, riparian forest, crops, intensive pasture, several types of silvopasture, and heterogeneous mosaics (i.e., no single dominant landcover type). This dataset permits analyses of bird diversity patterns and community composition across land-use gradients, especially the effects of silvopastoral practices on biodiversity in tropical productive landscapes. We also provide complementary datasets of taxonomic equivalents (BirdLife, BirdTree, and eBird / Clements), functional traits, site covariates, and survey covariates (@tbl-file-info), facilitating a variety of research questions and analytical approaches. For example, one could examine the interacting effects of local management practices and climate, while controlling for phylogenetic non-independence, to understand silvopasture's influence on functional diversity and ecosystem service provisioning. Importantly, the longitudinal nature of these data allow for analyses of population trends or colonization/extinction dynamics, which is critical for conservation practitioners [@leesRoadmapIdentifyingFilling2020].
 
@@ -195,7 +193,8 @@ Colombia, Bajo Magdalena, Cafetera, Río Cesar, Piedemonte, Cordillera Oriental,
 1.  Identity: This data set was been collected during two long-term international initiatives, the Sustainable Cattle Ranching (SCR) and the Science for Nature and People Partnership (SNAPP) projects.
 
 2.  Originators: Names and addresses of principal investigators associated with project\
-    \[Tomas Walschburger, Manuel Gómez Vivas, Christina Kennedy, Juliana Delgado\]\
+    \
+    Tomas Walschburger, Manuel Gómez Vivas, Christina Kennedy, Juliana Delgado\
     COLLABORATORS - Provide address
 
 3.  Period of study: Date commenced, date terminated, or expected duration\
@@ -211,7 +210,7 @@ Colombia, Bajo Magdalena, Cafetera, Río Cesar, Piedemonte, Cordillera Oriental,
 
 6.  Sources of funding: Grant and contract numbers, names, and addresses of funding sources\
     \
-    This work was funded through the Mainstreaming Sustainable Cattle Ranching project: Global Environment Facility (GEF) Trust Fund grant TF-96465, and World Bank grant P104687. \[COLLABORATORS - please provide the addresses of the funding sources.\]
+    This work was funded through the Mainstreaming Sustainable Cattle Ranching project: Global Environment Facility (GEF) Trust Fund grant TF-96465, and World Bank grant P104687.
 
 ## B. Specific subproject description
 
@@ -219,16 +218,14 @@ Colombia, Bajo Magdalena, Cafetera, Río Cesar, Piedemonte, Cordillera Oriental,
 
 - Site type: Descriptive (e.g., short-grass prairie, blackwater stream, etc.)\
   \
-  Sampling was conducted in five broad ecoregions: the coffee region (Central mountain range of the Andes), the Cordillera Oriental (Eastern mountain range of the Andes), Piedemonte (Orinoco Basin piedmont), Bajo Magdalena (lower basin of the Magdalena River), and Río Cesar (Cesar river basin) (@fig-sampling-map). Colombia is a tropical country with extreme topographic complexity but little temperature variation throughout the year. Thus, climate and seasonality are primarily defined by elevation and rainfall patterns (@fig-envi-boxplots). Rainfall is unimodal closer to the equator (e.g., our sites in the Piedemonte region are closer to unimodal) and generally bimodal further from the equator (@fig-prec-smooth), although local topography complicates these patterns.
+  Sampling was conducted in five broad ecoregions: the coffee region (the central Andes), the Cordillera Oriental (the Eastern Andes), Piedemonte (Orinoco piedmont), Bajo Magdalena (lower basin of the Magdalena River), and Río Cesar (Cesar river basin) (@fig-sampling-map). Colombia is a tropical country with extreme topographic complexity but little temperature variation throughout the year. Thus, climate and seasonality are primarily defined by elevation and rainfall patterns (@fig-envi-boxplots). Rainfall is unimodal closer to the equator (e.g., our sites in the Piedemonte region are closer to unimodal) and generally bimodal further from the equator (@fig-prec-smooth), although local topography complicates these patterns.
 
 ![Elevation (m a.s.l.), mean annual temperature (°C), and mean annual precipitation (mm) of each point count location within five ecoregions. A jitter was applied to aid in visualization.](../../../Figures/Envi_vars.png){#fig-envi-boxplots}
 
-[The Andes:]{.underline} The coffee region and the Cordillera Oriental reside in the Andes, a region defined by complex mountain topography, highly regional microclimates, and extreme elevational and climatic gradients over short horizontal distances. The Andes trifurcate in Colombia into three distinct ranges or 'cordilleras' and two major intermontane valleys, the Cauca Valley between the Western and Central cordilleras, and the Magdalena Valley between the Central and Eastern cordilleras. The eastern slopes of the cordilleras tend to be wetter than the western slopes (although the western side of the westernmost cordillera is an exception due to the extreme humidity from the Pacific Ocean characteristic of the Chocó region), and there are small rain shadows at lower elevations at the bottom of the valleys. Topographic complexity and highly regional microclimates have resulted in high bird diversity, including a large influx of migrants in the winter months. Note that our sites in the coffee region span both the Magdalena and Cauca river valleys, as well as the Western and Central cordilleras, whereas our sites in the Cordillera Oriental are only in the Eastern cordillera.\
+[The Andes:]{.underline} The coffee region and the Cordillera Oriental reside in the Andes, a region defined by complex mountain topography, highly regional microclimates, and extreme elevational and climatic gradients over short horizontal distances. The Andes trifurcate in Colombia into three distinct ranges or 'cordilleras' and two major intermontane valleys, the Cauca Valley between the Western and Central cordilleras, and the Magdalena Valley between the Central and Eastern cordilleras. The eastern slopes of the cordilleras tend to be wetter than the western slopes (although the western side of the westernmost cordillera is an exception due to the extreme humidity from the Pacific Ocean characteristic of the Chocó region), and there are small rain shadows at lower elevations at the bottom of the valleys. Topographic complexity and highly regional microclimates have resulted in high bird diversity, including a large influx of migrants in the winter months. Note that our sites in the coffee region span both the Magdalena and Cauca river valleys, as well as the Western and Central cordilleras, whereas our sites in the Cordillera Oriental are only in the East Andean highlands.\
 [Piedemonte:]{.underline} On the East side of the Eastern-most chain of the Andes is the 'Piedemonte' (piedmont or foothills) region, a complex transition zone between the Andes and the flat plains (i.e. los Llanos) to the East. Heavy rainfall on the Eastern slope of the Andes results in many rivers and gallery forests dissecting the landscape as they flow East towards the grassland plains of the upper Orinoco River basin and south towards the Amazon rainforest biome. Little forest remains and cattle ranching is the predominant agricultural activity of the region. The birds of the Piedemonte are quite diverse as it is a mix of Andean and Llanos birds, with some widespread Amazonian birds reaching our sampling sites.\
 [Bajo Magdalena:]{.underline} This region is near the delta of the Magdalena River in the Caribbean. The region is dry although it gets wetter further inland. Coastal regions are largely windswept, dominated by short stature tropical dry forest (most trees drop their leaves) and desert-like scrub. [\
-Río Cesar:]{.underline} A dry river valley nestled between the imposing Sierra Nevada de Santa Marta (the world's second tallest coastal mountain range) and the Serranía del Perijá mountains that straddle the Colombia-Venezuela border. The vegetation is similar to the Bajo Magdalena region. High temperatures and low precipitation result in desert conditions, with scrubby acacia-like trees and large cacti dominating the vegetation. This unique region has relatively high endemism, sharing birds only with similar desert areas in neighboring Venezuela.\
-\
-\[COLLABORATORS\]: I never visited the sites in Río Cesar or Bajo Magdalena, so I'm unsure exactly what I should highlight to differentiate our sampling sites in these regions. Also, I've combined the treatment of the coffee region and the Cordillera Oriental for now, as both of these regions are defined by the Andes. I'm open to other suggestions though.
+Río Cesar:]{.underline} A dry river valley nestled between the imposing Sierra Nevada de Santa Marta (the world's tallest isolated coastal mountain range) and the Serranía del Perijá mountains that straddle the Colombia-Venezuela border. The vegetation is similar to the Bajo Magdalena region. High temperatures and low precipitation result in desert conditions, with scrubby acacia-like trees and large cacti dominating the vegetation. This unique region has relatively high endemism, sharing birds only with similar desert areas in neighboring Venezuela.
 
 ![In Colombia, precipitation is one of the primary determinants of the distribution of biodiversity. Rainfall is bimodal throughout most of Colombia, although often becomes unimodal closer to the equator. Curves show the 30-year average precipitation at our sampling sites, grouped by ecoregion. Curves were fit using generalized additive model smoothers fit separately by ecoregion, with a cyclic cubic regression spline and basis dimension k = 12 to capture monthly periodicity.](../../../Figures/Rainfall/Prec_smoothed.png){#fig-prec-smooth width="700"}
 
@@ -277,14 +274,24 @@ Data$Site_covs %>%
             Range = Max - Min,
             .by = Ecoregion) %>%
   left_join(area_km2_ecor) %>%
-  # Spanish primary name + English descriptor, matching the ecoregion list in the site description
-  mutate(Ecoregion = case_match(Ecoregion,
-    "Cafetera"            ~ "Coffee region (Central Andes)",
-    "Cordillera oriental" ~ "Cordillera Oriental (Eastern Andes)",
-    "Piedemonte"          ~ "Piedemonte (Orinoco Basin piedmont)",
-    "Bajo magdalena"      ~ "Bajo Magdalena (lower basin of the Magdalena River)",
-    "Rio cesar"           ~ "Río Cesar (Cesar river valley)"
-  )) %>%
+  # Ecoregion: Spanish primary name; Description: English descriptor (see the ecoregion list in the site description)
+  mutate(
+    Description = case_match(Ecoregion,
+      "Cafetera"            ~ "Central Andes and surrounding river valleys",
+      "Cordillera oriental" ~ "East-Andean Highlands",
+      "Piedemonte"          ~ "East-Andean piedmont, transition to Orinoquian plains",
+      "Bajo magdalena"      ~ "Lower Magdalena Basin",
+      "Rio cesar"           ~ "Cesar river valley"
+    ),
+    Ecoregion = case_match(Ecoregion,
+      "Cafetera"            ~ "Coffee region",
+      "Cordillera oriental" ~ "Cordillera Oriental",
+      "Piedemonte"          ~ "Piedemonte",
+      "Bajo magdalena"      ~ "Bajo Magdalena",
+      "Rio cesar"           ~ "Río Cesar"
+    )
+  ) %>%
+  relocate(Description, .after = Ecoregion) %>%
   arrange(Range) %>%
   kable("latex", booktabs = TRUE, longtable = TRUE, escape = FALSE, align = "c") %>%
   kable_styling(latex_options = c("striped", "hold_position"),
@@ -321,8 +328,6 @@ Hab_sub_tbl <- Create_hab_tbl(col = Habitat_sub)
   - Riparian forest (n = `r Hab_sub_tbl$Ripario`): Gallery forests on either side of a stream or river
 
   - Mature forest (n = `r Hab_sub_tbl$Maduro`): Taller, older, and larger contiguous forests. 10 of these points were in the Ecorregion Cafetera (9 in the ecological reserve Otún Quimbaya, 1 in Reserva El Hatico) and 2 were in a large forest in the Piedemonte.
-
-  - \[COLLABORATORS\]: How do we want to define 'mature' forest? In the 'Habitat_sub' column I set everything to 'Secondary' unless it was specified in the data that it was a riparian forest or a mature forest. However, there may be other forests surveyed that could be considered mature.
 
 - Silvopasture (Total n = `r Hab_tbl$Ssp`): Silvopastoral systems consist of a variety of practices and range across a spectrum regarding the diversity and intensity of practices implemented. For example, silvopastural systems can be tree (and grass) monocultures planted to be homogeneous in spacing and age, or, alternatively, they can be highly-productive, diverse polycultures composed of remnant vegetation and naturally recruited tree species [@cubbageComparingSilvopastoralSystems2012]. See @murgueitioNativeTreesShrubs2011, @calleStrategyScalingUpIntensive2013, and @cubbageComparingSilvopastoralSystems2012 to better understand the full extent of management practices that can be incorporated in silvopastoral systems. In our bird sampling efforts, the project differentiated between several types of silvopasture:
 
@@ -575,8 +580,6 @@ Please cite this dataset (DOI TBD) when using these data.
 #### a. Release date
 
 Date when proprietary restrictions expire
-
-CMK - I asked editors and we cannot set an embargo date, however I could postpone submission. I imagine I'm still a 8-12 months from publishing anything using these data, do you think we should hold off on submitting this for now?
 
 #### b. Citation
 
@@ -835,19 +838,14 @@ Questionable or unusual data discovered by secondary users; limitations or probl
 
 # Acknowledgements
 
-I am grateful to Camila Gómez, Nick Bayly, and several students at the Universidad de los Llanos (particularly Evelyn Alvarez and Maira Holguín Ruiz) for help with field planning in 2022, as well as everyone who facilitated logistics and access to farms, especially Yadi Lorena Duarte Cañas.
+I am grateful to Camila Gómez, Nick Bayly, and several students at the Universidad de los Llanos (particularly Maira Holguín Ruiz) for help with field planning in 2022, as well as everyone who facilitated logistics and access to farms, especially Yadi Lorena Duarte Cañas.
 
 # Questions - collaborators
 
 - All co-authors:
 
-  - The 5 'ecoregions'
-    - It seems like 'Boyacá & Santander' isn't really an 'ecoregion' in the way that the others are. For example, Bajo Magdalena refers to part of a river valley, valle de rio cesar defines a river valley, whereas Boyacá & Santander are geopolitical departments. Should we change to something defined by topography? I think 'cordillera oriental' wouldn't be specific enough, but something along those lines?
-    - To a lesser extent, the 'Ecoregion cafetera' seems similar given that this name comes from the predominant crop (agricultural) / cultural similarities. This ecoregion is also 3x larger than the next largest ecoregion and covers \~3100 m of altitude, including points in both the Cauca and Magdalena river valleys as well as the cordillera central. Consider breaking up into smaller ecoregions?
-    - Should we change the 'Piedemonte' to 'Piedemonte llanero' to be more specific?
-  - Can folks provide their best guesses generally (I'm sure it varies by region) regarding the history of forest fragments and riparian forests in these landscapes? I remember there was a law implemented requiring a vegetative buffer to be left around waterways? Was this law national? When was it implemented? How big is the vegetative buffer ?
-  - I have elected to have multiple data sets with 'join keys' (i.e. the columns that are repeated in multiple data sets to allow joining of different data) to connect them, instead of 1-2 datasets with more columns and row repetition. I think this structure is helpful as it makes the data structure more explicit (e.g., there are 496 unique sites, there are 2,691 unique point count surveys). Was structuring the data this way intuitive for you?
-  - Column names: Decide whether English or Spanish
-  - Are there additional columns that you feel are important to include in this dataset?
+  - The 5 ecoregions: Please see table 2 and confirm names + descriptions feel representative.
+  - I think a shapefile of the rio Cesar for the sampling map if anyone could locate one.
+  - Column names: Lets go with English, with a script to translate the column names to Spanish.
 
 # References {.unnumbered}
