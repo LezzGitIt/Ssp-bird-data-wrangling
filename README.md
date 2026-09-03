@@ -1,9 +1,9 @@
-# Bird diversity in working landscapes of Colombia
+# Bird diversity in productive landscapes of Colombia
 
 This repository holds (1) the **data-wrangling pipeline** that assembles the
 Sustainable Cattle Ranching (SCR) bird point-count data into clean, covariate-linked
-tables, and (2) the **Ecology data paper** ("Bird diversity in working landscapes of
-Colombia") built from those tables.
+tables, and (2) the **Ecology data paper** ("Bird diversity in productive landscapes
+of Colombia") built from those tables.
 
 The project uses data from 500+ unique point count locations surveyed 2013–2025
 across five Colombian ecoregions to study how silvopasture affects bird taxonomic,
