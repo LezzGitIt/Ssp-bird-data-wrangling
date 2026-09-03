@@ -66,10 +66,10 @@ source("Scripts/Data_paper/Figs.R")
 source("Scripts/Data_paper/Phylogeny_fig.R")
 
 # 3. Render
-#    quarto render Scripts/qmd/Data_paper_ecology.qmd
+#    quarto render Scripts/Data_paper/qmd/Data_paper_ecology.qmd
 ```
 
-Output (`Data_paper_ecology.pdf` and `.docx`) lands next to the qmd in `Scripts/qmd/`.
+Output (`Data_paper_ecology.pdf` and `.docx`) lands next to the qmd in `Scripts/Data_paper/qmd/`.
 
 ## Repository layout
 

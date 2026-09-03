@@ -37,23 +37,23 @@ Docs/
 # DataS1/ is the deposit and IS tracked, but *.xlsx is ignored globally above:
 !DataS1/Column_definitions_final.xlsx
 
-# Quarto / LaTeX render byproducts, scoped to Scripts/qmd/ so they can never
+# Quarto / LaTeX render byproducts, scoped to Scripts/Data_paper/qmd/ so they can never
 # shadow real sources (Suppfiles/title.tex, _extensions/**)
-Scripts/qmd/*_files/
-Scripts/qmd/*_cache/
-Scripts/qmd/*.tex
-Scripts/qmd/*.aux
-Scripts/qmd/*.bbl
-Scripts/qmd/*.blg
-Scripts/qmd/*.log
-Scripts/qmd/*.toc
-Scripts/qmd/*.out
-Scripts/qmd/*.spl
-Scripts/qmd/*.rmarkdown
-Scripts/qmd/*.pdf
-Scripts/qmd/*.docx
-Scripts/qmd/*.cls
-Scripts/qmd/*.bst
+Scripts/Data_paper/qmd/*_files/
+Scripts/Data_paper/qmd/*_cache/
+Scripts/Data_paper/qmd/*.tex
+Scripts/Data_paper/qmd/*.aux
+Scripts/Data_paper/qmd/*.bbl
+Scripts/Data_paper/qmd/*.blg
+Scripts/Data_paper/qmd/*.log
+Scripts/Data_paper/qmd/*.toc
+Scripts/Data_paper/qmd/*.out
+Scripts/Data_paper/qmd/*.spl
+Scripts/Data_paper/qmd/*.rmarkdown
+Scripts/Data_paper/qmd/*.pdf
+Scripts/Data_paper/qmd/*.docx
+Scripts/Data_paper/qmd/*.cls
+Scripts/Data_paper/qmd/*.bst
 
 # Working docs (session notes / migration plan, not the science)
 Project_notes.md
