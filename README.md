@@ -48,12 +48,14 @@ order, inputs, and outputs.
 | `04_Out_range.R` | `Bird_pcs_dist.csv` (range screening) |
 | `05_Extract_lcs.R` → `06_LSM.R` → `07_wvsc.R` | digitized land cover, landscape metrics, woody-vegetation structure |
 | `08_Analysis_wrangling.R` | `Bird_pcs_analysis.csv` |
-| `09_Phylogeny.R` | pruned BirdTree phylogeny, phylogenetic-diversity metrics, phylogeny figure |
+
+`Scripts/Data_paper/Phylogeny_figure.R` prunes the BirdTree phylogeny and builds
+the `@fig-phylogeny` plot + `Tax_summary.csv`.
 
 ## Reproducing the manuscript
 
-Requires a populated `Derived/` and `Derived_geospatial/` (run the pipeline first),
-the Elsevier Quarto extension, and `lualatex`.
+Requires a populated `Derived/` (run the pipeline first), the Elsevier Quarto
+extension, and `lualatex`.
 
 ```r
 # 1. Install the journal format (once)
@@ -61,6 +63,7 @@ the Elsevier Quarto extension, and `lualatex`.
 
 # 2. Build the figures + metadata the manuscript embeds
 source("Scripts/Data_paper/Data_paper_figs.R")
+source("Scripts/Data_paper/Phylogeny_figure.R")
 
 # 3. Render
 #    quarto render Scripts/qmd/Data_paper_ecology.qmd
@@ -71,13 +74,14 @@ Output (`Data_paper_ecology.pdf` and `.docx`) lands next to the qmd in `Scripts/
 ## Repository layout
 
 ```
-Scripts/        01–09 pipeline; Data_paper/ (figure + example scripts); qmd/ (manuscript)
+Scripts/        01–08 pipeline; Data_paper/ (figure + example scripts); qmd/ (manuscript);
+                _ch1_pending/ (staged for Ch1-ssp-birds)
 DataS1/         curated deposit (tracked)
 Suppfiles/      bibliography, author/affiliation metadata, title-page partial
 _extensions/    Elsevier Quarto format
 Figures_static/ manuscript figures no script regenerates (sampling map, example landscape, phylogeny)
-Figures/        script-generated figures (gitignored, rebuilt by Data_paper_figs.R)
-Data/ Derived/ Derived_geospatial/ Rdata/   raw + recreatable (gitignored)
+Figures/        script-generated figures (gitignored, rebuilt by the Data_paper/ scripts)
+Data/ Derived/ Rdata/   raw + recreatable (gitignored); geospatial outputs in Derived/geospatial/
 docs/           methodology notes, feedback, planning docs (gitignored)
 ```
 
