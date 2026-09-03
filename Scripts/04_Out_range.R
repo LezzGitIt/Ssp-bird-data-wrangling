@@ -34,15 +34,15 @@ conflicts_prefer(dplyr::filter)
 
 ## Load data
 Bird_pcs_all <-  read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
-#Bird_pcs_dist <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_dist.csv")
+Bird_pcs_dist <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_dist.csv")
 Elev_ranges <- read_csv(file = "Derived/Excels/Elev_ranges_all_sources.csv")
 Site_covs <- read_csv(file = "Derived/Excels/Site_covs.csv")
 Event_covs_pcs <- read_csv(file = "Derived/Excels/Event_covs_pcs.csv")
 
 # Select Bird_df ----------------------------------------------------------
 # Data frame
-Bird_df <- Bird_pcs_all
-#Bird_df <- Bird_pcs_dist
+#Bird_df <- Bird_pcs_all
+Bird_df <- Bird_pcs_dist
 #nrow(Bird_pcs_dist)
 
 # File name for pdf if printing
