@@ -141,8 +141,8 @@ file_names_and_sizes <- tibble(
   File_name = basename(rownames(file_info)),
   Number_obs = Num_obs_vec,
   Size_MB = round(file_sizes / 1e6, 2)
-) %>% full_join(Short_descriptions) %>%
-  arrange(desc(Size_MB)) %>% 
+) %>% inner_join(Short_descriptions) %>%   # keep only the documented deposit tables (drops the .xlsx / manifest)
+  arrange(desc(Size_MB)) %>%
   relocate(Description, .after = File_name)
 
 # To do - I want to 1) align the contents each column underneath the center of the column header, and 2) in header "Number \nobservations" the "\nobservations" part is not being printed on a second line. How can I fix? 

@@ -19,7 +19,6 @@ phylogenetic diversity).
 | File | Contents | Join keys |
 |---|---|---|
 | `Bird_pcs_all.csv` | every point-count observation | `Id_muestreo`, `Id_muestreo_no_dc`, `Species_ayerbe` |
-| `Bird_pcs_dist.csv` | after distributional/elevational range screening | same |
 | `Bird_pcs_analysis.csv` | analysis-ready subset (50 m radius, used the habitat) | same |
 | `Event_covs.csv` | per-survey covariates (date, time, observer, weather, land cover) | `Id_muestreo`, `Id_muestreo_no_dc` |
 | `Site_covs.csv` | per-location covariates (elevation, climate, distance to nearest farm) | `Id_muestreo_no_dc` |
