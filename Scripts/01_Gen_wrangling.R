@@ -807,26 +807,22 @@ Pc_hab_ano <- Bird_pcs_all %>%
   )
 
 # Each point count has a single Habitat_ut except for Gaica distancia points
+### Classify Habitat_sub from the raw Habitat_ut (which still distinguishes "Bosque ripario", "Borde de bosque", etc.), THEN collapse every forest label to "Bosque" -- collapsing first hides the ~59 riparian point counts as generic "Secundario".
 Pc_hab_ano2 <- Pc_hab_ano %>%
-  mutate(Habitat_ut = ifelse(
-    str_detect(Habitat_ut, "Bosque|bosque"), "Bosque", Habitat_ut
-  ),
-  Habitat_sub = case_when(
-    Id_group %in% c("UBCG-MB-R-OQ", "UBC-MB-M-LBR") ~ "Maduro", 
-    Habitat_ut == "Bosque ripario" | Habitat_sub == "Bosque ripario" ~ "Ripario",
-    Habitat_ut == "Bosque" & is.na(Habitat_sub) ~ "Secundario",
-    Habitat_ut == "Bosque" & Habitat_sub %in% c("Borde", "Interior") ~ "Secundario",
+  mutate(Habitat_sub = case_when(
+    Id_group %in% c("UBCG-MB-R-OQ", "UBC-MB-M-LBR") ~ "Maduro",
+    str_detect(Habitat_ut, "[Rr]ipario") | Habitat_sub == "Bosque ripario" ~ "Ripario",
+    str_detect(Habitat_ut, "[Bb]osque") & is.na(Habitat_sub) ~ "Secundario",
+    str_detect(Habitat_ut, "[Bb]osque") & Habitat_sub %in% c("Borde", "Interior") ~ "Secundario",
     Habitat_sub == "Transitorio" ~ NA_character_,
     .default = Habitat_sub
-  )
-  ) %>%
-  mutate(
-    Habitat_ut = case_when(
-      str_detect(Id_muestreo, "OQ_") ~ "Bosque",
-      Habitat_ut == "Bosque ripario" ~ "Bosque",
-      .default = Habitat_ut
-    )
-  ) %>% rename(Habitat = Habitat_ut)
+  )) %>%
+  mutate(Habitat_ut = case_when(
+    str_detect(Id_muestreo, "OQ_") ~ "Bosque",
+    str_detect(Habitat_ut, "[Bb]osque") ~ "Bosque",
+    .default = Habitat_ut
+  )) %>%
+  rename(Habitat = Habitat_ut)
 
 # Remove year
 Pc_hab <- Pc_hab_ano2 %>% distinct(pick(-Ano))
