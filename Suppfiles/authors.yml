@@ -47,6 +47,13 @@ affiliations:
     city: Fort Collins
     region: Colorado
     country: United States of America
+    
+  - id: UW
+    name: University of Wyoming
+    department: Department of Zoology and Physiology
+    city: Laramie
+    region: WY
+    country: United States
 
 author:
   - name: Aaron Skinner
@@ -95,6 +102,10 @@ author:
   #- name: Sergio Montoya-Arango
    # affiliations:
     #  - ref: unillanos
+    
+  - name: Michael Castaño-Diaz
+    affiliations:
+      - ref: UW
       
   - name: Alexander Velasquez 
     affiliations: 
