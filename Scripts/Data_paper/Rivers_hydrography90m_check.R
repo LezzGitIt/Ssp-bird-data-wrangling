@@ -16,14 +16,15 @@ library(stringr)
 
 sf::sf_use_s2(FALSE)
 
-stream_source <- "api"          # "api" or "tiles"
+stream_source <- "tiles"        # "tiles" or "api"
+## "api" host aqua.igb-berlin.de sends an incomplete chain (HARICA TLS RSA Root CA 2021 not in most R trust stores) -> "unable to get local issuer certificate". Fix by adding that root: Sys.setenv(CURL_CA_BUNDLE = "<bundle with HARICA-TLS-Root-2021-RSA.pem appended>") before the api call. The "tiles" host public.igb-berlin.de uses Let's Encrypt and needs no fix.
 hydro90_dir   <- "Derived/Geospatial/Hydrography90m"   # gitignored cache (tile mode)
 out_dir       <- "Figures/Rivers_check"                 # gitignored
 utm18n        <- "EPSG:32618"                            # metric CRS for the study area
 buffer_thresholds_m <- c(15, 30, 50, 100, 200)          # riparian-buffer distances to score against
 
-# Tile mode: order_vect_segment tiles for regional unit 33 (study area is entirely in RU 33)
-tile_ids  <- c("h10v06")                                 # add "h10v08" if southern points snap far
+# Tile mode: order_vect_segment 20-degree tiles (regional unit 33). h10v06 covers lat >= 5 N (coffee region, Cordillera Oriental, N Bajo Magdalena / Rio Cesar); h10v08 covers lat < 5 N (most Piedemonte + southern coffee region). Both are needed -- ~32 of the 38 riparian points are below 5 N.
+tile_ids  <- c("h10v06", "h10v08")                       # h10v06 ~2.4 GB, h10v08 ~8.5 GB
 tile_url  <- function(t) sprintf(
   "https://public.igb-berlin.de/index.php/s/agciopgzXjWswF4/download?path=%%2Fr.stream.order%%2Forder_vect_tiles20d&files=order_vect_segment_%s.gpkg", t)
 
@@ -31,25 +32,31 @@ dir.create(hydro90_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 # Point counts + riparian flag (from the pipeline) ------------------------
-## 01 stops at its own guard; Pc_locs_sf (one row per physical location) and Pc_hab (habitat) are built before that
-source("Scripts/01_Gen_wrangling.R")
+## 01 stops at its own guard (~line 1254) -- catch it; Pc_locs_sf (one row per physical location) and Pc_hab (habitat) are built well before that and persist
+tryCatch(source("Scripts/01_Gen_wrangling.R"), error = function(e) message("01 stopped at its guard: ", conditionMessage(e)))
+stopifnot(exists("Pc_locs_sf"), exists("Pc_hab"))
 
-pc_hab_loc <- Pc_hab %>% distinct(Id_muestreo_no_dc, Habitat, Habitat_sub)
+## One row per physical location. 12 locations carry both "Ripario" and "Secundario" across survey years (inconsistent field labels) -- treat as riparian if ever classified riparian.
+pc_hab_loc <- Pc_hab %>%
+  summarize(is_riparian  = any(Habitat_sub == "Ripario", na.rm = TRUE),
+            any_forest    = any(Habitat == "Bosque", na.rm = TRUE),
+            .by = Id_muestreo_no_dc)
 
 points_sf <- Pc_locs_sf %>%
   distinct(Id_muestreo_no_dc, .keep_all = TRUE) %>%
   select(Id_muestreo_no_dc, Ecoregion, Id_gcs) %>%
   left_join(pc_hab_loc, by = "Id_muestreo_no_dc") %>%
-  mutate(is_riparian = !is.na(Habitat_sub) & Habitat_sub == "Ripario")
+  mutate(group = case_when(is_riparian ~ "Riparian forest",
+                           any_forest  ~ "Other forest",
+                           .default    = "Non-forest"))
 
 coords <- st_coordinates(points_sf)
 points_df <- points_sf %>%
   st_drop_geometry() %>%
   mutate(longitude = coords[, 1], latitude = coords[, 2], site_id = Id_muestreo_no_dc)
 
-cat("Point counts:", nrow(points_df),
-    "| riparian:", sum(points_df$is_riparian),
-    "| other forest:", sum(points_df$Habitat == "Bosque" & !points_df$is_riparian, na.rm = TRUE), "\n")
+cat("Point counts:", nrow(points_df), "|",
+    paste(names(table(points_df$group)), table(points_df$group), sep = " = ", collapse = " | "), "\n")
 
 # Distance to the nearest Hydrography90m stream --------------------------
 if (stream_source == "api") {
@@ -77,10 +84,16 @@ if (stream_source == "api") {
   walk2(tile_ids, local_tiles, \(t, dest) {
     if (!file.exists(dest)) {
       options(timeout = 3600)
-      download.file(tile_url(t), dest, mode = "wb")
+      download.file(tile_url(t), dest, mode = "wb")   # ~2.4 GB for h10v06
     }
   })
-  streams <- map(local_tiles, st_read, quiet = TRUE) |>
+
+  # Read only the segments near the point counts (each tile spans a full 20 degrees)
+  bb <- st_bbox(points_sf)
+  bb[c("xmin", "ymin")] <- bb[c("xmin", "ymin")] - 0.1
+  bb[c("xmax", "ymax")] <- bb[c("xmax", "ymax")] + 0.1
+  aoi_wkt <- st_as_text(st_as_sfc(bb))
+  streams <- map(local_tiles, \(f) st_read(f, wkt_filter = aoi_wkt, quiet = TRUE)) |>
     bind_rows() |>
     st_zm(drop = TRUE) |>
     st_transform(utm18n)
@@ -98,12 +111,12 @@ if (stream_source == "api") {
 pts <- points_df %>% left_join(dist_tbl, by = "site_id")
 
 # Accuracy summary ------------------------------------------------------
-pts <- pts %>%
-  mutate(group = case_when(
-    is_riparian ~ "Riparian forest",
-    Habitat == "Bosque" ~ "Other forest",
-    .default = "Non-forest"
-  ))
+## A nearest stream > 5 km away means the point sits outside the downloaded tiles' coverage, not that the network is that sparse -- drop those from the summary
+outside <- pts$dist_stream_m > 5000
+if (any(outside, na.rm = TRUE)) {
+  warning(sum(outside, na.rm = TRUE), " point(s) > 5 km from any stream -- likely outside tile coverage; excluded. Check tile_ids.")
+  pts <- pts[!outside %in% TRUE, ]
+}
 
 by_group <- pts %>%
   summarize(n = n(),
@@ -157,6 +170,6 @@ print(p_order)
 stop()
 
 pts %>%
-  select(site_id, Ecoregion, Id_gcs, Habitat, Habitat_sub, is_riparian, dist_stream_m, stream_order) %>%
+  select(site_id, Ecoregion, Id_gcs, group, is_riparian, dist_stream_m, stream_order) %>%
   arrange(desc(is_riparian), dist_stream_m) %>%
   write.csv(file.path(out_dir, "hydrography90m_point_distances.csv"), row.names = FALSE)
