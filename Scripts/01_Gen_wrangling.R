@@ -827,6 +827,11 @@ Pc_hab_ano2 <- Pc_hab_ano %>%
 # Remove year
 Pc_hab <- Pc_hab_ano2 %>% distinct(pick(-Ano))
 
+### One forest sub-type per physical location -- data collectors recorded stream presence inconsistently across survey years, so a point is riparian if it was ever recorded as riparian
+Pc_hab <- Pc_hab %>%
+  mutate(Habitat_sub = if (any(Habitat_sub == "Ripario", na.rm = TRUE)) "Ripario" else Habitat_sub,
+         .by = Id_muestreo_no_dc)
+
 # NOTE:: 1 row for each Id_muestreo
 Pc_hab %>% 
   distinct(Ecoregion, Id_muestreo_no_dc, Habitat, Habitat_sub) %>%
