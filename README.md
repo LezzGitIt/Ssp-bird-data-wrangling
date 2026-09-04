@@ -30,9 +30,10 @@ phylogenetic diversity).
 a starting point, to be adapted to your own analysis. `Scripts/08_Analysis_wrangling.R`
 documents how `Bird_pcs_analysis.csv` was derived from the full observation set.
 
-The deposit tables use English column headers. `Scripts/Data_paper/Translate_column_names.R`
-maintains the English→Spanish crosswalk (`Suppfiles/column_names_es.csv`) and writes
-Spanish-headed copies of the tables.
+The deposit ships all-English column headers. `Scripts/Data_paper/Translate_column_names.R`
+maintains the column-name crosswalk (`Suppfiles/column_names.csv`:
+`name_current → name_en → name_es`) and writes English- and Spanish-headed copies of the
+tables to `Derived/`.
 
 On publication, the versioned deposit of record (with a DOI) will be archived on
 **Dryad/Zenodo**; `DataS1/` here is the working copy, kept in sync with the pipeline.
