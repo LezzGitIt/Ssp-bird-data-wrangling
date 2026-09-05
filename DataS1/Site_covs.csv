@@ -39,7 +39,7 @@ MB-CS-CA,MB-CS-CA_01,3264,Casanare,0,Rio cesar,Cesar,-73.269,10.222,96,28.567,13
 MB-CS-CA,MB-CS-CA_02,3264,Casanare,0,Rio cesar,Cesar,-73.2714,10.2213,93,28.567,1337,Pastizales,NA
 MB-CS-CA,MB-CS-CA_03,3264,Casanare,0,Rio cesar,Cesar,-73.2694,10.2184,95,28.567,1337,Ssp,Banco de forraje
 MB-CS-CA,MB-CS-CA_04,3264,Casanare,0,Rio cesar,Cesar,-73.2722,10.219,94,28.567,1337,Pastizales,NA
-MB-CS-LD2,MB-CS-LD2_01,1716,Las delicias 2,0,Rio cesar,Cesar,-73.3805,10.4448,265,27.3,1392,Bosque,Secundario
+MB-CS-LD2,MB-CS-LD2_01,1716,Las delicias 2,0,Rio cesar,Cesar,-73.3805,10.4448,265,27.3,1392,Bosque,Ripario
 MB-CS-LD2,MB-CS-LD2_02,1716,Las delicias 2,0,Rio cesar,Cesar,-73.3819,10.4437,273,27.3,1392,Pastizales,NA
 MB-CS-LD2,MB-CS-LD2_03,1716,Las delicias 2,0,Rio cesar,Cesar,-73.3836,10.4448,280,27.183,1369,Pastizales,NA
 MB-CS-LD2,MB-CS-LD2_04,1716,Las delicias 2,0,Rio cesar,Cesar,-73.3828,10.4422,265,27.3,1392,Ssp,Banco de forraje
@@ -54,7 +54,7 @@ MB-CS-PV,MB-CS-PV_04,2193,Palmares de venecia,0,Rio cesar,Cesar,-73.1617,10.5849
 MB-CS-SI,MB-CS-SI_01,2063,Santa isabel – parcela 52,0,Rio cesar,Cesar,-73.2336,9.885,115,28.267,1538,Ssp,Arboles dispersos
 MB-CS-SI,MB-CS-SI_02,2063,Santa isabel – parcela 52,0,Rio cesar,Cesar,-73.2324,9.8819,115,28.167,1639,Ssp,Arboles dispersos
 MB-CS-SI,MB-CS-SI_03,2063,Santa isabel – parcela 52,0,Rio cesar,Cesar,-73.2336,9.8834,113,28.267,1538,Ssp,Arboles dispersos
-MB-CS-SI,MB-CS-SI_04,2063,Santa isabel – parcela 52,0,Rio cesar,Cesar,-73.2325,9.8811,122,28.167,1639,Bosque,Secundario
+MB-CS-SI,MB-CS-SI_04,2063,Santa isabel – parcela 52,0,Rio cesar,Cesar,-73.2325,9.8811,122,28.167,1639,Bosque,Ripario
 MB-G-LO,MB-G-LO_01,3219,La oka,0,Rio cesar,Guajira,-72.9562,10.8552,224,27.333,1217,Ssp,Arboles dispersos
 MB-G-LO,MB-G-LO_02,3219,La oka,0,Rio cesar,Guajira,-72.9586,10.8508,227,27.242,1108,Ssp,Arboles dispersos
 MB-G-LO,MB-G-LO_03,3219,La oka,0,Rio cesar,Guajira,-72.9562,10.8504,222,27.333,1217,Pastizales,NA
@@ -67,8 +67,8 @@ MB-G-LP,MB-G-LP_04,671,La pradera,1823,Rio cesar,Guajira,-73.0921,10.5229,163,27
 MB-M-C,MB-M-C_01,3065,Camaguey,0,Piedemonte,Meta,-73.6629,3.7377,393,25.433,3162,Pastizales,NA
 MB-M-C,MB-M-C_02,3065,Camaguey,0,Piedemonte,Meta,-73.6626,3.7358,393,25.433,3162,Ssp,Cerca viva
 MB-M-C,MB-M-C_03,3065,Camaguey,0,Piedemonte,Meta,-73.6635,3.7339,398,25.433,3162,Ssp,Intensivo
-MB-M-C,MB-M-C_04,3065,Camaguey,0,Piedemonte,Meta,-73.6613,3.7326,401,25.45,3131,Bosque,Secundario
-MB-M-EPO2,MB-M-EPO2_01,268,El porvenir 2,0,Piedemonte,Meta,-73.8208,3.7913,555,24.65,3825,Bosque,Secundario
+MB-M-C,MB-M-C_04,3065,Camaguey,0,Piedemonte,Meta,-73.6613,3.7326,401,25.45,3131,Bosque,Ripario
+MB-M-EPO2,MB-M-EPO2_01,268,El porvenir 2,0,Piedemonte,Meta,-73.8208,3.7913,555,24.65,3825,Bosque,Ripario
 MB-M-EPO2,MB-M-EPO2_02,268,El porvenir 2,0,Piedemonte,Meta,-73.8214,3.7907,553,24.65,3825,Ssp,Arboles dispersos
 MB-M-EPO2,MB-M-EPO2_03,268,El porvenir 2,0,Piedemonte,Meta,-73.8222,3.7896,553,24.65,3825,Pastizales,NA
 MB-M-EPO2,MB-M-EPO2_04,268,El porvenir 2,0,Piedemonte,Meta,-73.8212,3.7866,554,24.65,3825,Ssp,Intensivo
@@ -76,7 +76,7 @@ MB-M-NC,MB-M-NC_01,35,Nuevo caney,0,Piedemonte,Meta,-73.6831,3.6891,399,25.5,321
 MB-M-NC,MB-M-NC_02,35,Nuevo caney,0,Piedemonte,Meta,-73.6831,3.6876,399,25.5,3211,Bosque,Secundario
 MB-M-NC,MB-M-NC_03,35,Nuevo caney,0,Piedemonte,Meta,-73.685,3.6904,403,25.467,3150,Ssp,Arboles dispersos
 MB-M-NC,MB-M-NC_04,35,Nuevo caney,0,Piedemonte,Meta,-73.6874,3.6921,404,25.45,3077,Ssp,Arboles dispersos
-MB-M-S,MB-M-S_01,1556,Sion,0,Piedemonte,Meta,-73.5353,3.711,323,25.792,3047,Bosque,Secundario
+MB-M-S,MB-M-S_01,1556,Sion,0,Piedemonte,Meta,-73.5353,3.711,323,25.792,3047,Bosque,Ripario
 MB-M-S,MB-M-S_02,1556,Sion,0,Piedemonte,Meta,-73.5351,3.7087,318,25.792,3047,Pastizales,NA
 MB-M-S,MB-M-S_03,1556,Sion,0,Piedemonte,Meta,-73.5373,3.7094,319,25.792,3047,Ssp,Intensivo
 MB-M-S,MB-M-S_04,1556,Sion,0,Piedemonte,Meta,-73.5366,3.7092,319,25.792,3047,Pastizales,NA
@@ -88,7 +88,7 @@ MB-S-BA,MB-S-BA_01,3580,Buenos aires,21,Cordillera oriental,Santander,-73.13,6.2
 MB-S-BA,MB-S-BA_02,3580,Buenos aires,70,Cordillera oriental,Santander,-73.127,6.2684,1394,20.825,2301,Ssp,Intensivo
 MB-S-BA,MB-S-BA_03,3580,Buenos aires,43,Cordillera oriental,Santander,-73.1274,6.2682,1404,20.825,2301,Ssp,Arboles dispersos
 MB-S-BA,MB-S-BA_04,3580,Buenos aires,0,Cordillera oriental,Santander,-73.1283,6.2685,1402,20.825,2301,Ssp,Intensivo
-MB-S-LR,MB-S-LR_01,225,La reliquia,0,Cordillera oriental,Santander,-73.1446,6.1918,1584,19.7,2133,Bosque,Secundario
+MB-S-LR,MB-S-LR_01,225,La reliquia,0,Cordillera oriental,Santander,-73.1446,6.1918,1584,19.7,2133,Bosque,Ripario
 MB-S-LR,MB-S-LR_02,225,La reliquia,0,Cordillera oriental,Santander,-73.145,6.191,1595,19.733,2235,Pastizales,NA
 MB-S-LR,MB-S-LR_03,225,La reliquia,0,Cordillera oriental,Santander,-73.1458,6.1906,1568,19.733,2235,Ssp,Intensivo
 MB-S-LR,MB-S-LR_04,225,La reliquia,0,Cordillera oriental,Santander,-73.146,6.1916,1537,19.733,2235,Ssp,Intensivo
@@ -104,11 +104,11 @@ MB-T-SA,MB-T-SA_01,1353,Santaren,169,Cafetera,Tolima,-74.7938,4.8763,235,27.058,
 MB-T-SA,MB-T-SA_02,1353,Santaren,0,Cafetera,Tolima,-74.7932,4.8785,237,27.058,2216,Ssp,Arboles dispersos
 MB-T-SA,MB-T-SA_03,1353,Santaren,0,Cafetera,Tolima,-74.7915,4.8805,239,27.042,2231,Pastizales,NA
 MB-T-SA,MB-T-SA_04,1353,Santaren,0,Cafetera,Tolima,-74.7906,4.8798,234,27.042,2231,Ssp,Intensivo
-MB-VC-EB,MB-VC-EB_01,344,El brillante,0,Cafetera,Valle del cauca,-75.9154,3.9477,3284,9.783,1391,Bosque,Secundario
-MB-VC-EB,MB-VC-EB_02,344,El brillante,0,Cafetera,Valle del cauca,-75.9147,3.9478,3279,9.783,1391,Bosque,Secundario
-MB-VC-EB,MB-VC-EB_03,344,El brillante,0,Cafetera,Valle del cauca,-75.9154,3.9498,3327,9.783,1391,Bosque,Secundario
+MB-VC-EB,MB-VC-EB_01,344,El brillante,0,Cafetera,Valle del cauca,-75.9154,3.9477,3284,9.783,1391,Bosque,Ripario
+MB-VC-EB,MB-VC-EB_02,344,El brillante,0,Cafetera,Valle del cauca,-75.9147,3.9478,3279,9.783,1391,Bosque,Ripario
+MB-VC-EB,MB-VC-EB_03,344,El brillante,0,Cafetera,Valle del cauca,-75.9154,3.9498,3327,9.783,1391,Bosque,Ripario
 MB-VC-EH,MB-VC-EH_01,Ref_El hatico,El hatico,0,Cafetera,Valle del cauca,-76.3242,3.6434,1014,23.35,1466,Bosque,Maduro
-MB-VC-EH,MB-VC-EH_02,Ref_El hatico,El hatico,0,Cafetera,Valle del cauca,-76.321,3.6451,1000,23.35,1466,Bosque,Secundario
+MB-VC-EH,MB-VC-EH_02,Ref_El hatico,El hatico,0,Cafetera,Valle del cauca,-76.321,3.6451,1000,23.35,1466,Bosque,Ripario
 MB-VC-EH,MB-VC-EH_03,Ref_El hatico,El hatico,0,Cafetera,Valle del cauca,-76.3162,3.6437,1000,23.333,1406,Ssp,Intensivo
 MB-VC-EH,MB-VC-EH_04,Ref_El hatico,El hatico,0,Cafetera,Valle del cauca,-76.3142,3.6443,1004,23.333,1406,Ssp,Cerca viva
 MB-VC-LCH,MB-VC-LCH_01,995,Los chagualos,51,Cafetera,Valle del cauca,-76.2264,3.8786,1374,20.417,1517,Bosque,Secundario
@@ -123,7 +123,7 @@ MB-VC-P,MB-VC-P_01,735,Pinzacua,0,Cafetera,Valle del cauca,-75.7884,4.6814,1220,
 MB-VC-P,MB-VC-P_02,735,Pinzacua,0,Cafetera,Valle del cauca,-75.7893,4.6817,1216,21.75,1922,Bosque,Secundario
 MB-VC-P,MB-VC-P_03,735,Pinzacua,0,Cafetera,Valle del cauca,-75.7893,4.6812,1213,21.75,1922,Ssp,Arboles dispersos
 MB-VC-P,MB-VC-P_04,735,Pinzacua,0,Cafetera,Valle del cauca,-75.7881,4.6808,1215,21.75,1922,Ssp,Setos
-MB-VC-SJ,MB-VC-SJ_01,1607,San jose,0,Cafetera,Valle del cauca,-75.7388,4.6949,1378,20.733,2019,Bosque,Secundario
+MB-VC-SJ,MB-VC-SJ_01,1607,San jose,0,Cafetera,Valle del cauca,-75.7388,4.6949,1378,20.733,2019,Bosque,Ripario
 MB-VC-SJ,MB-VC-SJ_02,1607,San jose,0,Cafetera,Valle del cauca,-75.7361,4.6932,1412,20.733,2019,Ssp,Cerca viva
 MB-VC-SJ,MB-VC-SJ_03,1607,San jose,0,Cafetera,Valle del cauca,-75.7368,4.6938,1401,20.733,2019,Pastizales,NA
 MB-VC-SJ,MB-VC-SJ_04,1607,San jose,0,Cafetera,Valle del cauca,-75.7384,4.6944,1378,20.733,2019,Ssp,Intensivo
@@ -286,9 +286,9 @@ MB-G-EPAR,MB-G-EPAR_04,4334,El paraiso,0,Rio cesar,Guajira,-73.0121,11.1196,146,
 MB-G-EPAR,MB-G-EPAR_05,4334,El paraiso,0,Rio cesar,Guajira,-73.0111,11.1191,152,27.317,1011,Bosque,Secundario
 MB-G-EPAR,MB-G-EPAR_06,4334,El paraiso,0,Rio cesar,Guajira,-73.0112,11.1182,152,27.317,1011,Bosque,Secundario
 MB-G-LU,MB-G-LU_01,4051,La ultima carta,196,Rio cesar,Guajira,-72.9098,11.1447,142,27.442,1072,Bosque,Secundario
-MB-G-LU,MB-G-LU_02,4051,La ultima carta,251,Rio cesar,Guajira,-72.9105,11.1435,139,27.442,1072,Bosque,Secundario
-MB-G-LU,MB-G-LU_03,4051,La ultima carta,356,Rio cesar,Guajira,-72.9105,11.1424,145,27.442,1072,Bosque,Secundario
-MB-G-LU,MB-G-LU_04,4051,La ultima carta,442,Rio cesar,Guajira,-72.9104,11.1413,145,27.325,1113,Bosque,Secundario
+MB-G-LU,MB-G-LU_02,4051,La ultima carta,251,Rio cesar,Guajira,-72.9105,11.1435,139,27.442,1072,Bosque,Ripario
+MB-G-LU,MB-G-LU_03,4051,La ultima carta,356,Rio cesar,Guajira,-72.9105,11.1424,145,27.442,1072,Bosque,Ripario
+MB-G-LU,MB-G-LU_04,4051,La ultima carta,442,Rio cesar,Guajira,-72.9104,11.1413,145,27.325,1113,Bosque,Ripario
 MB-G-LU,MB-G-LU_05,4051,La ultima carta,437,Rio cesar,Guajira,-72.9114,11.1408,149,27.325,1113,Bosque,Secundario
 MB-G-LU,MB-G-LU_06,4051,La ultima carta,533,Rio cesar,Guajira,-72.9118,11.1397,155,27.325,1113,Bosque,Secundario
 MB-G-MV,MB-G-MV_01,4715,Mis viejos,0,Rio cesar,Guajira,-72.9581,11.0231,837,23.558,1206,Bosque,Secundario
@@ -298,17 +298,17 @@ MB-G-MV,MB-G-MV_04,4715,Mis viejos,64,Rio cesar,Guajira,-72.9589,11.0199,770,23.
 MB-G-MV,MB-G-MV_05,4715,Mis viejos,79,Rio cesar,Guajira,-72.9585,11.0188,756,23.183,1251,Bosque,Secundario
 MB-G-MV,MB-G-MV_06,4715,Mis viejos,54,Rio cesar,Guajira,-72.9579,11.0176,734,23.558,1206,Bosque,Secundario
 MB-M-A,MB-M-A_01-A,3188,Andorra,0,Piedemonte,Meta,-73.8071,3.8049,543,24.742,3569,Bosque,Secundario
-MB-M-A,MB-M-A_01-B,1734,Andorra,0,Piedemonte,Meta,-73.8072,3.8083,534,24.742,3569,Bosque,Secundario
+MB-M-A,MB-M-A_01-B,1734,Andorra,0,Piedemonte,Meta,-73.8072,3.8083,534,24.742,3569,Bosque,Ripario
 MB-M-A,MB-M-A_02-A,3188,Andorra,0,Piedemonte,Meta,-73.8078,3.8041,545,24.742,3569,Bosque,Secundario
-MB-M-A,MB-M-A_02-B,1734,Andorra,0,Piedemonte,Meta,-73.8079,3.8074,538,24.742,3569,Bosque,Secundario
+MB-M-A,MB-M-A_02-B,1734,Andorra,0,Piedemonte,Meta,-73.8079,3.8074,538,24.742,3569,Bosque,Ripario
 MB-M-A,MB-M-A_03-A,3188,Andorra,0,Piedemonte,Meta,-73.8083,3.8032,536,24.742,3569,Bosque,Secundario
-MB-M-A,MB-M-A_03-B,3188,Andorra,0,Piedemonte,Meta,-73.8088,3.8069,544,24.658,3642,Bosque,Secundario
+MB-M-A,MB-M-A_03-B,3188,Andorra,0,Piedemonte,Meta,-73.8088,3.8069,544,24.658,3642,Bosque,Ripario
 MB-M-A,MB-M-A_04-A,3188,Andorra,0,Piedemonte,Meta,-73.8075,3.8027,536,24.742,3569,Bosque,Secundario
-MB-M-A,MB-M-A_04-B,3188,Andorra,0,Piedemonte,Meta,-73.8092,3.8059,542,24.658,3642,Bosque,Secundario
+MB-M-A,MB-M-A_04-B,3188,Andorra,0,Piedemonte,Meta,-73.8092,3.8059,542,24.658,3642,Bosque,Ripario
 MB-M-A,MB-M-A_05-A,3188,Andorra,0,Piedemonte,Meta,-73.8067,3.8034,545,24.742,3569,Bosque,Secundario
-MB-M-A,MB-M-A_05-B,3188,Andorra,0,Piedemonte,Meta,-73.8102,3.806,543,24.658,3642,Bosque,Secundario
+MB-M-A,MB-M-A_05-B,3188,Andorra,0,Piedemonte,Meta,-73.8102,3.806,543,24.658,3642,Bosque,Ripario
 MB-M-A,MB-M-A_06-A,3188,Andorra,0,Piedemonte,Meta,-73.8062,3.8045,537,24.742,3569,Bosque,Secundario
-MB-M-A,MB-M-A_06-B,268,Andorra,0,Piedemonte,Meta,-73.8111,3.8059,548,24.658,3642,Bosque,Secundario
+MB-M-A,MB-M-A_06-B,268,Andorra,0,Piedemonte,Meta,-73.8111,3.8059,548,24.658,3642,Bosque,Ripario
 MB-M-BV,MB-M-BV_01,3948,Buena vista,0,Piedemonte,Meta,-73.7219,3.3634,346,25.892,2794,Bosque,Secundario
 MB-M-BV,MB-M-BV_02,3948,Buena vista,0,Piedemonte,Meta,-73.7229,3.3637,354,25.892,2794,Bosque,Secundario
 MB-M-BV,MB-M-BV_03,3948,Buena vista,0,Piedemonte,Meta,-73.7241,3.3638,350,25.892,2794,Bosque,Secundario
@@ -321,7 +321,7 @@ MB-M-EA,MB-M-EA_03,4121,El amparo,0,Piedemonte,Meta,-73.673,3.3291,320,26.008,28
 MB-M-EA,MB-M-EA_04,4121,El amparo,0,Piedemonte,Meta,-73.6729,3.3277,319,26.008,2811,Bosque,Secundario
 MB-M-EA,MB-M-EA_05,4121,El amparo,0,Piedemonte,Meta,-73.6701,3.3263,315,26.008,2811,Bosque,Secundario
 MB-M-EA,MB-M-EA_06,4121,El amparo,0,Piedemonte,Meta,-73.6689,3.3272,322,26.008,2811,Bosque,Secundario
-MB-M-EPO1,MB-M-EPO1_01,259,El porvenir 1,0,Piedemonte,Meta,-73.8432,3.8274,747,23.492,4079,Bosque,Secundario
+MB-M-EPO1,MB-M-EPO1_01,259,El porvenir 1,0,Piedemonte,Meta,-73.8432,3.8274,747,23.492,4079,Bosque,Ripario
 MB-M-EPO1,MB-M-EPO1_02,259,El porvenir 1,0,Piedemonte,Meta,-73.8427,3.8281,749,23.492,4079,Bosque,Secundario
 MB-M-EPO1,MB-M-EPO1_03,259,El porvenir 1,0,Piedemonte,Meta,-73.842,3.8285,754,23.492,4079,Bosque,Secundario
 MB-M-EPO1,MB-M-EPO1_03_(1),259,El porvenir 1,0,Piedemonte,Meta,-73.8417,3.8293,751,23.492,4079,Bosque,Secundario
@@ -334,13 +334,13 @@ MB-M-LCA1,MB-M-LCA1_03,3958,Los cambulos 1,0,Piedemonte,Meta,-73.7425,3.3812,357
 MB-M-LCA1,MB-M-LCA1_04,3958,Los cambulos 1,0,Piedemonte,Meta,-73.7446,3.3827,336,25.775,2705,Bosque,Secundario
 MB-M-LCA1,MB-M-LCA1_05,3958,Los cambulos 1,0,Piedemonte,Meta,-73.7445,3.3816,365,25.775,2705,Bosque,Secundario
 MB-M-LCA1,MB-M-LCA1_06,3958,Los cambulos 1,0,Piedemonte,Meta,-73.744,3.3805,366,25.775,2705,Bosque,Secundario
-MB-M-LCR,MB-M-LCR_01,1732,La cristalina,0,Piedemonte,Meta,-73.84,3.819,619,24.167,4350,Bosque,Secundario
-MB-M-LCR,MB-M-LCR_02,1732,La cristalina,0,Piedemonte,Meta,-73.8407,3.8202,639,24.167,4350,Bosque,Secundario
+MB-M-LCR,MB-M-LCR_01,1732,La cristalina,0,Piedemonte,Meta,-73.84,3.819,619,24.167,4350,Bosque,Ripario
+MB-M-LCR,MB-M-LCR_02,1732,La cristalina,0,Piedemonte,Meta,-73.8407,3.8202,639,24.167,4350,Bosque,Ripario
 MB-M-LCR,MB-M-LCR_03,1732,La cristalina,0,Piedemonte,Meta,-73.8414,3.8196,632,24.167,4350,Bosque,Ripario
-MB-M-LCR,MB-M-LCR_04,1732,La cristalina,0,Piedemonte,Meta,-73.8409,3.8189,628,24.167,4350,Bosque,Secundario
+MB-M-LCR,MB-M-LCR_04,1732,La cristalina,0,Piedemonte,Meta,-73.8409,3.8189,628,24.167,4350,Bosque,Ripario
 MB-M-LCR,MB-M-LCR_05,1732,La cristalina,0,Piedemonte,Meta,-73.8418,3.82,640,23.892,4386,Bosque,Secundario
 MB-M-LCR,MB-M-LCR_06,1732,La cristalina,0,Piedemonte,Meta,-73.8424,3.8213,668,23.892,4386,Bosque,Secundario
-MB-M-LCR,MB-M-LCR_07,1732,La cristalina,0,Piedemonte,Meta,-73.8413,3.8207,645,24.167,4350,Bosque,Secundario
+MB-M-LCR,MB-M-LCR_07,1732,La cristalina,0,Piedemonte,Meta,-73.8413,3.8207,645,24.167,4350,Bosque,Ripario
 MB-M-LCR,MB-M-LCR_08,1732,La cristalina,0,Piedemonte,Meta,-73.8395,3.8181,608,24.167,4350,Ssp,Arboles dispersos
 MB-M-LCR,MB-M-LCR_09,1732,La cristalina,0,Piedemonte,Meta,-73.8388,3.8204,622,24.167,4350,Ssp,Cerca viva
 MB-M-LH,MB-M-LH_01-A,1501,La herradura,15,Piedemonte,Meta,-73.6006,3.2994,276,26.1,2668,Bosque,Secundario
@@ -355,16 +355,16 @@ MB-M-LH,MB-M-LH_05-A,1501,La herradura,90,Piedemonte,Meta,-73.6055,3.301,290,26.
 MB-M-LH,MB-M-LH_05-B,1501,La herradura,617,Piedemonte,Meta,-73.6097,3.2948,306,26.075,2693,Bosque,Secundario
 MB-M-LH,MB-M-LH_06-A,1501,La herradura,244,Piedemonte,Meta,-73.6065,3.302,301,26.167,2678,Bosque,Secundario
 MB-M-LH,MB-M-LH_06-B,1501,La herradura,664,Piedemonte,Meta,-73.6093,3.2936,291,26.075,2693,Bosque,Secundario
-MB-M-LP1,MB-M-LP1_01,1518,La pradera 1,0,Piedemonte,Meta,-73.8206,3.8228,544,24.642,3881,Bosque,Secundario
+MB-M-LP1,MB-M-LP1_01,1518,La pradera 1,0,Piedemonte,Meta,-73.8206,3.8228,544,24.642,3881,Bosque,Ripario
 MB-M-LP1,MB-M-LP1_02,1518,La pradera 1,0,Piedemonte,Meta,-73.8208,3.824,552,24.642,3881,Bosque,Secundario
-MB-M-LP1,MB-M-LP1_03,1518,La pradera 1,0,Piedemonte,Meta,-73.8216,3.8235,564,24.642,3881,Bosque,Secundario
-MB-M-LP1,MB-M-LP1_04,1518,La pradera 1,0,Piedemonte,Meta,-73.8206,3.8252,560,24.45,4192,Bosque,Secundario
-MB-M-LP1,MB-M-LP1_05,1518,La pradera 1,18,Piedemonte,Meta,-73.821,3.8261,578,24.45,4192,Bosque,Secundario
-MB-M-LP1,MB-M-LP1_06,1518,La pradera 1,47,Piedemonte,Meta,-73.822,3.8266,580,24.45,4192,Bosque,Secundario
-MB-Q-ECOR,MB-Q-ECOR_01,350,El cortijo,0,Cafetera,Quindio,-75.5615,4.6493,1891,17.358,2051,Bosque,Secundario
+MB-M-LP1,MB-M-LP1_03,1518,La pradera 1,0,Piedemonte,Meta,-73.8216,3.8235,564,24.642,3881,Bosque,Ripario
+MB-M-LP1,MB-M-LP1_04,1518,La pradera 1,0,Piedemonte,Meta,-73.8206,3.8252,560,24.45,4192,Bosque,Ripario
+MB-M-LP1,MB-M-LP1_05,1518,La pradera 1,18,Piedemonte,Meta,-73.821,3.8261,578,24.45,4192,Bosque,Ripario
+MB-M-LP1,MB-M-LP1_06,1518,La pradera 1,47,Piedemonte,Meta,-73.822,3.8266,580,24.45,4192,Bosque,Ripario
+MB-Q-ECOR,MB-Q-ECOR_01,350,El cortijo,0,Cafetera,Quindio,-75.5615,4.6493,1891,17.358,2051,Bosque,Ripario
 MB-Q-ECOR,MB-Q-ECOR_02,350,El cortijo,0,Cafetera,Quindio,-75.5617,4.65,1895,17.358,2051,Bosque,Secundario
-MB-Q-ECOR,MB-Q-ECOR_03,350,El cortijo,0,Cafetera,Quindio,-75.5602,4.6509,1951,16.717,2242,Bosque,Secundario
-MB-Q-ECOR,MB-Q-ECOR_04,350,El cortijo,0,Cafetera,Quindio,-75.5597,4.6518,1943,16.717,2242,Bosque,Secundario
+MB-Q-ECOR,MB-Q-ECOR_03,350,El cortijo,0,Cafetera,Quindio,-75.5602,4.6509,1951,16.717,2242,Bosque,Ripario
+MB-Q-ECOR,MB-Q-ECOR_04,350,El cortijo,0,Cafetera,Quindio,-75.5597,4.6518,1943,16.717,2242,Bosque,Ripario
 MB-Q-ECOR,MB-Q-ECOR_05,350,El cortijo,0,Cafetera,Quindio,-75.5612,4.6505,1937,16.717,2242,Bosque,Secundario
 MB-Q-ECOR,MB-Q-ECOR_06,350,El cortijo,0,Cafetera,Quindio,-75.5612,4.6499,1891,17.358,2051,Bosque,Secundario
 MB-Q-EC,MB-Q-EC_01,731,El cairo,466,Cafetera,Quindio,-75.5475,4.6357,2072,16.617,1888,Bosque,Secundario
@@ -379,11 +379,11 @@ MB-Q-EC,MB-Q-EC_09,731,El cairo,355,Cafetera,Quindio,-75.5496,4.6384,1952,16.617
 MB-Q-EC,MB-Q-EC_10,731,El cairo,499,Cafetera,Quindio,-75.5503,4.6372,1992,16.767,2033,Bosque,Secundario
 MB-Q-EC,MB-Q-EC_11,731,El cairo,566,Cafetera,Quindio,-75.5499,4.636,2018,16.617,1888,Bosque,Secundario
 MB-Q-EC,MB-Q-EC_12,731,El cairo,663,Cafetera,Quindio,-75.5494,4.6347,2089,16.617,1888,Bosque,Secundario
-MB-Q-JB,MB-Q-JB_01,855,Juan b,0,Cafetera,Quindio,-75.4839,4.6369,2383,14.167,1834,Bosque,Secundario
+MB-Q-JB,MB-Q-JB_01,855,Juan b,0,Cafetera,Quindio,-75.4839,4.6369,2383,14.167,1834,Bosque,Ripario
 MB-Q-JB,MB-Q-JB_02,855,Juan b,0,Cafetera,Quindio,-75.4835,4.6355,2408,14.167,1834,Ssp,Cerca viva
 MB-Q-JB,MB-Q-JB_03,855,Juan b,0,Cafetera,Quindio,-75.4826,4.6344,2422,13.383,1799,Ssp,Arboles dispersos
 MB-Q-JB,MB-Q-JB_04,855,Juan b,0,Cafetera,Quindio,-75.4846,4.6348,2425,14.167,1834,Ssp,Cerca viva
-MB-Q-JB,MB-Q-JB_05,855,Juan b,0,Cafetera,Quindio,-75.4853,4.6338,2427,14.167,1834,Bosque,Secundario
+MB-Q-JB,MB-Q-JB_05,855,Juan b,0,Cafetera,Quindio,-75.4853,4.6338,2427,14.167,1834,Bosque,Ripario
 MB-Q-JB,MB-Q-JB_06,855,Juan b,0,Cafetera,Quindio,-75.4859,4.6346,2392,14.167,1834,Ssp,Arboles dispersos
 MB-Q-LA,MB-Q-LA_01,899,Los arboles,283,Cafetera,Quindio,-75.5021,4.6318,2234,14.733,1867,Bosque,Secundario
 MB-Q-LA,MB-Q-LA_02,899,Los arboles,188,Cafetera,Quindio,-75.5031,4.6318,2228,14.733,1867,Bosque,Secundario
@@ -391,7 +391,7 @@ MB-Q-LA,MB-Q-LA_03,899,Los arboles,95,Cafetera,Quindio,-75.5042,4.6319,2211,14.7
 MB-Q-LA,MB-Q-LA_04,899,Los arboles,0,Cafetera,Quindio,-75.5053,4.6316,2228,14.733,1867,Bosque,Secundario
 MB-Q-LA,MB-Q-LA_05,899,Los arboles,0,Cafetera,Quindio,-75.5065,4.6311,2219,14.733,1867,Bosque,Secundario
 MB-Q-LA,MB-Q-LA_06,899,Los arboles,0,Cafetera,Quindio,-75.507,4.6304,2234,14.733,1867,Bosque,Secundario
-MB-Q-LCA,MB-Q-LCA_01,2229,La carelia,0,Cafetera,Quindio,-75.5083,4.6398,2223,14.758,1807,Bosque,Secundario
+MB-Q-LCA,MB-Q-LCA_01,2229,La carelia,0,Cafetera,Quindio,-75.5083,4.6398,2223,14.758,1807,Bosque,Ripario
 MB-Q-LCA,MB-Q-LCA_02,2229,La carelia,0,Cafetera,Quindio,-75.5075,4.6392,2249,14.758,1807,Bosque,Secundario
 MB-Q-LCA,MB-Q-LCA_03,2229,La carelia,0,Cafetera,Quindio,-75.5065,4.6383,2229,14.758,1807,Bosque,Secundario
 MB-Q-LCA,MB-Q-LCA_04,2229,La carelia,74,Cafetera,Quindio,-75.5054,4.6394,2308,14.758,1807,Bosque,Secundario
@@ -400,8 +400,8 @@ MB-Q-LCA,MB-Q-LCA_06,2229,La carelia,61,Cafetera,Quindio,-75.5064,4.6408,2320,14
 MB-Q-LCA,MB-Q-LCA_07,2229,La carelia,0,Cafetera,Quindio,-75.5072,4.6398,2249,14.758,1807,Bosque,Secundario
 MB-Q-LCA,MB-Q-LCA_08,2229,La carelia,0,Cafetera,Quindio,-75.5072,4.6409,2318,14.758,1807,Bosque,Secundario
 MB-Q-LCA,MB-Q-LCA_09,2229,La carelia,8,Cafetera,Quindio,-75.5072,4.642,2386,12.942,1729,Bosque,Secundario
-MB-Q-PORT,MB-Q-PORT_01,1629,Portugal,0,Cafetera,Quindio,-75.5322,4.6407,2041,16.117,1959,Bosque,Secundario
-MB-Q-PORT,MB-Q-PORT_02,1629,Portugal,0,Cafetera,Quindio,-75.5314,4.6409,2089,16.117,1959,Bosque,Secundario
+MB-Q-PORT,MB-Q-PORT_01,1629,Portugal,0,Cafetera,Quindio,-75.5322,4.6407,2041,16.117,1959,Bosque,Ripario
+MB-Q-PORT,MB-Q-PORT_02,1629,Portugal,0,Cafetera,Quindio,-75.5314,4.6409,2089,16.117,1959,Bosque,Ripario
 MB-Q-PORT,MB-Q-PORT_03,1629,Portugal,0,Cafetera,Quindio,-75.5307,4.6407,2077,16.117,1959,Bosque,Secundario
 MB-Q-PORT,MB-Q-PORT_04,1629,Portugal,0,Cafetera,Quindio,-75.5301,4.6412,2117,16.117,1959,Bosque,Secundario
 MB-Q-PORT,MB-Q-PORT_05,1629,Portugal,0,Cafetera,Quindio,-75.5298,4.6423,2159,15.75,2093,Bosque,Secundario
@@ -430,22 +430,22 @@ MB-S-MF,MB-S-MF_09,197,Martina florez,0,Cordillera oriental,Santander,-73.0471,6
 MB-S-MF,MB-S-MF_10,197,Martina florez,0,Cordillera oriental,Santander,-73.0465,6.1068,2329,14.683,1192,Bosque,Secundario
 MB-S-MF,MB-S-MF_11,197,Martina florez,10,Cordillera oriental,Santander,-73.0463,6.1074,2329,14.683,1192,Bosque,Secundario
 MB-S-MF,MB-S-MF_12,197,Martina florez,0,Cordillera oriental,Santander,-73.0466,6.1079,2304,14.683,1192,Bosque,Secundario
-MB-R-OQ,MB-R-OQ_01,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5639,4.7192,1960,16.633,2052,Bosque,Maduro
+MB-R-OQ,MB-R-OQ_01,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5639,4.7192,1960,16.633,2052,Bosque,Ripario
 MB-R-OQ,MB-R-OQ_02,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5669,4.723,1925,16.567,2005,Bosque,Maduro
-MB-R-OQ,MB-R-OQ_03,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5575,4.7146,2023,16.283,1908,Bosque,Maduro
-MB-R-OQ,MB-R-OQ_04,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5419,4.7088,2063,15.933,1862,Bosque,Maduro
-MB-R-OQ,MB-R-OQ_05,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5392,4.705,2188,15.6,2095,Bosque,Maduro
-MB-R-OQ,MB-R-OQ_06,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5334,4.7008,2123,15.6,2095,Bosque,Maduro
-MB-R-OQ,MB-R-OQ_07,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5311,4.6999,2139,14.7,1957,Bosque,Maduro
-MB-R-OQ,MB-R-OQ_08,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5287,4.6996,2148,14.7,1957,Bosque,Maduro
-MB-R-OQ,MB-R-OQ_09,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5268,4.699,2166,14.7,1957,Bosque,Maduro
+MB-R-OQ,MB-R-OQ_03,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5575,4.7146,2023,16.283,1908,Bosque,Ripario
+MB-R-OQ,MB-R-OQ_04,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5419,4.7088,2063,15.933,1862,Bosque,Ripario
+MB-R-OQ,MB-R-OQ_05,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5392,4.705,2188,15.6,2095,Bosque,Ripario
+MB-R-OQ,MB-R-OQ_06,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5334,4.7008,2123,15.6,2095,Bosque,Ripario
+MB-R-OQ,MB-R-OQ_07,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5311,4.6999,2139,14.7,1957,Bosque,Ripario
+MB-R-OQ,MB-R-OQ_08,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5287,4.6996,2148,14.7,1957,Bosque,Ripario
+MB-R-OQ,MB-R-OQ_09,NA,"Vereda la suiza, corregimiento de la florida",NA,Cafetera,Risaralda,-75.5268,4.699,2166,14.7,1957,Bosque,Ripario
 MB-VC-EH,MB-VC-EH_05,Ref_El hatico,El hatico,NA,Cafetera,Valle del cauca,-76.3142,3.6411,1009,23.342,1458,Ssp,Arboles dispersos
 MB-VC-EH,MB-VC-EH_06,Ref_El hatico,El hatico,NA,Cafetera,Valle del cauca,-76.3152,3.6428,1003,23.333,1406,Ssp,Cerca viva
 MB-VC-EH,MB-VC-EH_07,Ref_El hatico,El hatico,NA,Cafetera,Valle del cauca,-76.3196,3.6431,997,23.35,1466,Ssp,Intensivo
 MB-VC-EH,MB-VC-EH_08,Ref_El hatico,El hatico,NA,Cafetera,Valle del cauca,-76.3228,3.6448,996,23.35,1466,Ssp,Arboles dispersos
 MB-VC-EH,MB-VC-EH_09,Ref_El hatico,El hatico,NA,Cafetera,Valle del cauca,-76.325,3.6425,1011,23.375,1411,Bosque,Maduro
 MB-VC-EH,MB-VC-EH_10,Ref_El hatico,El hatico,NA,Cafetera,Valle del cauca,-76.3251,3.641,1001,23.367,1463,Bosque,Secundario
-MB-VC-EH,MB-VC-EH_11,Ref_El hatico,El hatico,NA,Cafetera,Valle del cauca,-76.3262,3.6419,1005,23.375,1411,Bosque,Maduro
+MB-VC-EH,MB-VC-EH_11,Ref_El hatico,El hatico,NA,Cafetera,Valle del cauca,-76.3262,3.6419,1005,23.375,1411,Bosque,Ripario
 MB-VC-EH,MB-VC-EH_12,Ref_El hatico,El hatico,NA,Cafetera,Valle del cauca,-76.3268,3.6436,991,23.375,1411,Bosque,Secundario
 MB-M-A,MB-M-A_01,1734,Andorra,1133,Piedemonte,Meta,-73.8067,3.8105,530,24.742,3611,Ssp,Arboles dispersos
 MB-M-A,MB-M-A_02,1734,Andorra,1282,Piedemonte,Meta,-73.8085,3.8096,530,24.692,3869,Pastizales,NA
@@ -460,7 +460,7 @@ MB-M-A,MB-M-A_10,1734,Andorra,244,Piedemonte,Meta,-73.8107,3.8228,521,24.742,393
 MB-M-A,MB-M-A_13,1734,Andorra,574,Piedemonte,Meta,-73.8049,3.8201,523,24.775,3643,Pastizales,NA
 MB-M-A,MB-M-A_14,1734,Andorra,700,Piedemonte,Meta,-73.8059,3.8173,524,24.775,3643,Pastizales,NA
 MB-M-A,MB-M-A_15,1734,Andorra,775,Piedemonte,Meta,-73.8058,3.8154,527,24.742,3611,Pastizales,NA
-MB-M-A,MB-M-A_16,1734,Andorra,905,Piedemonte,Meta,-73.8043,3.8106,527,24.742,3611,Bosque,Secundario
+MB-M-A,MB-M-A_16,1734,Andorra,905,Piedemonte,Meta,-73.8043,3.8106,527,24.742,3611,Bosque,Ripario
 MB-M-A,MB-M-A_17,1734,Andorra,777,Piedemonte,Meta,-73.8025,3.8101,524,24.742,3611,Pastizales,NA
 MB-M-A,MB-M-A_18,1734,Andorra,629,Piedemonte,Meta,-73.8021,3.8124,530,24.742,3611,Bosque,Ripario
 MB-M-A,MB-M-A_19,1734,Andorra,490,Piedemonte,Meta,-73.7999,3.8114,524,24.792,3439,Ssp,Cerca viva
@@ -470,10 +470,10 @@ MB-M-A,MB-M-A_22,1734,Andorra,271,Piedemonte,Meta,-73.8017,3.8207,524,24.775,364
 MB-M-A,MB-M-A_23,1734,Andorra,581,Piedemonte,Meta,-73.8058,3.8218,511,24.775,3643,Pastizales,NA
 MB-M-A,MB-M-A_24,1734,Andorra,560,Piedemonte,Meta,-73.8078,3.8217,514,24.775,3643,Pastizales,NA
 MB-M-A,MB-M-A_25,1734,Andorra,633,Piedemonte,Meta,-73.808,3.8198,528,24.775,3643,Pastizales,NA
-MB-M-A,MB-M-A_26,1734,Andorra,749,Piedemonte,Meta,-73.8046,3.8142,525,24.742,3611,Ssp,Cerca viva
+MB-M-A,MB-M-A_26,1734,Andorra,749,Piedemonte,Meta,-73.8046,3.8142,525,24.742,3611,Ssp,Ripario
 MB-M-EPO3,MB-M-EPO3_01,261,El porvenir 3,0,Piedemonte,Meta,-73.7975,3.6735,430,25.325,2897,Ssp,Arboles dispersos
-MB-M-EPO3,MB-M-EPO3_02,261,El porvenir 3,11,Piedemonte,Meta,-73.7957,3.6738,431,25.325,2897,Bosque,Secundario
-MB-M-EPO3,MB-M-EPO3_03,261,El porvenir 3,12,Piedemonte,Meta,-73.7945,3.6718,429,25.325,2897,Bosque,Secundario
+MB-M-EPO3,MB-M-EPO3_02,261,El porvenir 3,11,Piedemonte,Meta,-73.7957,3.6738,431,25.325,2897,Bosque,Ripario
+MB-M-EPO3,MB-M-EPO3_03,261,El porvenir 3,12,Piedemonte,Meta,-73.7945,3.6718,429,25.325,2897,Bosque,Ripario
 MB-M-EPO3,MB-M-EPO3_04,261,El porvenir 3,0,Piedemonte,Meta,-73.7955,3.6701,423,25.325,2897,Ssp,Arboles dispersos
 MB-M-EPO3,MB-M-EPO3_05,261,El porvenir 3,0,Piedemonte,Meta,-73.7967,3.6688,424,25.325,2897,Pastizales,NA
 MB-M-EPO3,MB-M-EPO3_06,261,El porvenir 3,0,Piedemonte,Meta,-73.7983,3.668,424,25.325,2897,Pastizales,NA
@@ -494,7 +494,7 @@ MB-M-LRO1,MB-M-LRO1_02,3189,La rosania 1,0,Piedemonte,Meta,-73.8388,3.8369,783,2
 MB-M-LRO1,MB-M-LRO1_03,3189,La rosania 1,0,Piedemonte,Meta,-73.8405,3.8377,796,23.625,4306,Pastizales,NA
 MB-M-LRO1,MB-M-LRO1_04,3189,La rosania 1,0,Piedemonte,Meta,-73.8433,3.8382,807,23.3,4003,Ssp,Arboles dispersos
 MB-M-LRO1,MB-M-LRO1_05,3189,La rosania 1,0,Piedemonte,Meta,-73.8369,3.8334,697,23.625,4306,Bosque,Secundario
-MB-M-LRO1,MB-M-LRO1_06,3189,La rosania 1,0,Piedemonte,Meta,-73.8357,3.8319,667,23.858,4255,Bosque,Secundario
+MB-M-LRO1,MB-M-LRO1_06,3189,La rosania 1,0,Piedemonte,Meta,-73.8357,3.8319,667,23.858,4255,Bosque,Ripario
 MB-M-LRO1,MB-M-LRO1_07,3189,La rosania 1,0,Piedemonte,Meta,-73.8334,3.8291,628,23.858,4255,Pastizales,NA
 MB-M-LRO1,MB-M-LRO1_08,3189,La rosania 1,0,Piedemonte,Meta,-73.8452,3.8371,817,23.3,4003,Ssp,Cerca viva
 MB-M-LRO1,MB-M-LRO1_09,3189,La rosania 1,0,Piedemonte,Meta,-73.8473,3.8368,822,23.3,4003,Pastizales,NA
