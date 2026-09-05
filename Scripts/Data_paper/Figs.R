@@ -311,7 +311,7 @@ Pc_temporal_plot <- ggplot(data = Pc_date_p, aes(x = factor(Ano), y = Mes)) +
     x = "Year", y = "Month",
     size = "Number of distinct \n sampling periods", color = "Data collector",
   ) +
-  scale_shape_manual(values = c(0:5)) +
+  scale_shape_manual(values = 0:8) +   # one per Grp_spat level (legend hidden below)
   scale_color_viridis_d() +
   guides(shape = "none") +
   theme(legend.position = c(0.8, 0.2),
@@ -443,8 +443,8 @@ Plot_prec_samp <- function(regions = "All", dyn_occ = FALSE, facet = TRUE){
       x = "Month", y = "Precipitation (mm)",
       title = "30-year average rainfall by department"
     ) +
-    guides(shape = guide_legend(title = "Year")) + 
-    scale_shape_manual(values = c(0, 1, 2, 3, 4, 5, 6, 7)) 
+    guides(shape = guide_legend(title = "Year")) +
+    scale_shape_manual(values = 0:14)   # one shape per survey year -- 9 years as of 2026, headroom for more 
   
   if(facet == TRUE){
     Plot_prec2 <- Plot_prec2 + facet_wrap(~Ecoregion)
