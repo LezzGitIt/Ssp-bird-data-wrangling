@@ -79,15 +79,22 @@ Col_prec_map <- ggplot() +
 # Download rivers if needed
 #ne_rivers <- ne_download(scale = 10, type = "rivers_lake_centerlines", category = "physical", returnclass = "sf")
 
-# Filter to Colombia only
+## Río Cesar is below Natural Earth's scale-10 cutoff -- add its main stem (single 222 km line, dissolved from the OSM HOT Colombia waterways export in Data/hotosm_col_waterways_osm_gpkg/). Gitignored local input; re-bundle for the deposit.
+Rio_cesar <- st_read("Derived/Geospatial/Rio_Cesar_OSM.gpkg", quiet = TRUE)
+Rio_cesar <- st_sf(name = "Río Cesar",
+                   geometry = st_transform(st_geometry(Rio_cesar), st_crs(rivers_co)))
+rivers_co <- bind_rows(rivers_co, Rio_cesar)
+
+# Rivers labelled by geom_text_repel from a point on the line. Río Cesar is labelled separately (rio_cesar_label) at a fixed spot in the empty valley west of its point counts, since repel would put it on top of them.
 rivers_co2 <- rivers_co %>%
-  filter(
-    name %in% c("Magdalena", "Cauca", "Guainía", "Meta") | is.na(name)
-    ) %>% mutate(name = case_when(
-      name == "Guainía" ~ NA,
-      name == "Meta" ~ NA,
-      .default = name
-    ))
+  filter(name %in% c("Magdalena", "Cauca"))
+
+river_labels <- tibble(
+  name = c("Cesar", "Guainía", "Meta"),
+  x    = c(-73.8, -73.2, -73.6),
+  y    = c(10.12, 3.05, 4.5)
+) %>%
+  st_as_sf(coords = c("x", "y"), crs = st_crs(rivers_co))
 
 # >Point formatting -------------------------------------------------------
 ## Point counts within 0.25 degree grid cells 
@@ -167,13 +174,14 @@ Col_alt_map +
     data = rivers_co2,
     aes(label = name, geometry = geometry),
     stat = "sf_coordinates",
-    size = 4, color = "red",
+    size = 3, color = "red",
     max.overlaps = Inf
   ) +
+  geom_sf_text(data = river_labels, aes(label = name), color = "red", size = 3) +
   coord_sf(
-    xlim = c(bbox_all[1], bbox_all[3]), ylim = c(bbox_all[2], bbox_all[4]), 
+    xlim = c(bbox_all[1], bbox_all[3]), ylim = c(bbox_all[2], bbox_all[4]),
            label_axes = "____", expand = TRUE
-    ) + annotation_scale(location = "bl") +
+    ) + annotation_scale(location = "tl") +
   scale_shape_discrete(
     #name = "Data collector", 
     labels = c(
@@ -218,8 +226,9 @@ Col_prec_map +
     size = 4, color = "red",
     max.overlaps = Inf
   ) +
+  geom_sf_text(data = river_labels, aes(label = name), color = "red", size = 4) +
   coord_sf(
-    xlim = c(bbox_all[1], bbox_all[3]), ylim = c(bbox_all[2], bbox_all[4]), 
+    xlim = c(bbox_all[1], bbox_all[3]), ylim = c(bbox_all[2], bbox_all[4]),
     label_axes = "____", expand = TRUE
   ) + annotation_scale(location = "bl") +
   scale_shape_discrete(
