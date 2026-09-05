@@ -1,5 +1,6 @@
 ## PhD birds in silvopastoral landscapes ##
-# Data wrangling to add the landcover / tree cover covariates to Event_covs
+# Data wrangling to add the canopy cover / height covariates to Event_covs (from Event_covs_pcs)
+# The digitized-polygon land-cover metrics live in Chapter 1 (_ch1_pending/Extract_lcs.R, LSM.R), not in this deposit pipeline.
 
 ## Instructions
 # Set 'generate' to TRUE or FALSE, which decides whether to generate the masked and cropped files or whether to import the buffers (already masked and cropped) which are much faster to work with. 
@@ -38,7 +39,7 @@ conflicts_prefer(dplyr::filter)
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
 
 ## Load data
-Event_covs_lsm <- read_csv("Derived/Excels/Event_covs_lsm.csv")
+Event_covs_pcs <- read_csv("Derived/Excels/Event_covs_pcs.csv")
 Pc_locs <- vect("Derived/Geospatial/shp/Pc_locs.gpkg")
 
 # Load in Woody vegetation structure and change (WVSC) file 
@@ -153,40 +154,34 @@ Height_tbl2 <- Height_tbl %>%
          Ano = as.numeric(Ano)) %>% 
   select(-c(Canopy_height_dm))
 
-## Join 
-# The WSVC data only goes through 2024, so that is the closest we can get for the points collected in 2025 and 2026
-Recent_pts <- Event_covs_lsm %>% 
-  filter(Ano %in% c(2025, 2026)) %>% # 2026
-  pull(Id_muestreo) %>% 
-  unique()
-Event_covs_lsm2 <- Event_covs_lsm %>% 
-  mutate(Ano = ifelse(Id_muestreo %in% Recent_pts, 2024, Ano)) %>%
-  left_join(Cover_tbl) %>%
-  left_join(Height_tbl2) %>% 
-  # Will want to use row_update() once 2026 data is available 
-  mutate(Ano = ifelse(Id_muestreo %in% Recent_pts, 2025, Ano)) %>%
-  select(-Scale_m)
+## Join
+# WSVC data only goes through 2024, so 2025/2026 surveys are matched to the 2024 canopy layer -- via a temporary join year so the real Ano column is never overwritten (an earlier version reset every Recent_pts row to 2025, which also clobbered the other-year visits that share an Id_muestreo)
+Event_covs <- Event_covs_pcs %>%
+  mutate(Ano_wvsc = ifelse(Ano %in% c(2025, 2026), 2024, Ano)) %>%
+  left_join(Cover_tbl,   by = c("Id_muestreo_no_dc", "Ano_wvsc" = "Ano")) %>%
+  left_join(Height_tbl2, by = c("Id_muestreo_no_dc", "Ano_wvsc" = "Ano")) %>%
+  select(-any_of(c("Ano_wvsc", "Scale_m")))
 
-Event_covs_lsm2 %>% filter(is.na(Canopy_height_m) | is.na(Canopy_cover))
+Event_covs %>% filter(is.na(Canopy_height_m) | is.na(Canopy_cover))
 
 # >Visualize --------------------------------------------------------------
 ## Visualize distributions 
-Event_covs_lsm2 %>% ggplot() + 
+Event_covs %>% ggplot() + 
   geom_histogram(aes(x = Canopy_height_m))
 
-Event_covs_lsm2 %>% ggplot() + 
+Event_covs %>% ggplot() + 
   geom_histogram(aes(x = Canopy_cover))
 
 # >Check ------------------------------------------------------------------
-Event_covs_lsm2 %>% 
+Event_covs %>%
   Na_rows_cols(
-    id_cols = Id_muestreo, 
-    cols_inc = -c(Registrado_por, Noise, Clima, Cows_50m, forest_typ)
+    id_cols = Id_muestreo,
+    cols_inc = -c(Registrado_por, Noise, Clima, Cows_50m)
   )
 
 # Export ------------------------------------------------------------------
 stop()
-Event_covs_lsm2 %>% write_csv(file = "Derived/Excels/Event_covs.csv")
+Event_covs %>% write_csv(file = "Derived/Excels/Event_covs.csv")
 
 # Export the masked files to save time in future iterations 
 if(FALSE){
