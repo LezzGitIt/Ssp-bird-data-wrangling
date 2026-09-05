@@ -1,9 +1,18 @@
 ## PhD birds in silvopastoral landscapes ##
 ## NOTE: This riparian-corridor-delineation line of work belongs to PhD Chapter 1, not the Ecology data paper -- move this script (and its later revisions) to the Chapter 1 repo when that chapter resumes.
 
-## Derives a stream network for the Piedemonte point counts from FABDEM -- Copernicus GLO-30 with forest/building height removed (Hawker et al. 2022) -- via WhiteboxTools flow-routing and stream extraction. Landed here after SRTM 90 m and plain Copernicus GLO-30 (see git history) both under-performed: DEM extent and resolution weren't the limiting factor, canopy noise on the bare DSM was -- FABDEM's canopy correction alone cut the median riparian-point distance by ~27% at the finest threshold. Sweeps the flow-accumulation threshold, scores every point by a distance/stream-order heuristic ("how likely is this a mislabelled riparian point?"), and exports a review CSV + KMLs for manual reclassification in Google Earth.
+## Contents
+# Derives a stream network for the Piedemonte point counts from FABDEM -- Copernicus GLO-30 with forest/building height removed (Hawker et al. 2022) -- via WhiteboxTools flow-routing and stream extraction. Landed here after SRTM 90 m and plain Copernicus GLO-30 (see git history) both under-performed: DEM extent and resolution weren't the only limiting factors, accounting for height of the forest canopy also helped substantially (visual confirmation in Google Earth).
+# "Sweeps the flow-accumulation threshold" = runs the stream extraction at a range of flow-accumulation cut-offs (100-4000 cells; a cell only becomes a stream once that many upslope cells drain through it), so a low cut-off draws in every headwater rill and a high one keeps only major channels, then measures at each cut-off how far the point counts sit from the nearest derived stream.
+# Also scores every point by a distance/stream-order heuristic ("how likely is this a mislabelled riparian point?") and exports a review CSV + KMLs for manual reclassification in Google Earth.
 
-## Not part of the deposit or the manuscript build.
+## Findings: The water accumulation surface was most accurate in higher elevations and struggled to differentiate the true water flow paths in the flood plains (further East). The DEM resolution meant that the projected waterflows were often offset from the actual stream / river, which made it less useful. The riparian likelihood scores were generally not helpful.
+
+## I conducted manual stream reclassification, scoped to points with no direct field water-body record (Water_body_ever NA -- not visited in a year whose metadata form asked Cuerpo_de_agua):
+# "Y" = a river/stream is directly visible next to the point in Google Earth imagery.
+# "M" = likely riparian or seasonally flooded -- a mapped river runs through the point's forest but the exact channel can't be located (e.g. gallery forest a few hundred metres wide), or the ground shows clear flood signs with no water visible when the image was taken.
+# Stream order weighted the judgement (order 2, and especially 3, counted for more) but the reclassification was subjective; detection got harder further from the Andes as floodplains widen and channels braid.
+# Planned sensitivity check: rerun key models with "M" coded as riparian, as non-riparian, and as its own third category.
 
 # Setup ---------------------------------------------------------------------
 library(sf)
@@ -37,8 +46,10 @@ tryCatch(source("Scripts/01_Gen_wrangling.R"), error = function(e) message("01 s
 stopifnot(exists("Pc_locs_sf"), exists("Pc_hab"))
 
 pc_hab_loc <- Pc_hab %>%
-  summarize(is_riparian = any(Habitat_sub == "Ripario", na.rm = TRUE),
-            any_forest  = any(Habitat == "Bosque", na.rm = TRUE),
+  summarize(is_riparian      = any(Habitat_sub == "Ripario", na.rm = TRUE),
+            any_forest       = any(Habitat == "Bosque", na.rm = TRUE),
+            water_body_ever  = dplyr::first(Water_body_ever),   # NA where no metadata form asked Cuerpo_de_agua
+            water_body_types = dplyr::first(Water_body_types),
             .by = Id_muestreo_no_dc)
 
 points_sf <- Pc_locs_sf %>%
@@ -202,10 +213,10 @@ write.csv(points_sf |> st_drop_geometry() |> arrange(desc(riparian_score)),
 ## Review sheet for Aaron to manually confirm/correct riparian status on every Piedemonte point. Aaron_rip is pre-filled "PE" (pre-existing) where the field label already says riparian, blank otherwise, for Aaron to fill in.
 review_sheet <- points_sf |>
   st_drop_geometry() |>
-  left_join(Site_covs |> select(Id_muestreo_no_dc, Nombre_finca, Habitat, Habitat_sub, Water_body_ever, Water_body_types, Habitat_notes), by = "Id_muestreo_no_dc") |>
+  left_join(Site_covs |> select(Id_muestreo_no_dc, Nombre_finca, Habitat, Habitat_sub), by = "Id_muestreo_no_dc") |>
   mutate(Aaron_rip = if_else(is_riparian, "PE", NA_character_)) |>
   select(Point_count = Id_muestreo_no_dc, Id_gcs, Farm = Nombre_finca, riparian_score, Habitat, Habitat_sub,
-         Water_body_ever, Water_body_types, Notes = Habitat_notes, Aaron_rip) |>
+         Water_body_ever = water_body_ever, Water_body_types = water_body_types, Aaron_rip) |>
   arrange(Point_count)
 
 review_csv <- file.path(out_dir, paste0("dem_whitebox_", dem_source, "_riparian_review.csv"))
@@ -214,8 +225,7 @@ cat("Riparian review sheet written:\n  ", review_csv, "\n")
 
 # Export the chosen threshold as KML for Google Earth ------------------
 points_kml <- points_sf |>
-  left_join(review_sheet |> select(Point_count, Water_body_ever, Notes), by = c("Id_muestreo_no_dc" = "Point_count")) |>
-  transmute(Name = Id_muestreo_no_dc, Id_gcs, group, riparian_score, Water_body_ever, Notes) |>
+  transmute(Name = Id_muestreo_no_dc, Id_gcs, group, riparian_score, Water_body_ever = water_body_ever) |>
   st_transform(4326)
 
 kml_streams <- file.path(out_dir, paste0("dem_whitebox_", dem_source, "_streams_thr", export_threshold, ".kml"))
@@ -229,13 +239,9 @@ top_candidates <- points_sf |>
   filter(!is_riparian) |>
   arrange(desc(riparian_score)) |>
   slice_head(n = n_top_candidates) |>
-  left_join(review_sheet |> select(Point_count, Water_body_ever, Notes), by = c("Id_muestreo_no_dc" = "Point_count")) |>
-  transmute(Name = Id_muestreo_no_dc, Id_gcs, riparian_score, group, Water_body_ever, Notes) |>
+  transmute(Name = Id_muestreo_no_dc, Id_gcs, riparian_score, group, Water_body_ever = water_body_ever) |>
   st_transform(4326)
 
 kml_top <- file.path(out_dir, paste0("dem_whitebox_", dem_source, "_top", n_top_candidates, "_candidates.kml"))
 st_write(top_candidates, kml_top, driver = "KML", delete_dsn = TRUE, quiet = TRUE)
 cat("Top", n_top_candidates, "candidate KML written:\n  ", kml_top, "\n")
-
-# ------------------------------------------------------------------------
-stop()

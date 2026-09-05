@@ -1,4 +1,4 @@
-# Scripts/_ch1_pending/
+# _ch1_pending/
 
 Staging area for material that belongs in **`Ch1-ssp-birds`**, not this repo.
 Parked here (tracked) until Ch1's working tree is clean, then moved.
@@ -7,6 +7,11 @@ Parked here (tracked) until Ch1's working tree is clean, then moved.
 |---|---|---|
 | `Phylogenetic_diversity.R` | split out of the old `Scripts/09_Phylogeny.R` | plain copy (no history) |
 | `Math.qmd` | was `Scripts/Manuscripts/Math.qmd` (never tracked before) | plain copy (no history) |
+| `Rivers_dem_whitebox.R` | riparian-corridor delineation from a DEM; started as `Rivers_hydrography90m_check.R` | `git filter-repo` to keep the full history (Hydrography90m → cop30 → FABDEM) |
+
+`Rivers_dem_whitebox.R` still `source()`s `Scripts/01_Gen_wrangling.R` and writes to
+`Derived/`/`Figures/` — run it from the repo root; it is not otherwise part of any
+pipeline here.
 
 Also bound for Ch1 but **not** here: `DAGs.R` — already `git rm`'d from the working
 tree; extract it from this repo's history with `git filter-repo --path
