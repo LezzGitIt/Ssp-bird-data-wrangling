@@ -1,11 +1,7 @@
 ## PhD birds in silvopastoral landscapes ##
 ## NOTE: This riparian-corridor-delineation line of work belongs to PhD Chapter 1, not the Ecology data paper -- move this script (and its later revisions) to the Chapter 1 repo when that chapter resumes.
 
-## Exploratory -- derive a stream network from a DEM with WhiteboxTools and see whether it places the small rivers close to the Piedemonte point counts. Sweeps the flow-accumulation threshold, measuring how far riparian vs non-riparian points sit from the derived streams, and exports one threshold as KML for Google Earth.
-
-## The DEM must extend well up-slope of the point counts (the Piedemonte rivers drain the Eastern Cordillera to the W/SW) or the main channels get truncated and lose their upstream area. cop30 uses every tile in Derived/Geospatial/DEM/cop30/ -- add N02/N04, W075/W076 tiles as needed.
-
-## Test run first with SRTM 90 m (dem_source = "srtm90") to shake out the workflow, then Copernicus GLO-30 (cop30) for the real 30 m attempt.
+## Derives a stream network for the Piedemonte point counts from FABDEM -- Copernicus GLO-30 with forest/building height removed (Hawker et al. 2022) -- via WhiteboxTools flow-routing and stream extraction. Landed here after SRTM 90 m and plain Copernicus GLO-30 (see git history) both under-performed: DEM extent and resolution weren't the limiting factor, canopy noise on the bare DSM was -- FABDEM's canopy correction alone cut the median riparian-point distance by ~27% at the finest threshold. Sweeps the flow-accumulation threshold, scores every point by a distance/stream-order heuristic ("how likely is this a mislabelled riparian point?"), and exports a review CSV + KMLs for manual reclassification in Google Earth.
 
 ## Not part of the deposit or the manuscript build.
 
@@ -16,21 +12,20 @@ library(dplyr)
 library(purrr)
 library(whitebox)
 library(ggplot2)
-if (requireNamespace("CopernicusDEM", quietly = TRUE)) library(CopernicusDEM)   # cop30 only
 
 sf::sf_use_s2(FALSE)
 wbt_init()
 
-dem_source       <- "cop30"        # "srtm90" | "cop30"
-region           <- "Piedemonte"   # ecoregion to test on
-srtm_pad_deg      <- 0.9            # DEM padding around the points (srtm90 crop only -- cop30 uses all local tiles)
+region            <- "Piedemonte"   # ecoregion to test on
 breach_dist       <- 200           # least-cost breach search radius (cells)
 export_threshold  <- 250           # flow-accum cutoff (cells) to vectorise + export as KML
 analysis_buffer_m <- 3000          # clip the exported network to this buffer around the point counts
+n_top_candidates  <- 50            # export this many non-riparian-labelled points, ranked by riparian_score, as a review KML
 utm18n            <- "EPSG:32618"
+dem_source        <- "fabdem"      # used only to tag output filenames
 
-## flow-accumulation cutoffs (cells) to sweep -- ~0.008 km2/cell at 90 m, ~0.0009 km2/cell at 30 m
-thresholds <- if (dem_source == "srtm90") c(25, 50, 100, 200, 400, 800) else c(100, 250, 500, 1000, 2000, 4000)
+## flow-accumulation cutoffs (cells) to sweep -- ~0.0009 km2/cell at 30 m
+thresholds <- c(100, 250, 500, 1000, 2000, 4000)
 
 wb_dir  <- "Derived/Geospatial/Whitebox"
 dem_dir <- "Derived/Geospatial/DEM"
@@ -58,37 +53,25 @@ points_m <- st_transform(points_sf, utm18n)
 aoi_m <- points_m |> st_buffer(analysis_buffer_m) |> st_union()
 cat(region, "point counts:", nrow(points_sf), "| riparian:", sum(points_sf$is_riparian), "\n")
 
-# Get the DEM -----------------------------------------------------------
+# Get the DEM -------------------------------------------------------------
+## FABDEM (Copernicus GLO-30 with forest & building height removed). No registration needed via the `fabdem` Python package (pip install fabdem); public bucket behind it.
 pt_bb <- st_bbox(points_sf)
 
-dem_raw <- switch(dem_source,
-
-  srtm90 = {
-    bb <- pt_bb
-    bb[c("xmin", "ymin")] <- bb[c("xmin", "ymin")] - srtm_pad_deg
-    bb[c("xmax", "ymax")] <- bb[c("xmax", "ymax")] + srtm_pad_deg
-    d <- geodata::elevation_3s(lon = mean(bb[c("xmin", "xmax")]), lat = mean(bb[c("ymin", "ymax")]), path = dem_dir)
-    terra::crop(d, terra::ext(bb["xmin"], bb["xmax"], bb["ymin"], bb["ymax"]))
-  },
-
-  ## Copernicus GLO-30. CopernicusDEM::aoi_geom_save_tif_matches shells out to the AWS CLI; the copernicus-dem-30m bucket is public but the package omits --no-sign-request, so it needs AWS creds (or pre-download: aws s3 cp s3://copernicus-dem-30m/<tile>/<tile>.tif <cop_dir> --no-sign-request)
-  cop30 = {
-    cop_dir <- file.path(dem_dir, "cop30")
-    dir.create(cop_dir, showWarnings = FALSE, recursive = TRUE)
-    tifs <- list.files(cop_dir, pattern = "[.]tif$", full.names = TRUE)
-    if (length(tifs) == 0) {
-      pad <- pt_bb
-      pad[c("xmin", "ymin")] <- pad[c("xmin", "ymin")] - 1
-      pad[c("xmax", "ymax")] <- pad[c("xmax", "ymax")] + 1
-      CopernicusDEM::aoi_geom_save_tif_matches(sf::st_sf(geometry = sf::st_as_sfc(sf::st_bbox(pad, crs = 4326))),
-                                               dir_save_tifs = cop_dir, resolution = 30)
-      tifs <- list.files(cop_dir, pattern = "[.]tif$", full.names = TRUE)
-    }
-    if (length(tifs) == 0) stop("No Copernicus 30 m tiles in ", cop_dir)
-    ## terra::vrt() gave an empty mosaic for these COGs (terra 1.9.1) -- merge instead
-    if (length(tifs) == 1) terra::rast(tifs) else do.call(terra::merge, lapply(tifs, terra::rast))
-  }
-)
+fab_dir <- file.path(dem_dir, "fabdem")
+dir.create(fab_dir, showWarnings = FALSE, recursive = TRUE)
+fab_path <- file.path(fab_dir, sprintf("fabdem_%s.tif", tolower(region)))
+if (!file.exists(fab_path)) {
+  pad <- pt_bb
+  pad[c("xmin", "ymin")] <- pad[c("xmin", "ymin")] - 1
+  pad[c("xmax", "ymax")] <- pad[c("xmax", "ymax")] + 1
+  py <- Sys.which("python3")
+  cmd <- sprintf(
+    "import fabdem; fabdem.download((%f, %f, %f, %f), output_path='%s', cache='%s')",
+    pad["xmin"], pad["ymin"], pad["xmax"], pad["ymax"], fab_path, file.path(fab_dir, ".cache"))
+  system2(py, c("-c", shQuote(cmd)))
+}
+if (!file.exists(fab_path)) stop("FABDEM download failed -- see ", fab_path)
+dem_raw <- terra::rast(fab_path)
 
 dem_path <- file.path(wb_dir, "dem.tif")
 terra::writeRaster(dem_raw, dem_path, overwrite = TRUE)
@@ -104,7 +87,7 @@ wbt_breach_depressions_least_cost(dem = dem_path, output = dem_b, dist = breach_
 wbt_d8_pointer(dem = dem_b, output = d8_ptr)
 wbt_d8_flow_accumulation(input = dem_b, output = facc, out_type = "cells")
 
-## Coverage check: high flow accumulation entering at a DEM edge = a channel truncated from its upstream area
+## Coverage check: high flow accumulation entering at a DEM edge = a channel truncated from its upstream area (also fires on real outlets -- informational only)
 fa <- terra::rast(facc)
 edge_in <- c(west  = max(fa[, 1][[1]], na.rm = TRUE),
              east  = max(fa[, ncol(fa)][[1]], na.rm = TRUE),
@@ -172,8 +155,67 @@ streams_kml <- streams_exp |>
          Name = paste0("stream (Strahler ", strahler, ")")) |>
   select(Name, strahler)
 
+## Riparian likelihood score --------------------------------------------
+## Heuristic 0-1 score per point count combining distance to the nearest derived stream with that stream's Strahler order.
+## Higher-order streams get a longer decay scale (tau) since they carry both a wider natural riparian corridor and a larger DEM/flow-routing positional error, so the same 100 m offset means much less next to a 4th-order river than next to a 1st-order rill.
+## This is a ranking heuristic, not a fitted/calibrated probability -- the field riparian labels are too sparse (n=25 in Piedemonte) and, per Aaron, too unreliable to calibrate against. Use it to flag likely under-labeled points for manual review, not as a validated probability.
+tau_by_order    <- c(`1` = 40, `2` = 80, `3` = 150, `4` = 250, `5` = 350)   # metres -- decay scale per Strahler order
+score_radius_m  <- 500                                                     # ignore streams farther than this from a point
+
+streams_scored <- streams_at(min(thresholds), add_strahler = TRUE) |>
+  st_transform(utm18n) |>
+  st_intersection(aoi_m)
+ord_col <- strahler_col(names(streams_scored))
+max_tau_order <- max(as.integer(names(tau_by_order)))
+streams_scored <- streams_scored |>
+  mutate(order = pmin(pmax(as.integer(.data[[ord_col]]), 1L), max_tau_order))
+
+## For each point, find every stream within score_radius_m and take the highest exp(-distance / tau[order]) across them -- i.e. the single most-persuasive nearby stream, whatever its order.
+near <- st_is_within_distance(points_m, streams_scored, dist = score_radius_m)
+riparian_score <- map_dbl(seq_len(nrow(points_m)), function(i) {
+  idx <- near[[i]]
+  if (length(idx) == 0) return(0)
+  d <- as.numeric(st_distance(points_m[i, ], streams_scored[idx, ], by_element = FALSE))
+  o <- streams_scored$order[idx]
+  max(exp(-d / tau_by_order[as.character(o)]))
+})
+points_sf <- points_sf |> mutate(riparian_score = round(riparian_score, 3))
+
+cat("\n== Riparian likelihood score (", dem_source, ", tau by order) ==\n", sep = "")
+cat("Currently-riparian points -- score summary:\n")
+print(summary(points_sf$riparian_score[points_sf$is_riparian]))
+cat("Currently-non-riparian points -- score summary:\n")
+print(summary(points_sf$riparian_score[!points_sf$is_riparian]))
+
+cat("\nTop 15 non-riparian-labelled points by score (candidates for relabelling):\n")
+points_sf |>
+  st_drop_geometry() |>
+  filter(!is_riparian) |>
+  arrange(desc(riparian_score)) |>
+  select(Id_muestreo_no_dc, Id_gcs, riparian_score) |>
+  slice_head(n = 15) |>
+  print(n = 15)
+
+write.csv(points_sf |> st_drop_geometry() |> arrange(desc(riparian_score)),
+          file.path(out_dir, paste0("dem_whitebox_", dem_source, "_riparian_score.csv")), row.names = FALSE)
+
+## Review sheet for Aaron to manually confirm/correct riparian status on every Piedemonte point. Aaron_rip is pre-filled "PE" (pre-existing) where the field label already says riparian, blank otherwise, for Aaron to fill in.
+review_sheet <- points_sf |>
+  st_drop_geometry() |>
+  left_join(Site_covs |> select(Id_muestreo_no_dc, Nombre_finca, Habitat, Habitat_sub, Water_body_ever, Water_body_types, Habitat_notes), by = "Id_muestreo_no_dc") |>
+  mutate(Aaron_rip = if_else(is_riparian, "PE", NA_character_)) |>
+  select(Point_count = Id_muestreo_no_dc, Id_gcs, Farm = Nombre_finca, riparian_score, Habitat, Habitat_sub,
+         Water_body_ever, Water_body_types, Notes = Habitat_notes, Aaron_rip) |>
+  arrange(Point_count)
+
+review_csv <- file.path(out_dir, paste0("dem_whitebox_", dem_source, "_riparian_review.csv"))
+write.csv(review_sheet, review_csv, row.names = FALSE, na = "")
+cat("Riparian review sheet written:\n  ", review_csv, "\n")
+
+# Export the chosen threshold as KML for Google Earth ------------------
 points_kml <- points_sf |>
-  transmute(Name = Id_muestreo_no_dc, Id_gcs, group) |>
+  left_join(review_sheet |> select(Point_count, Water_body_ever, Notes), by = c("Id_muestreo_no_dc" = "Point_count")) |>
+  transmute(Name = Id_muestreo_no_dc, Id_gcs, group, riparian_score, Water_body_ever, Notes) |>
   st_transform(4326)
 
 kml_streams <- file.path(out_dir, paste0("dem_whitebox_", dem_source, "_streams_thr", export_threshold, ".kml"))
@@ -181,6 +223,19 @@ kml_points  <- file.path(out_dir, paste0(tolower(region), "_point_counts.kml"))
 st_write(streams_kml, kml_streams, driver = "KML", delete_dsn = TRUE, quiet = TRUE)
 st_write(points_kml, kml_points, driver = "KML", delete_dsn = TRUE, quiet = TRUE)
 cat("\nKML written:\n  ", kml_streams, "\n  ", kml_points, "\n")
+
+## Top N non-riparian-labelled points by score -- relabelling candidates for manual review
+top_candidates <- points_sf |>
+  filter(!is_riparian) |>
+  arrange(desc(riparian_score)) |>
+  slice_head(n = n_top_candidates) |>
+  left_join(review_sheet |> select(Point_count, Water_body_ever, Notes), by = c("Id_muestreo_no_dc" = "Point_count")) |>
+  transmute(Name = Id_muestreo_no_dc, Id_gcs, riparian_score, group, Water_body_ever, Notes) |>
+  st_transform(4326)
+
+kml_top <- file.path(out_dir, paste0("dem_whitebox_", dem_source, "_top", n_top_candidates, "_candidates.kml"))
+st_write(top_candidates, kml_top, driver = "KML", delete_dsn = TRUE, quiet = TRUE)
+cat("Top", n_top_candidates, "candidate KML written:\n  ", kml_top, "\n")
 
 # ------------------------------------------------------------------------
 stop()
