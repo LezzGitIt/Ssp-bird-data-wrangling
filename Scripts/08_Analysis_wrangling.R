@@ -10,7 +10,8 @@ library(conflicted)
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-Bird_pcs_dist <- read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_dist.csv")
+# guess_max = Inf: Grabacion is sparse (only ~180 non-NA, near the end) so the default type guess misreads it as logical and drops the values
+Bird_pcs_dist <- read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_dist.csv", guess_max = Inf)
 Taxonomy <- read_csv(file = "Derived/Excels/Taxonomy/Taxonomy.csv")
 
 # General formatting ---------------------------------------------------------
