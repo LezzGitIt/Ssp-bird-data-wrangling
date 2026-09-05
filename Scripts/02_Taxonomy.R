@@ -28,16 +28,14 @@ ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/Rcookbook/Themes_funs.R")
-
 # Load data ---------------------------------------------------------------
 ## Bring in data 
 # NOTE: This is just point counts
-Bird_pcs_all_spp <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_all_spp.csv")
+Bird_pcs_all_spp <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_all_spp.csv", guess_max = Inf)   # Grabacion is sparse -- force a full type scan
 Site_covs <- read_csv("Derived/Excels/Site_covs.csv")
 
 # Specify path 
-path <- "../Datasets_external/"
+path <- "../../../Datasets_external/"
 
 ## Use the crosswalk file to create a data frame of true taxonomic equivalents (at least for BL & BT)
 Crosswalk <- read.csv(

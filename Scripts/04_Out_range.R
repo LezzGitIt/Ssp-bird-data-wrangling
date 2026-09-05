@@ -33,8 +33,8 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 ## Load data
-Bird_pcs_all <-  read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
-Bird_pcs_dist <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_dist.csv")
+Bird_pcs_all <-  read_csv(file = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv", guess_max = Inf)   # Grabacion is sparse
+Bird_pcs_dist <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_dist.csv", guess_max = Inf)
 Elev_ranges <- read_csv(file = "Derived/Excels/Elev_ranges_all_sources.csv")
 Site_covs <- read_csv(file = "Derived/Excels/Site_covs.csv")
 Event_covs_pcs <- read_csv(file = "Derived/Excels/Event_covs_pcs.csv")
