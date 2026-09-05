@@ -1,4 +1,6 @@
 ## PhD birds in silvopastoral landscapes ##
+## NOTE: This riparian-corridor-delineation line of work belongs to PhD Chapter 1, not the Ecology data paper -- move this script (and its later revisions) to the Chapter 1 repo when that chapter resumes.
+
 ## Exploratory -- does the Hydrography90m stream network resolve the small rivers next to our point counts? The point counts classified as riparian forest are the ground truth: if the layer is detailed enough, those points should snap to a mapped stream within a few tens of metres, on low Strahler-order (small) segments.
 
 ## Two ways to get the streams (set stream_source below):
