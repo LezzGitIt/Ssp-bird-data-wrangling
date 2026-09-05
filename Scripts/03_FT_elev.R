@@ -36,7 +36,7 @@ Tax_df <- read_csv("Derived/Excels/Taxonomy/Taxonomy.csv") #%>%
 # Avonet list  ------------------------------------------------------------
 # See metadata tab in Excel (.xlsx) for information on what each column contains
 # Bring in here as this is used to create Tax_df
-Traits_path <- "../Datasets_external/Avonet_Data/TraitData/"
+Traits_path <- "../../../Datasets_external/Avonet_Data/TraitData/"
 filesAvo <- list.files(path = Traits_path, pattern = ".xlsx")
 sheetsAvo <- str_split_i(filesAvo, ".x", 1)
 dfsAvo <- list() # dfs Ecotropico
@@ -104,7 +104,7 @@ lapply(Ft_df2[17:21], table)
 
 # Birdbase ----------------------------------------------------------------
 # Extract specialization traits from Birdbase
-Birdbase <- read_excel("../Datasets_external/BIRDBASE v2025.1 Sekercioglu et al. Final.xlsx", skip = 1) %>% clean_names()
+Birdbase <- read_excel("../../../Datasets_external/BIRDBASE v2025.1 Sekercioglu et al. Final.xlsx", skip = 1) %>% clean_names()
 # ESI =  log10(100/[dietary breadth x habitat breadth]); a maximum of 2 for the most specialized species that only feed on one major food group and live in one major type of habitat. 
 
 Birdbase_specialization <- Birdbase %>% 
@@ -153,12 +153,12 @@ Ft_df4 <- Ft_df3 %>%
 
 # From Hilty guidebook, thanks to Hazen
 Hilty_elev <- read_xlsx(
-  "../Datasets_external/Elev_ranges/Hazen_Elev_ranges_Hilty.xlsx"
+  "../../../Datasets_external/Elev_ranges/Hazen_Elev_ranges_Hilty.xlsx"
 ) %>% select(Species_ayerbe, contains("Hilty"))
 
 # From Suarez Castro et al (2024)
 Ayerbe_elev <- read_csv(
-  "../Datasets_external/Elev_ranges/Suarez_castro_AOH_birds_table_S3_V3.csv"
+  "../../../Datasets_external/Elev_ranges/Suarez_castro_AOH_birds_table_S3_V3.csv"
 ) %>% rename(
   Species_bl = BirdLife..IUCN.,
   Min_ayerbe = Minimum.elevation,
@@ -167,23 +167,23 @@ Ayerbe_elev <- read_csv(
 
 # From Ayerbe-Quiñones (2018) field guide 
 Ayerbe_elev_hazen <- read_xlsx(
-  "../Datasets_external/Elev_ranges/Hazen_Elev_ranges_Ayerbe.xlsx"
+  "../../../Datasets_external/Elev_ranges/Hazen_Elev_ranges_Ayerbe.xlsx"
 ) %>% select(-Elev_range_ayerbe)
 
 # Join Suarez Castro et al (2024) and Hazen's work from Ayerbe field guide
 Ayerbe_elev2 <- Ayerbe_elev %>% bind_rows(Ayerbe_elev_hazen)
 
 # Traits from Bird et al.
-bird20t <- read_excel("../Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0003-tables3.xlsx")
+bird20t <- read_excel("../../../Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0003-tables3.xlsx")
 bird20t <- bird20t %>%
   rename_with(make.names) %>%
   rename(Min_B20 = Minimum.altitude, Max_B20 = Maximum.altitude)
 
 # Pull elevational ranges of the species of Colombia from Quintero & Jetz 2018, 'Global elevational diversity and diversification of birds'
-elev_rangesQJ <- read_excel("../Datasets_external/Elev_ranges/Quintero_Jetz_Elevational_ranges_2018.xlsx") # QJ = Quintero Jetz
+elev_rangesQJ <- read_excel("../../../Datasets_external/Elev_ranges/Quintero_Jetz_Elevational_ranges_2018.xlsx") # QJ = Quintero Jetz
 
 # Ben Freeman's science paper using eBird to generate elevational ranges
-Free22 <- read.csv("../Datasets_external/Elev_ranges/Freeman_Code_MSM_Elev_2022/Part1/output/elevational-ranges.csv")
+Free22 <- read.csv("../../../Datasets_external/Elev_ranges/Freeman_Code_MSM_Elev_2022/Part1/output/elevational-ranges.csv")
 eB_Tax <- read_excel("../Vignettes/ebird_vignettes/eBird-Clements-v2023-integrated-checklist-October-2023.xlsx") %>%
   filter(category == "species") %>%
   rename_with(make.names)
@@ -435,7 +435,7 @@ Elev_ranges %>%
 table(elev_raw$Match_type)
 
 # IUCN status -------------------------------------------------------------
-HBW <- read_excel("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Analysis/Datasets_external/Handbook of the Birds of the World and BirdLife International Digital Checklist of the Birds of the World_Version_7.xlsx", sheet = "HBW-BirdLife v7 ", skip = 3) %>% tibble() %>% 
+HBW <- read_excel("../../../Datasets_external/Handbook of the Birds of the World and BirdLife International Digital Checklist of the Birds of the World_Version_7.xlsx", sheet = "HBW-BirdLife v7 ", skip = 3) %>% tibble() %>%
   clean_names() %>% 
   rename(iucn_red_list = x2022_iucn_red_list_category)
 # Reduce file down just to recognized species 
@@ -465,7 +465,7 @@ iucn_status %>% tabyl(iucn_red_list)
 ## r-k continuum traits. It would be interesting to see if species that are on the k-side of the continuum are impacted more greatly than r-selected species. Look at Wolfe et al 2025 too. 
 
 # Pace of life traits from Bird et al.
-Bird_pl <- read_excel("../Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0004-tables4.xlsx") %>% clean_names()
+Bird_pl <- read_excel("../../../Datasets_external/Bird_et_al_Generation_length_2020/cobi13486-sup-0004-tables4.xlsx") %>% clean_names()
 
 # Variables are highly correlated
 Bird_pl %>% select(adult_survival:gen_length) %>%
@@ -512,8 +512,28 @@ gg_miss_var(Life_history)
 
 # 341 species with clutch size information
 Life_history %>%
-  filter(!is.na(Clutch)) %>% 
+  filter(!is.na(Clutch)) %>%
   ggplot() + geom_histogram(aes(x = Clutch))
+
+## Are the two mean-clutch-size estimates redundant? BirdLife (Bird et al. 2020) vs BIRDBASE (Sekercioglu). Bridge the two taxonomies through Tax_df.
+Clutch_compare <- Tax_df %>%
+  distinct(Species_bl, Species_avilist_25) %>%
+  left_join(select(Life_history, Scientific.name, Clutch_bl = Clutch),
+            by = join_by(Species_bl == Scientific.name)) %>%
+  left_join(select(Birdbase_clutch, avi_list_v1_2025, Clutch_bb = clutch_mean),
+            by = join_by(Species_avilist_25 == avi_list_v1_2025)) %>%
+  filter(!is.na(Clutch_bl), !is.na(Clutch_bb))
+cat("species with both clutch estimates:", nrow(Clutch_compare), "\n")
+with(Clutch_compare, cor.test(Clutch_bl, Clutch_bb))
+Clutch_compare %>%
+  summarize(mean_abs_diff = mean(abs(Clutch_bb - Clutch_bl)),
+            pct_within_half_egg = mean(abs(Clutch_bb - Clutch_bl) <= 0.5) * 100)
+ggplot(Clutch_compare, aes(Clutch_bl, Clutch_bb)) +
+  geom_abline(slope = 1, linetype = 2, colour = "grey50") +
+  geom_jitter(width = 0.08, height = 0.08, alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Mean clutch size -- BirdLife (Bird et al. 2020)",
+       y = "Mean clutch size -- BIRDBASE (Sekercioglu)")
 
 ## Compare clutch and generation length
 # Correlation = -0.17
@@ -525,7 +545,7 @@ Gen_length2 %>%
 
 # >Nest type --------------------------------------------------------------
 # Nest type data from Sheard, Catherine, et al. "Nest traits for the world's birds" Global Ecology and Biogeography 33.2 (2024): 206-214.
-Nesting_path <- "../Datasets_external/Sheard_et_al_geb_Nesting_traits_2023"
+Nesting_path <- "../../../Datasets_external/Sheard_et_al_geb_Nesting_traits_2023"
 Nesting_sheard1 <- read_csv(paste0(Nesting_path, "/Dataset-S1.csv")) %>%
   clean_names() %>%
   distinct(species_scientific_name, veg_type) %>% 
@@ -678,7 +698,7 @@ if(FALSE){
 
 # Eye_size ----------------------------------------------------------------
 # Load in data
-path <- "../Datasets_external/Eye Size Files/"
+path <- "../../../Datasets_external/Eye Size Files/"
 
 Final_Book_Join <- read_excel(paste0(path, "Final_Book_Join.xlsx")) %>% 
   mutate(Species_sacc_18 = str_to_sentence(Species_sacc_18), 
@@ -762,8 +782,10 @@ stop()
 # 369 rows × 7 cols
 Ft_final %>% Na_rows_cols()
 
-# Export functional traits file as csv 
+# Export functional traits file as csv
+# Dropped from the data-paper deposit (kept for Chapter 1, where the derivations get motivated): Clutch (BirdLife -- redundant with the BIRDBASE clutch_*, r = 0.93), Eye_resid/Source_eye, and the Sheard-derived nest traits (Nest_ground_bush, N_nest_locs, Nest_exposure).
 Ft_final %>%
+  select(-any_of(c("Clutch", "Eye_resid", "Source_eye", "Nest_ground_bush", "N_nest_locs", "Nest_exposure"))) %>%
   rename_with(.cols = everything(), .fn = ~str_remove(., "_comb")) %>%
   write_csv(file = "Derived/Excels/Traits/Functional_traits.csv")
 
@@ -779,7 +801,7 @@ Elev_final %>% write_csv(file = "Derived/Excels/Elev_ranges_all_sources.csv")
 # >Hazen elevation scratch pad ---------------------------------------------
 # With the Hilty guide book, it is worth checking the species with extreme differences in ranges, or without data from the most trustworthy sources. This has been iterative as Hazen has gone through the Hilty guidebook and we have had more information available to us.
 Old_path <- ("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Grad_School/PhD/Mentorship/Hazen/Elev_ranges_diff_qj_ebird_10.2.25.xlsx") 
-Hilty_elev <- read_xlsx("../Datasets_external/Elev_ranges/Elev_ranges_Hazen.xlsx")
+Hilty_elev <- read_xlsx("../../../Datasets_external/Elev_ranges/Elev_ranges_Hazen.xlsx")
 
 # Check elevational limits of coffee region species
 Elev_min_max %>% select(Species_ayerbe, matches("Min|Max")) %>% 
