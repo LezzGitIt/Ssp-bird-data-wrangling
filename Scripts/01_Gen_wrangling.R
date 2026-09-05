@@ -827,9 +827,21 @@ Pc_hab_ano2 <- Pc_hab_ano %>%
 # Remove year
 Pc_hab <- Pc_hab_ano2 %>% distinct(pick(-Ano))
 
-### One forest sub-type per physical location -- data collectors recorded stream presence inconsistently across survey years, so a point is riparian if it was ever recorded as riparian
+### Field-recorded water bodies (Cuerpo_de_agua) -- direct field observation of a Caño/Quebrada near the point count, independent of the Habitat_ut/Habitat_sub free text above. Only the 2024 UBC/GAICA (Cafetera, Meta, Otun Quimbaya, El Hatico) and 2026 UBC Meta metadata sheets ask this; other data sets stay NA rather than FALSE, since the question was never asked for them.
+water_body_files <- names(df_metadata)[map_lgl(df_metadata, ~"Cuerpo_de_agua" %in% names(.x))]
+Water_body_site <- map(water_body_files, \(nm) df_metadata[[nm]] %>% select(Id_muestreo, Cuerpo_de_agua)) %>%
+  list_rbind() %>%
+  mutate(Cuerpo_de_agua = na_if(Cuerpo_de_agua, "__")) %>%
+  left_join(distinct(Bird_pcs_all, Id_muestreo, Id_muestreo_no_dc), by = "Id_muestreo") %>%
+  filter(!is.na(Id_muestreo_no_dc)) %>%
+  summarise(Water_body_ever  = any(!is.na(Cuerpo_de_agua)),
+            Water_body_types = paste(sort(unique(na.omit(Cuerpo_de_agua))), collapse = ", "),
+            .by = Id_muestreo_no_dc)
+Pc_hab <- Pc_hab %>% left_join(Water_body_site, by = "Id_muestreo_no_dc")
+
+### One forest sub-type per physical location -- data collectors recorded stream presence inconsistently across survey years, so a point is riparian if it was ever recorded as riparian (Habitat_sub) or ever had a water body noted in the field metadata (Water_body_ever)
 Pc_hab <- Pc_hab %>%
-  mutate(Habitat_sub = if (any(Habitat_sub == "Ripario", na.rm = TRUE)) "Ripario" else Habitat_sub,
+  mutate(Habitat_sub = if (any(Habitat_sub == "Ripario", na.rm = TRUE) || any(Water_body_ever, na.rm = TRUE)) "Ripario" else Habitat_sub,
          .by = Id_muestreo_no_dc)
 
 # NOTE:: 1 row for each Id_muestreo
