@@ -27,7 +27,7 @@ phylogenetic diversity).
 | `Column_definitions_final.xlsx` | field definitions for each table | |
 
 `Scripts/Data_paper/Data_joining_example.R` shows how the `DataS1/` tables join —
-a starting point, to be adapted to your own analysis. `Scripts/08_Analysis_wrangling.R`
+a starting point, to be adapted to your own analysis. `Scripts/06_Analysis_wrangling.R`
 documents how `Bird_pcs_analysis.csv` was derived from the full observation set.
 
 The deposit ships all-English column headers. `Scripts/Data_paper/Translate_column_names.R`
@@ -40,7 +40,7 @@ On publication, the versioned deposit of record (with a DOI) will be archived on
 
 ## The pipeline (`Scripts/`)
 
-`Scripts/01_…` through `Scripts/08_…` run in sequence; most end with a deliberate
+`Scripts/01_…` through `Scripts/06_…` run in sequence; most end with a deliberate
 `stop()` before their export section. See `Project_notes.md` for the full run
 order, inputs, and outputs.
 
@@ -50,8 +50,11 @@ order, inputs, and outputs.
 | `02_Taxonomy.R` | `Taxonomy.csv`, taxonomy-standardized observations |
 | `03_FT_elev.R` | `Functional_traits.csv`, elevational ranges |
 | `04_Out_range.R` | `Bird_pcs_dist.csv` (range screening) |
-| `05_Extract_lcs.R` → `06_LSM.R` → `07_wvsc.R` | digitized land cover, landscape metrics, woody-vegetation structure |
-| `08_Analysis_wrangling.R` | `Bird_pcs_analysis.csv` |
+| `05_wvsc.R` | woody-vegetation canopy cover + height, added to `Event_covs.csv` |
+| `06_Analysis_wrangling.R` | `Bird_pcs_analysis.csv` |
+
+Digitized land-cover extraction and landscape metrics (formerly `05_Extract_lcs.R` →
+`06_LSM.R`) are Chapter 1 work — moved to `_ch1_pending/`.
 
 `Scripts/Data_paper/Phylogeny_fig.R` prunes the BirdTree phylogeny and builds
 the `@fig-phylogeny` plot + `Tax_summary.csv`.

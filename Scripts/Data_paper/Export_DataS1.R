@@ -3,7 +3,7 @@
 
 ## DataS1/ holds only the final deposit tables; mid-pipeline artifacts that a reader can reproduce from the pipeline (e.g. Bird_pcs_dist.csv, the range-screening step) are deliberately excluded.
 
-## Run this AFTER a full pipeline run (Scripts/01_ .. 08_). The Derived/Excels/ outputs are already in deposit format (column selection + naming happen in each script's export section); this step only freezes them into the versioned DataS1/ folder so a re-export is a clean `git diff`.
+## Run this AFTER a full pipeline run (Scripts/01_ .. 06_). The Derived/Excels/ outputs are already in deposit format (column selection + naming happen in each script's export section); this step only freezes them into the versioned DataS1/ folder so a re-export is a clean `git diff`.
 
 ## Column_definitions_final.xlsx is hand-maintained and is NOT overwritten here.
 
@@ -12,11 +12,10 @@ library(readr)
 library(purrr)
 
 # Map DataS1 filename -> its producing script's Derived/Excels/ path ----------
-# forest_typ / canopy / land-cover columns in Event_covs come from 05->06->07; if those columns are dropped from the deposit (pending decision), re-run 07 first so Event_covs.csv reflects that.
 source_paths <- c(
   Bird_pcs_all      = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv",       # 02
-  Bird_pcs_analysis = "Derived/Excels/Bird_pcs/Bird_pcs_analysis.csv",  # 08_Analysis_wrangling
-  Event_covs        = "Derived/Excels/Event_covs.csv",                  # 07
+  Bird_pcs_analysis = "Derived/Excels/Bird_pcs/Bird_pcs_analysis.csv",  # 06_Analysis_wrangling
+  Event_covs        = "Derived/Excels/Event_covs.csv",                  # 05_wvsc
   Functional_traits = "Derived/Excels/Traits/Functional_traits.csv",    # 03
   Site_covs         = "Derived/Excels/Site_covs.csv",                   # 01
   Taxonomy          = "Derived/Excels/Taxonomy/Taxonomy.csv"            # 02
