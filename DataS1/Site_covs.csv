@@ -145,7 +145,7 @@ AD-M-EPO3_04,261,Piedemonte,Meta,-73.7971,3.6689,AD-M-EPO3,El porvenir 3,0,4,424
 AD-M-EPO3_05,261,Piedemonte,Meta,-73.796,3.6694,AD-M-EPO3,El porvenir 3,0,4,425,25.325,2897,Ssp,Cerca viva
 AD-M-EPO3_06,261,Piedemonte,Meta,-73.795,3.6687,AD-M-EPO3,El porvenir 3,0,4,424,25.325,2897,Ssp,Arboles dispersos
 AD-M-EPO3_07,261,Piedemonte,Meta,-73.7945,3.6675,AD-M-EPO3,El porvenir 3,0,4,425,25.325,2897,Bosque,Secundario
-AD-M-EPO3_08,261,Piedemonte,Meta,-73.7947,3.6699,AD-M-EPO3,El porvenir 3,0,4,424,25.325,2897,Ssp,Both
+AD-M-EPO3_08,261,Piedemonte,Meta,-73.7947,3.6699,AD-M-EPO3,El porvenir 3,0,4,424,25.325,2897,Ssp,Arboles dispersos
 AD-M-EPO3_09,261,Piedemonte,Meta,-73.7949,3.671,AD-M-EPO3,El porvenir 3,0,4,425,25.325,2897,Ssp,Arboles dispersos
 AD-M-EPO3_10,261,Piedemonte,Meta,-73.796,3.6708,AD-M-EPO3,El porvenir 3,0,4,427,25.325,2897,Ssp,Arboles dispersos
 AD-M-EPO3_11,261,Piedemonte,Meta,-73.7969,3.6714,AD-M-EPO3,El porvenir 3,0,4,427,25.325,2897,Bosque,Secundario
@@ -178,15 +178,15 @@ AD-M-LC_04,4755,Piedemonte,Meta,-73.72,3.4194,AD-M-LC,La candelaria,0,5,303,26.0
 AD-M-LC_05,4755,Piedemonte,Meta,-73.72,3.4204,AD-M-LC,La candelaria,0,5,304,26.033,2754,Ssp,Arboles dispersos
 AD-M-LC_06,4755,Piedemonte,Meta,-73.7207,3.4211,AD-M-LC,La candelaria,0,5,304,26.033,2754,Ssp,Arboles dispersos
 AD-M-LC_07,4755,Piedemonte,Meta,-73.7208,3.4222,AD-M-LC,La candelaria,0,5,305,26.033,2754,Ssp,Cerca viva
-AD-M-LC_08,4755,Piedemonte,Meta,-73.7214,3.4229,AD-M-LC,La candelaria,1,5,303,26.033,2754,Ssp,Both
-AD-M-LC_09,4755,Piedemonte,Meta,-73.7228,3.423,AD-M-LC,La candelaria,78,5,302,26.033,2754,Mosaic,
+AD-M-LC_08,4755,Piedemonte,Meta,-73.7214,3.4229,AD-M-LC,La candelaria,1,5,303,26.033,2754,Ssp,Cerca viva
+AD-M-LC_09,4755,Piedemonte,Meta,-73.7228,3.423,AD-M-LC,La candelaria,78,5,302,26.033,2754,Cultivos,
 AD-M-LC_10,4755,Piedemonte,Meta,-73.7243,3.4208,AD-M-LC,La candelaria,0,5,306,26.033,2754,Ssp,Cerca viva
 AD-M-LC_11,4755,Piedemonte,Meta,-73.7241,3.419,AD-M-LC,La candelaria,0,5,309,26.033,2754,Ssp,Cerca viva
 AD-M-LD1_01,4689,Piedemonte,Meta,-73.677,3.426,AD-M-LD1,Las delicias 1,46,4,286,26.092,2745,Mosaic,
 AD-M-LD1_02,4689,Piedemonte,Meta,-73.6778,3.4268,AD-M-LD1,Las delicias 1,60,5,281,26.092,2745,Ssp,Cerca viva
 AD-M-LD1_03,4689,Piedemonte,Meta,-73.6788,3.4261,AD-M-LD1,Las delicias 1,182,5,285,26.092,2745,Bosque,Secundario
 AD-M-LD1_04,4689,Piedemonte,Meta,-73.6797,3.4265,AD-M-LD1,Las delicias 1,151,5,284,26.092,2745,Bosque,Secundario
-AD-M-LD1_05,4689,Piedemonte,Meta,-73.6798,3.4275,AD-M-LD1,Las delicias 1,57,5,286,26.092,2745,Ssp,Both
+AD-M-LD1_05,4689,Piedemonte,Meta,-73.6798,3.4275,AD-M-LD1,Las delicias 1,57,5,286,26.092,2745,Ssp,Arboles dispersos
 AD-M-LD1_06,4689,Piedemonte,Meta,-73.6788,3.4279,AD-M-LD1,Las delicias 1,16,5,281,26.092,2745,Mosaic,
 AD-M-LD1_07,4689,Piedemonte,Meta,-73.6768,3.4269,AD-M-LD1,Las delicias 1,0,5,284,26.092,2745,Bosque,Secundario
 AD-M-LD1_08,4689,Piedemonte,Meta,-73.6757,3.4266,AD-M-LD1,Las delicias 1,0,5,286,26.092,2745,Bosque,Secundario
@@ -200,7 +200,7 @@ AD-M-LE_04,5240,Piedemonte,Meta,-73.6401,3.5787,AD-M-LE,La esmeralda,11,5,352,25
 AD-M-LE_05,5240,Piedemonte,Meta,-73.639,3.5792,AD-M-LE,La esmeralda,117,5,347,25.775,2905,Ssp,Cerca viva
 AD-M-LE_06,5240,Piedemonte,Meta,-73.638,3.5796,AD-M-LE,La esmeralda,214,5,349,25.775,2905,Ssp,Cerca viva
 AD-M-LE_07,5240,Piedemonte,Meta,-73.637,3.5799,AD-M-LE,La esmeralda,292,5,348,25.775,2905,Ssp,Arboles dispersos
-AD-M-LE_08,5240,Piedemonte,Meta,-73.636,3.5797,AD-M-LE,La esmeralda,334,5,347,25.775,2905,Ssp,Both
+AD-M-LE_08,5240,Piedemonte,Meta,-73.636,3.5797,AD-M-LE,La esmeralda,334,5,347,25.775,2905,Ssp,Arboles dispersos
 AD-M-LE_09,5240,Piedemonte,Meta,-73.6353,3.5783,AD-M-LE,La esmeralda,274,5,345,25.775,2905,Mosaic,
 AD-M-LE_10,5240,Piedemonte,Meta,-73.6354,3.5765,AD-M-LE,La esmeralda,119,5,346,25.775,2905,Ssp,Arboles dispersos
 AD-M-LE_11,5240,Piedemonte,Meta,-73.6374,3.5749,AD-M-LE,La esmeralda,2,5,346,25.775,2917,Ssp,Cerca viva
@@ -470,7 +470,7 @@ MB-M-A_22,1734,Piedemonte,Meta,-73.8017,3.8207,MB-M-A,Andorra,271,10,524,24.775,
 MB-M-A_23,1734,Piedemonte,Meta,-73.8058,3.8218,MB-M-A,Andorra,581,10,511,24.775,3643,Pastizales,
 MB-M-A_24,1734,Piedemonte,Meta,-73.8078,3.8217,MB-M-A,Andorra,560,11,514,24.775,3643,Pastizales,
 MB-M-A_25,1734,Piedemonte,Meta,-73.808,3.8198,MB-M-A,Andorra,633,11,528,24.775,3643,Pastizales,
-MB-M-A_26,1734,Piedemonte,Meta,-73.8046,3.8142,MB-M-A,Andorra,749,11,525,24.742,3611,Ssp,Ripario
+MB-M-A_26,1734,Piedemonte,Meta,-73.8046,3.8142,MB-M-A,Andorra,749,11,525,24.742,3611,Ssp,Cerca viva
 MB-M-EPO3_01,261,Piedemonte,Meta,-73.7975,3.6735,MB-M-EPO3,El porvenir 3,0,10,430,25.325,2897,Ssp,Arboles dispersos
 MB-M-EPO3_02,261,Piedemonte,Meta,-73.7957,3.6738,MB-M-EPO3,El porvenir 3,11,10,431,25.325,2897,Bosque,Ripario
 MB-M-EPO3_03,261,Piedemonte,Meta,-73.7945,3.6718,MB-M-EPO3,El porvenir 3,12,10,429,25.325,2897,Bosque,Ripario
