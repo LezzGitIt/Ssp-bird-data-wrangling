@@ -1,8 +1,6 @@
 ## PhD birds in silvopastoral landscapes ##
-## Maintain the column-name crosswalk. The pipeline now writes English headers, so DataS1/ is
-## already English; this crosswalk exists to carry the Spanish equivalents. Export_DataS1.R
-## writes DataS1/Column_names_ES.csv from it, and a downloader regenerates the Spanish tables
-## with DataS1/Make_Spanish_headers.R.
+## Maintain the column-name crosswalk. The pipeline writes English headers, so DataS1/ is English; this crosswalk carries the Spanish equivalents for a possible future Spanish-headed deposit.
+## Spanish output never goes into DataS1/ -- the optional section at the end writes Spanish-headed preview copies to Derived/DataS1_es/ (gitignored).
 
 ## Crosswalk: Suppfiles/column_names.csv (name_current, name_en, name_es, tables).
 ## name_current = the header the pipeline writes in Derived/Excels/ (English after the 2026 rename).
@@ -49,7 +47,7 @@ crosswalk <- headers_tbl |>
   left_join(existing, by = "name_current") |>
   mutate(name_en = coalesce(na_if(name_en, ""), name_current)) |>
   select(name_current, name_en, name_es, tables) |>
-  arrange(name_current)
+  arrange(tables, name_current)   # group by deposit table so name_es is easy to fill in one pass
 
 write_csv(crosswalk, crosswalk_path, na = "")
 

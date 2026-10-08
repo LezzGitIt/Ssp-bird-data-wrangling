@@ -38,9 +38,9 @@ Not renamed: raw provider coords `Latitud` / `Longitud` (they become `Lat` / `Lo
 where the pipeline standardises them). Some cell *values* are still Spanish
 (`Obs_type == "Sobrevuelo"` for flyovers; `Habitat`, `Habitat_sub` categories).
 
-`Suppfiles/column_names.csv` (`name_current → name_en → name_es`) and
-`DataS1/Column_names_ES.csv` carry the crosswalk; `DataS1/Make_Spanish_headers.R`
-regenerates Spanish-headed copies.
+`Suppfiles/column_names.csv` (`name_current → name_en → name_es`) carries the
+crosswalk; the optional last section of `Scripts/Data_paper/Translate_column_names.R`
+writes Spanish-headed copies to `Derived/DataS1_es/`.
 
 ---
 

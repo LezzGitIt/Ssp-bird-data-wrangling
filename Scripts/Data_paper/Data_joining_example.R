@@ -13,7 +13,7 @@ library(naniar)
 # Bring in data -----------------------------------------------------------
 # Read in the six deposit tables and store in a named list
 path <- "DataS1"
-File_names <- setdiff(list.files(path, pattern = "\\.csv$"), "Column_names_ES.csv")
+File_names <- list.files(path, pattern = "\\.csv$")
 
 Data <- map(File_names, \(file){
   read_csv(file = paste0(path, "/", file))

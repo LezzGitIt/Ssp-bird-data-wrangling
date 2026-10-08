@@ -1,90 +1,90 @@
 name_current,name_en,name_es,tables
-Avg_temp,Avg_temp,,Site_covs
-Beak.Depth,Beak.Depth,,Functional_traits
-Beak.Length_Culmen,Beak.Length_Culmen,,Functional_traits
-Beak.Length_Nares,Beak.Length_Nares,,Functional_traits
-Beak.Width,Beak.Width,,Functional_traits
+Distance_bird,Distance_bird,Distancia_bird,Bird_pcs_all
+Obs_type,Obs_type,,Bird_pcs_all
+Recording,Recording,Grabacion,Bird_pcs_all
+Count,Count,,Bird_pcs_all; Bird_pcs_analysis
+Date,Date,Fecha,Bird_pcs_all; Bird_pcs_analysis; Event_covs
+Id_survey,Id_survey,Id_muestreo,Bird_pcs_all; Bird_pcs_analysis; Event_covs
+Pc_start,Pc_start,,Bird_pcs_all; Bird_pcs_analysis; Event_covs
+Id_survey_no_dc,Id_survey_no_dc,,Bird_pcs_all; Bird_pcs_analysis; Event_covs; Site_covs
+Species_ayerbe,Species_ayerbe,,Bird_pcs_all; Bird_pcs_analysis; Functional_traits; Taxonomy
 Canopy_cover,Canopy_cover,,Event_covs
 Canopy_height_m,Canopy_height_m,,Event_covs
-Centroid.Latitude,Centroid.Latitude,,Functional_traits
-Centroid.Longitude,Centroid.Longitude,,Functional_traits
-Clutch_max,Clutch_max,,Functional_traits
-Clutch_mean,Clutch_mean,,Functional_traits
-Clutch_min,Clutch_min,,Functional_traits
-Count,Count,,Bird_pcs_all; Bird_pcs_analysis
 Cows_50m,Cows_50m,,Event_covs
-Date,Date,Fecha,Bird_pcs_all; Bird_pcs_analysis; Event_covs
 Day,Day,Dia,Event_covs
-Department,Department,Departamento,Site_covs
-Diet_breadth,Diet_breadth,,Functional_traits
-Distance_bird,Distance_bird,Distancia_bird,Bird_pcs_all
-Distance_farm,Distance_farm,Distancia_farm,Site_covs
-Ecological_specialization,Ecological_specialization,,Functional_traits
-Ecoregion,Ecoregion,,Site_covs
-Elev,Elev,,Site_covs
-Elev_range,Elev_range,,Functional_traits
-Family,Family,,Taxonomy
-Farm_name,Farm_name,,Site_covs
-Forest_bin,Forest_bin,,Functional_traits
-Gen_length,Gen_length,,Functional_traits
-Habitat,Habitat,,Functional_traits; Site_covs
-Habitat.Density,Habitat.Density,,Functional_traits
-Habitat_breadth,Habitat_breadth,,Functional_traits
-Habitat_sub,Habitat_sub,,Site_covs
-Hand-Wing.Index,Hand-Wing.Index,,Functional_traits
 Id_group,Id_group,,Event_covs
-Id_group_no_dc,Id_group_no_dc,,Site_covs
-Id_scr,Id_scr,Id_gcs,Site_covs
-Id_survey,Id_survey,Id_muestreo,Bird_pcs_all; Bird_pcs_analysis; Event_covs
-Id_survey_no_dc,Id_survey_no_dc,,Bird_pcs_all; Bird_pcs_analysis; Event_covs; Site_covs
 Institution_name,Institution_name,,Event_covs
-Iucn_red_list,Iucn_red_list,,Functional_traits
 Julian_day,Julian_day,,Event_covs
-Kipps.Distance,Kipps.Distance,,Functional_traits
-Lat,Lat,,Site_covs
-Long,Long,,Site_covs
-Mass,Mass,,Functional_traits
-Max.Latitude,Max.Latitude,,Functional_traits
-Migration_avo,Migration_avo,,Functional_traits
-Migration_bb,Migration_bb,,Functional_traits
-Min.Latitude,Min.Latitude,,Functional_traits
 Month,Month,Mes,Event_covs
 N_reps,N_reps,,Event_covs
 N_samp_periods,N_samp_periods,,Event_covs
-N_visits,N_visits,,Site_covs
 Noise,Noise,,Event_covs
-Obs_type,Obs_type,,Bird_pcs_all
-Order,Order,,Taxonomy
 Pc_duration,Pc_duration,,Event_covs
-Pc_start,Pc_start,,Bird_pcs_all; Bird_pcs_analysis; Event_covs
-Primary.Lifestyle,Primary.Lifestyle,,Functional_traits
-Primary_diet,Primary_diet,,Functional_traits
-Range.Size,Range.Size,,Functional_traits
-Recording,Recording,Grabacion,Bird_pcs_all
 Registered_by,Registered_by,,Event_covs
 Rep_season,Rep_season,,Event_covs
 Rep_year_grp,Rep_year_grp,,Event_covs
 Sampling_day,Sampling_day,,Event_covs
 Season,Season,,Event_covs
-Secondary,Secondary,,Functional_traits
-Species_avilist_25,Species_avilist_25,,Taxonomy
-Species_ayerbe,Species_ayerbe,,Bird_pcs_all; Bird_pcs_analysis; Functional_traits; Taxonomy
-Species_bl,Species_bl,,Functional_traits; Taxonomy
-Species_bt,Species_bt,,Taxonomy
-Species_eB,Species_eB,,Taxonomy
-Species_sacc_18,Species_sacc_18,,Taxonomy
 Spp_obs,Spp_obs,,Event_covs
+Uniq_db,Uniq_db,,Event_covs
+Weather,Weather,Clima,Event_covs
+Year,Year,Ano,Event_covs
+Year_grp,Year_grp,Ano_agrupado,Event_covs
+Beak.Depth,Beak.Depth,,Functional_traits
+Beak.Length_Culmen,Beak.Length_Culmen,,Functional_traits
+Beak.Length_Nares,Beak.Length_Nares,,Functional_traits
+Beak.Width,Beak.Width,,Functional_traits
+Centroid.Latitude,Centroid.Latitude,,Functional_traits
+Centroid.Longitude,Centroid.Longitude,,Functional_traits
+Clutch_max,Clutch_max,,Functional_traits
+Clutch_mean,Clutch_mean,,Functional_traits
+Clutch_min,Clutch_min,,Functional_traits
+Diet_breadth,Diet_breadth,,Functional_traits
+Ecological_specialization,Ecological_specialization,,Functional_traits
+Elev_range,Elev_range,,Functional_traits
+Forest_bin,Forest_bin,,Functional_traits
+Gen_length,Gen_length,,Functional_traits
+Habitat.Density,Habitat.Density,,Functional_traits
+Habitat_breadth,Habitat_breadth,,Functional_traits
+Hand-Wing.Index,Hand-Wing.Index,,Functional_traits
+Iucn_red_list,Iucn_red_list,,Functional_traits
+Kipps.Distance,Kipps.Distance,,Functional_traits
+Mass,Mass,,Functional_traits
+Max.Latitude,Max.Latitude,,Functional_traits
+Migration_avo,Migration_avo,,Functional_traits
+Migration_bb,Migration_bb,,Functional_traits
+Min.Latitude,Min.Latitude,,Functional_traits
+Primary.Lifestyle,Primary.Lifestyle,,Functional_traits
+Primary_diet,Primary_diet,,Functional_traits
+Range.Size,Range.Size,,Functional_traits
+Secondary,Secondary,,Functional_traits
 Tail.Length,Tail.Length,,Functional_traits
 Tarsus.Length,Tarsus.Length,,Functional_traits
-Tot_prec,Tot_prec,,Site_covs
 Total.individuals,Total.individuals,,Functional_traits
 Trophic.Level,Trophic.Level,,Functional_traits
 Trophic.Niche,Trophic.Niche,,Functional_traits
-Uniq_db,Uniq_db,,Event_covs
-Weather,Weather,Clima,Event_covs
 Wing.Length,Wing.Length,,Functional_traits
-Year,Year,Ano,Event_covs
-Year_grp,Year_grp,Ano_agrupado,Event_covs
+Habitat,Habitat,,Functional_traits; Site_covs
+Species_bl,Species_bl,,Functional_traits; Taxonomy
+Avg_temp,Avg_temp,,Site_covs
+Department,Department,Departamento,Site_covs
+Distance_farm,Distance_farm,Distancia_farm,Site_covs
+Ecoregion,Ecoregion,,Site_covs
+Elev,Elev,,Site_covs
+Farm_name,Farm_name,,Site_covs
+Habitat_sub,Habitat_sub,,Site_covs
+Id_group_no_dc,Id_group_no_dc,,Site_covs
+Id_scr,Id_scr,Id_gcs,Site_covs
+Lat,Lat,,Site_covs
+Long,Long,,Site_covs
+N_visits,N_visits,,Site_covs
+Tot_prec,Tot_prec,,Site_covs
+Family,Family,,Taxonomy
+Order,Order,,Taxonomy
+Species_avilist_25,Species_avilist_25,,Taxonomy
+Species_bt,Species_bt,,Taxonomy
+Species_eB,Species_eB,,Taxonomy
+Species_sacc_18,Species_sacc_18,,Taxonomy
 common_name_avilist,common_name_avilist,,Taxonomy
 common_name_sacc,common_name_sacc,,Taxonomy
 concept_id_avilist,concept_id_avilist,,Taxonomy
