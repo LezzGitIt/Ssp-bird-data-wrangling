@@ -852,9 +852,11 @@ Pc_hab <- Pc_hab %>% left_join(Water_body_site, by = "Id_survey_no_dc")
 
 ### One forest sub-type per physical location -- data collectors recorded stream presence inconsistently across survey years, so a point is riparian if it was ever recorded as riparian (Habitat_sub) or ever had a water body noted in the field metadata (Water_body_ever)
 ### Mature forest (Otun Quimbaya, La Brisa) outranks the riparian collapse -- those are old-growth reserve forests that happen to sit on a stream, and "Maduro" is the more informative label
+### Riparian is a forest sub-type only: a stream noted beside a silvopasture or pasture point (e.g. the live fence MB-M-A_26, 2026) must not turn it into "Ripario"
 Pc_hab <- Pc_hab %>%
   mutate(Habitat_sub =
-    if (any(Habitat_sub == "Maduro", na.rm = TRUE)) "Maduro"
+    if (all(Habitat != "Bosque", na.rm = TRUE)) Habitat_sub
+    else if (any(Habitat_sub == "Maduro", na.rm = TRUE)) "Maduro"
     else if (any(Habitat_sub == "Ripario", na.rm = TRUE) || any(Water_body_ever, na.rm = TRUE)) "Ripario"
     else Habitat_sub,
   .by = Id_survey_no_dc)
