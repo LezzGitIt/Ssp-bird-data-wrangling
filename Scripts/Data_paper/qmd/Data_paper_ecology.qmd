@@ -101,6 +101,15 @@ Num_datasets <- n_distinct(Data$Event_covs$Uniq_db)
 Year_first <- min(Data$Event_covs$Year)
 Year_last <- max(Data$Event_covs$Year)
 
+# Crop locations: too few to list as a sampled habitat in the dataset overview table, so the table caption reports them instead
+Crop_locs <- Data$Site_covs %>%
+  filter(Habitat == "Cultivos") %>%
+  left_join(distinct(Data$Event_covs, Id_survey_no_dc, Uniq_db), by = "Id_survey_no_dc") %>%
+  count(Uniq_db)
+Crop_locs_txt <- str_c(Crop_locs$n, " ", Crop_locs$Uniq_db, collapse = ", ")
+# Caption of the dataset overview table (built here because it reports the computed crop counts)
+Tbl_datasets_cap <- paste0('Overview of the datasets, ordered by first survey year. Each dataset is one data collector\'s survey campaign, named as in the `Uniq_db` column of `Event_covs.csv`. CIPAV = Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria; GAICA = Asociación GAICA; Unillanos = Universidad de los Llanos; UBC = University of British Columbia. Locations are unique point count locations and surveys are point counts (a location surveyed on several visits counts once per visit). Habitats are the dominant land cover within the point count radius. CIPAV\'s duration is the span between the first and last bird recorded, since they extended counts when few birds were detected; every other dataset used a fixed 10-minute count. GAICA distancia used no fixed radius; observers estimated the distance to each bird. Crops are omitted from Habitats: only ', sum(Crop_locs$n), ' locations were in crops (', Crop_locs_txt, ').')
+
 # Visits per physical location, pooled across data collectors -- the Event_covs 'N_reps' column counts repeats per Id_survey (one collector's point count) and so tops out lower than this
 Visits_per_loc <- Data$Event_covs %>% count(Id_survey_no_dc, name = "n_visits")
 Max_visits_loc <- max(Visits_per_loc$n_visits)
@@ -128,7 +137,7 @@ Here we present the 'Bird diversity in cattle ranching landscapes of Colombia' d
 
 ```{r}
 #| label: tbl-datasets
-#| tbl-cap: "Overview of the datasets, ordered by first survey year. Each dataset is one data collector's survey campaign, named as in the `Uniq_db` column of `Event_covs.csv`. CIPAV = Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria; GAICA = Asociación GAICA; Unillanos = Universidad de los Llanos; UBC = University of British Columbia. Locations are unique point count locations and surveys are point counts (a location surveyed on several visits counts once per visit). Habitats are the dominant land cover within the point count radius. CIPAV's duration is the span between the first and last bird recorded, since they extended counts when few birds were detected; every other dataset used a fixed 10-minute count. GAICA distancia used no fixed radius; observers estimated the distance to each bird."
+#| tbl-cap: !expr Tbl_datasets_cap
 
 # Fixed point count radius (m) of each dataset's protocol (see Research methods); GAICA distancia had no fixed radius, only an estimated distance to each bird
 Dataset_radius <- c("Cipav mbd" = "25", "Gaica mbd" = "50", "Gaica distancia" = "–",
@@ -157,7 +166,7 @@ Dataset_tbl <- Covs_join %>%
     First_year = min(Year),
     Years = collapse_years(Year),
     Ecoregions = if (n_distinct(Ecoregion) == Num_ecor) "All five" else str_c(sort(unique(Ecoregion)), collapse = ", "),
-    Habitats = str_c(sort(unique(Habitat)), collapse = ", ") %>% str_to_sentence(),
+    Habitats = str_c(sort(unique(Habitat[Habitat != "crops"])), collapse = ", ") %>% str_to_sentence(), # crops (a handful of locations) are reported in the caption instead
     Farms = n_distinct(Id_scr),
     Locations = n_distinct(Id_survey_no_dc),
     Surveys = n(),
