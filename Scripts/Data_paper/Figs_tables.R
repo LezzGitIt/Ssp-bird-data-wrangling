@@ -79,139 +79,234 @@ Col_prec_map <- ggplot() +
 # Download rivers if needed
 #ne_rivers <- ne_download(scale = 10, type = "rivers_lake_centerlines", category = "physical", returnclass = "sf")
 
-## Río Cesar is below Natural Earth's scale-10 cutoff -- add its main stem (single 222 km line, dissolved from the OSM HOT Colombia waterways export in Data/hotosm_col_waterways_osm_gpkg/). Gitignored local input; re-bundle for the deposit.
-Rio_cesar <- st_read("Derived/Geospatial/Rio_Cesar_OSM.gpkg", quiet = TRUE)
+## Río Cesar is below Natural Earth's scale-10 cutoff, so build it from the OSM HOT Colombia waterways export (Data/hotosm_col_waterways_osm_gpkg/; gitignored local input, re-bundle for the deposit). Downstream of the Ciénaga de Zapatosa OSM maps the river only as a riverbank polygon, so trace that polygon's centreline and join it to the main stem, which carries the river to the Magdalena.
+Osm_waterways <- "Data/hotosm_col_waterways_osm_gpkg/waterways.gpkg"
+Cesar_wkt <- "POLYGON((-74.1 8.9, -72.9 8.9, -72.9 10.95, -74.1 10.95, -74.1 8.9))"
+# OSM leaves two reaches of the main stem unnamed (9.66-9.76 and 9.82-10.00 N); these ways fill them, checked by plotting against the named segments
+Cesar_unnamed_ways <- c("way/418073379", "way/418073374", "way/418073361", "way/418073367", "way/871539527", "way/1032651206", "way/1032651205")
+Cesar_osm <- st_read(Osm_waterways, query = "SELECT id, name, waterway, geom FROM waterways", wkt_filter = Cesar_wkt, quiet = TRUE) %>%
+  filter(stringi::stri_trans_general(name, "Latin-ASCII") %>% tolower() %in% "rio cesar" | id %in% Cesar_unnamed_ways)
+
+# Centreline of a north-south running riverbank polygon: the midpoint of the polygon's extent in each thin latitude band
+polygon_centreline <- function(poly, band_deg = 0.005) {
+  bb <- st_bbox(poly)
+  lats <- seq(bb["ymin"] + band_deg / 2, bb["ymax"] - band_deg / 2, by = band_deg)
+  mids <- map(lats, \(lat) {
+    cut <- st_intersection(st_geometry(poly), st_linestring(rbind(c(bb["xmin"] - 1, lat), c(bb["xmax"] + 1, lat))) %>% st_sfc(crs = st_crs(poly)))
+    if (length(cut) == 0) return(NULL)
+    xs <- st_coordinates(cut)[, "X"]
+    c(mean(range(xs)), lat)
+  }) %>% compact() %>% do.call(rbind, .)
+  st_linestring(mids[order(-mids[, 2]), ])
+}
+sf_use_s2(FALSE) # planar intersection of the latitude bands
+Cesar_main <- Cesar_osm %>% filter(waterway %in% "river") %>% st_union() %>% st_line_merge()
+Cesar_lower <- Cesar_osm %>% filter(st_geometry_type(.) %in% c("POLYGON", "MULTIPOLYGON")) %>% st_union() %>% polygon_centreline()
+sf_use_s2(TRUE)
+# Join the main stem's southern end (Ciénaga de Zapatosa) to the head of the lower reach
+Main_coords <- st_coordinates(Cesar_main)[, c("X", "Y")]
+Main_south <- Main_coords[which.min(Main_coords[, "Y"]), ]
+Lower_coords <- st_coordinates(Cesar_lower)[, c("X", "Y")]
+Cesar_link <- st_linestring(rbind(Main_south, Lower_coords[1, ]))
 Rio_cesar <- st_sf(name = "Río Cesar",
-                   geometry = st_transform(st_geometry(Rio_cesar), st_crs(rivers_co)))
+                   geometry = st_sfc(st_union(c(st_geometry(Cesar_main), st_sfc(Cesar_link, Cesar_lower, crs = 4326)))) %>%
+                     st_transform(st_crs(rivers_co)))
 rivers_co <- bind_rows(rivers_co, Rio_cesar)
 
-# Rivers labelled by geom_text_repel from a point on the line. Río Cesar is labelled separately (rio_cesar_label) at a fixed spot in the empty valley west of its point counts, since repel would put it on top of them.
-rivers_co2 <- rivers_co %>%
-  filter(name %in% c("Magdalena", "Cauca"))
-
-river_labels <- tibble(
-  name = c("Cesar", "Guainía", "Meta"),
-  x    = c(-73.8, -73.2, -73.6),
-  y    = c(10.12, 3.05, 4.5)
+# River labels: each sits where its river crosses a chosen latitude (the crossing nearest near_x, since a river can cross a latitude more than once), nudged by dx / dy degrees so the text clears the line. Natural Earth names the Meta tributary "Guainía", but the river drawn there is the Ariari (Ariari + Guayabero form the Guaviare)
+label_on_river <- function(rivers, river_name, lat, near_x, dx = 0, dy = 0) {
+  # Planar intersection with a short parallel: under spherical geometry (s2) a long east-west line is a great circle that bows away from the latitude
+  s2_was_on <- sf_use_s2(FALSE)
+  on.exit(suppressMessages(sf_use_s2(s2_was_on)))
+  line <- st_geometry(filter(rivers, name == river_name)) %>% st_union()
+  parallel <- st_sfc(st_linestring(rbind(c(near_x - 2, lat), c(near_x + 2, lat))), crs = st_crs(rivers))
+  xs <- suppressMessages(st_intersection(line, parallel)) %>% st_coordinates() %>% .[, "X"]
+  tibble(x = xs[which.min(abs(xs - near_x))] + dx, y = lat + dy)
+}
+river_labels <- tribble(
+  ~river,      ~label,      ~lat,  ~near_x, ~dx,   ~dy,
+  "Magdalena", "Magdalena",  5.6,  -74.6,   0.42,  0,
+  "Cauca",     "Cauca",      6.9,  -75.4,  -0.28,  0,
+  "Guainía",   "Ariari",     3.77, -74.2,   0,    -0.17,
+  "Meta",      "Meta",       4.45, -73.9,   0.3,   0
 ) %>%
-  st_as_sf(coords = c("x", "y"), crs = st_crs(rivers_co))
+  mutate(pos = pmap(list(river, lat, near_x, dx, dy), \(r, l, nx, x, y) label_on_river(rivers_co, r, l, nx, x, y))) %>%
+  unnest(pos) %>%
+  st_as_sf(coords = c("x", "y"), crs = st_crs(rivers_co)) %>%
+  select(name = label)
+
+# The Cesar label is hard to read over the valley's shading, so it sits on the grey of Venezuela with a leader line from the label's left edge to the river
+Cesar_callout <- label_on_river(rivers_co, "Río Cesar", lat = 9.7, near_x = -73.6) %>%
+  rename(xend = x, yend = y) %>%
+  mutate(x = -73.08, y = 9.42, name = "Cesar")
 
 # >Point formatting -------------------------------------------------------
-## Point counts within 0.25 degree grid cells 
-# With ~500 point counts in concentrated regions there is too much overlap to clearly visualize what is going on. Instead, I calculate the number of point counts within .25 degrees cells and return the rounded coordinates for plotting
-Pc_locs_round <- Pc_locs_dc_sf %>%
-  st_drop_geometry() %>%
-  mutate(Latitud_rd = mround(Latitud, .25), 
-         Longitud_rd = mround(Longitud, .25)) %>%
-  count(Uniq_db, Ecoregion, Latitud_rd, Longitud_rd, sort = T) %>%
-  st_as_sf(coords = c("Longitud_rd", "Latitud_rd"), crs = 4326, remove = FALSE)
-
-## Piedemonte
-# In Piedemonte there is tons of data and too much overlap, thus I subset Piedemonte points separately, count the number of rows at each set of (rounded) latitude & longitude coords, and jitter the points based on the amount of overlap
-Pc_locs_meta <- Pc_locs_round %>% 
-  filter(Ecoregion == "Piedemonte") %>% 
-  mutate(dup_count = n(), .by = c(Latitud_rd, Longitud_rd))
-
-# Jitter Piedemonte points by the number of duplicates (dup_count) within each 0.25 degree cell 
-jitter_amt <- c(.2, .3, .5)
-Pc_locs_meta2 <- Pc_locs_meta %>% 
-  group_split(dup_count) %>% 
-  map2(jitter_amt, \(locs, jam){
-    st_jitter(locs, jam)
-  }) %>% dplyr::bind_rows()
-
-## Jitter points in all other regions
-# In the remaining regions there is far less data, so a small amount of jitter is sufficient. However, the points in Bajo Magdalena and Rio Cesar often end up in the ocean which is problematic 
-
-# Function to jitter points while ensuring all points stay within a boundary polygon
-jitter_within_boundary <- function(sf_points, boundary_poly, jitter_factor, max_iter = 10) {
-  inside <- rep(FALSE, nrow(sf_points))
-  original <- sf_points
-  accepted <- st_geometry(sf_points)
-  iter <- 1
-  
-  while (!all(inside) && iter <= max_iter) {
-    to_jitter <- which(!inside)
-    
-    # Propose jittered geometries from original points
-    proposed <- st_jitter(sf_points[to_jitter, ], factor = jitter_factor)
-    
-    # TF vector depending on status inside or outside polygon
-    is_inside <- st_within(proposed, boundary_poly, sparse = FALSE)[,1]
-    
-    # Accept new jittered locations only if they fall inside polygon
-    accepted[to_jitter[is_inside]] <- st_geometry(proposed[is_inside, ])
-    
-    # Update inside status
-    inside[to_jitter[is_inside]] <- TRUE
-    iter <- iter + 1
-  }
-  sf_points$geometry <- accepted
-  if (!all(inside)) warning("Some points still fell outside the boundary after jittering.")
-  sf_points
+## Point counts within grid cells
+# With ~500 point counts in concentrated regions there is too much overlap to clearly visualize what is going on. Instead, count the point count locations of each data collector within grid cells (0.25 degrees on the main map, finer in the Piedemonte zoom panel) and plot each count at its cell centre
+count_in_cells <- function(locs, cell_deg) {
+  locs %>%
+    st_drop_geometry() %>%
+    mutate(Latitud_rd = mround(Latitud, cell_deg),
+           Longitud_rd = mround(Longitud, cell_deg)) %>%
+    count(Uniq_db, Ecoregion, Latitud_rd, Longitud_rd, sort = TRUE)
 }
+Pc_locs_round <- count_in_cells(Pc_locs_dc_sf, cell_deg = 0.25)
 
-# Apply minor jitter to all points outside of Piedemonte 
-Pc_locs_gen <- Pc_locs_round %>% 
-  filter(Ecoregion != "Piedemonte") %>% 
-  jitter_within_boundary(boundary_poly = neCol, jitter_factor = .02)
-
-## Bind the Piedemonte points with points from all other regions
-Pc_locs_jit <- bind_rows(Pc_locs_gen, Pc_locs_meta2)
-
-# >Inset elev map -----------------------------------------------------
-## Plot inset map for biodiversity data on elevation map background.
-# Extract bounding box
-bbox_all <- st_bbox(Pc_locs_jit)
-
-# Generate map
-Col_alt_map + 
-  geom_sf(data = Pc_locs_jit, 
-          aes(shape = Uniq_db, size = n, alpha = desc(n))) +
-  # Rivers
-  geom_sf(data = rivers_co, color = "blue") +
-  geom_text_repel(
-    data = rivers_co2,
-    aes(label = name, geometry = geometry),
-    stat = "sf_coordinates",
-    size = 3, color = "red",
-    max.overlaps = Inf
-  ) +
-  geom_sf_text(data = river_labels, aes(label = name), color = "red", size = 3) +
-  coord_sf(
-    xlim = c(bbox_all[1], bbox_all[3]), ylim = c(bbox_all[2], bbox_all[4]),
-           label_axes = "____", expand = TRUE
-    ) + annotation_scale(location = "tl") +
-  scale_shape_discrete(
-    #name = "Data collector", 
-    labels = c(
-      "CIPAV", "GAICA\ndistancia", "GAICA", "UBC & GAICA", "UBC", "Universidad de \nlos Llanos"),
-    solid = FALSE
-    ) +
-  scale_size_continuous(range = c(3, 7)) +
-  scale_alpha_continuous(range = c(.5, 1)) +
-  guides(
-    alpha = "none",
-    size = guide_legend(title = "Number of \npoint counts"),
-    shape = guide_legend(title = "Data collector")
-  )
-ggsave("Figures/Map_sampling/Sampling_map.png", bg = "white", width = 4)
-
-## Delete in final version
-explore <- FALSE
-if(explore){
-  # Formatting
-  Rio_cesar_pts <- Pc_locs_sf %>% filter(Ecoregion == "Rio cesar") 
-  Envi_rc <- Rio_cesar_pts %>% left_join(Site_covs)
-  
-  # Plot zoomed in 
-  bbox_rc <- st_bbox(Rio_cesar_pts)
-  Col_alt_map + geom_sf(data = Envi_rc,
-                        aes(color = Tot_prec)) + 
-    coord_sf(
-      xlim = c(bbox_rc[1], bbox_rc[3]), ylim = c(bbox_rc[2], bbox_rc[4])
+## Separate data collectors that share a grid cell
+# Several data collectors often surveyed the same 0.25 degree cell (up to five in the Piedemonte), so their symbols would sit on top of each other. Rather than a random jitter, which in the Piedemonte moved symbols up to ~50 km from where sampling happened, place the collectors sharing a cell evenly on a small ring around the cell centre. The offset is deterministic and never leaves the cell.
+dodge_in_cell <- function(cell_points, ring_radius_deg) {
+  cell_points %>%
+    mutate(
+      n_in_cell = n(),
+      angle = 2 * pi * (row_number() - 1) / n_in_cell + pi / 2,
+      Longitud_plot = Longitud_rd + if_else(n_in_cell > 1, ring_radius_deg * cos(angle), 0),
+      Latitud_plot  = Latitud_rd  + if_else(n_in_cell > 1, ring_radius_deg * sin(angle), 0),
+      .by = c(Latitud_rd, Longitud_rd)
     )
 }
+Pc_locs_jit <- Pc_locs_round %>%
+  arrange(Latitud_rd, Longitud_rd, Uniq_db) %>%
+  dodge_in_cell(ring_radius_deg = 0.1) %>%
+  st_as_sf(coords = c("Longitud_plot", "Latitud_plot"), crs = 4326, remove = FALSE)
+
+# >Sampling map -----------------------------------------------------------
+## Main map: elevation background, ecoregion outlines, rivers, and point count locations; an inset locates it in northern South America. Built entirely in R (it replaces the figure assembled by hand in PowerPoint).
+
+# Ecoregions are drawn as the convex hull of each ecoregion's plotted point count locations, buffered so the symbols sit inside. Ecoregions are formally groups of departments (Table 2), but whole departments are large and adjacent, so their outlines hid where sampling actually was; the hull matches the per-ecoregion area reported in Table 2
+Ecor_names <- c("Cafetera" = "Coffee region", "Cordillera oriental" = "Cordillera Oriental", "Piedemonte" = "Piedemonte",
+                "Bajo magdalena" = "Bajo Magdalena", "Rio cesar" = "Río Cesar")
+Ecor_buffer_m <- 15000
+# The Piedemonte is shown in a zoom panel rather than on the main map, so its true locations stand in for its plotted ones
+Pc_locs_pdm <- Pc_locs_dc_sf %>% filter(Ecoregion == "Piedemonte")
+# The Piedemonte's outline on the main map is the zoom-panel rectangle, so it gets no hull
+Ecor_polys <- bind_rows(
+  Pc_locs_jit %>% filter(Ecoregion != "Piedemonte") %>% select(Ecoregion),
+  Pc_locs_pdm %>% select(Ecoregion) %>% rename(geometry = geom)
+) %>%
+  filter(Ecoregion != "Piedemonte") %>%
+  group_by(Ecoregion) %>%
+  summarise(.groups = "drop") %>%
+  st_convex_hull() %>%
+  st_transform(32618) %>%
+  st_buffer(Ecor_buffer_m) %>%
+  st_transform(4326) %>%
+  mutate(Ecoregion = Ecor_names[Ecoregion])
+
+# Ecoregion labels, hand-placed just outside each hull
+Ecor_labels <- tibble(
+  Ecoregion = c("Coffee region", "Cordillera Oriental", "Piedemonte", "Bajo Magdalena", "Río Cesar"),
+  x = c(-75.75, -73.0, -73.95, -75.2, -72.45),
+  y = c(5.4, 6.62, 4.12, 11.2, 11.05)
+)
+
+# Neighbouring countries, for the grey land around Colombia and for the inset
+Countries <- rnaturalearth::ne_countries(scale = 50, returnclass = "sf")
+
+# Main map extent: the sampling locations plus a margin, wide enough to reach the Caribbean coast
+Main_xlim <- c(-77.6, -71.0)
+Main_ylim <- c(2.4, 11.9)
+
+# Elevation (m) on a log scale, which spreads out the colours at low elevations where most sampling is; cells at or below sea level are floored at 1 m so the log is defined
+ColElev_df <- ColElev_df %>% mutate(Elev_m = pmax(COL_elv_msk, 1))
+Elev_breaks <- c(10, 100, 1000, 3000)
+
+# Point count locations: size = locations per 0.25 degree cell (per data collector); hollow symbol shape = data collector (Uniq_db)
+Collector_labels <- c("Cipav mbd" = "CIPAV", "Gaica distancia" = "GAICA distancia", "Gaica mbd" = "GAICA",
+                      "Ubc gaica mbd" = "UBC & GAICA", "Ubc mbd" = "UBC", "Unillanos mbd" = "Unillanos")
+Collector_shapes <- setNames(c(1, 0, 5, 2, 6, 4), names(Collector_labels)) # circle, square, diamond, triangle up, triangle down, cross
+# Named values + limits keep each collector's symbol fixed and list all six in the legend, including those drawn only in the Piedemonte zoom panel
+Collector_shape_scale <- function(...) scale_shape_manual(values = Collector_shapes, limits = names(Collector_labels), labels = Collector_labels, ...)
+
+# Piedemonte cells for the zoom panel: 0.05 degrees (~5.5 km), with collectors sharing a cell dodged on a ring well inside the cell
+Pdm_cells <- count_in_cells(Pc_locs_pdm, cell_deg = 0.05) %>%
+  arrange(Latitud_rd, Longitud_rd, Uniq_db) %>%
+  dodge_in_cell(ring_radius_deg = 0.02) %>%
+  st_as_sf(coords = c("Longitud_plot", "Latitud_plot"), crs = 4326, remove = FALSE)
+
+# One size scale for the main map and the zoom panel, so a symbol of a given size means the same number of locations in both
+Size_max <- max(Pc_locs_jit$n, Pdm_cells$n)
+Size_scale <- scale_size_area(max_size = 7, limits = c(0, Size_max), breaks = keep(c(5, 20, 40, 80), \(b) b <= Size_max),
+                              name = "Point count\nlocations")
+
+# The extent (coord_sf) comes after every geom_sf layer, since a geom_sf layer added after coord_sf() resets it
+Sampling_map <- ggplot() +
+  geom_sf(data = Countries, fill = "grey88", colour = "grey60", linewidth = 0.3) +
+  geom_raster(data = ColElev_df, aes(x = x, y = y, fill = Elev_m)) +
+  scale_fill_viridis_c(trans = "log10", breaks = Elev_breaks, labels = scales::label_comma(), name = "Elevation (m)") +
+  geom_sf(data = Ecor_polys, fill = NA, colour = "black", linewidth = 0.5, linetype = "dashed") +
+  geom_sf(data = rivers_co, colour = "#1f5fbf", linewidth = 0.45) +
+  geom_sf_text(data = river_labels, aes(label = name), colour = "#1f5fbf", size = 3, fontface = "italic") +
+  geom_segment(data = Cesar_callout, aes(x = x - 0.04, y = y, xend = xend, yend = yend), colour = "#1f5fbf", linewidth = 0.35) +
+  geom_text(data = Cesar_callout, aes(x = x, y = y, label = name), colour = "#1f5fbf", size = 3, fontface = "italic", hjust = 0) +
+  geom_sf(data = filter(Pc_locs_jit, Ecoregion != "Piedemonte"), aes(size = n, shape = Uniq_db), colour = "black", stroke = 0.7) +
+  # Invisible copy of the Piedemonte locations: ggplot only draws legend keys for values present in a layer, and two collectors appear only in the zoom panel
+  geom_sf(data = Pc_locs_pdm, aes(shape = Uniq_db), alpha = 0, show.legend = c(shape = TRUE, size = FALSE)) +
+  Collector_shape_scale(name = "Data collector") +
+  Size_scale +
+  guides(shape = guide_legend(override.aes = list(size = 2.5, alpha = 1, stroke = 0.7)),
+         size = guide_legend(override.aes = list(shape = 1))) +
+  geom_label(data = Ecor_labels, aes(x = x, y = y, label = Ecoregion), size = 2.6, fontface = "bold",
+             fill = "white", label.size = 0.3, label.padding = unit(0.12, "lines")) +
+  annotation_scale(location = "bl", width_hint = 0.25, text_cex = 0.7) +
+  annotation_north_arrow(location = "tl", height = unit(0.8, "cm"), width = unit(0.6, "cm"),
+                         style = north_arrow_fancy_orienteering(text_size = 7)) +
+  coord_sf(xlim = Main_xlim, ylim = Main_ylim, expand = FALSE) +
+  labs(x = NULL, y = NULL) +
+  theme(panel.background = element_rect(fill = "#dceaf5"), # sea
+        panel.border = element_rect(colour = "black", fill = NA),
+        axis.text = element_text(size = 7),
+        legend.title = element_text(size = 8), legend.text = element_text(size = 7),
+        legend.key.height = unit(0.5, "cm"),
+        legend.key.spacing.y = unit(0.02, "cm"),
+        legend.justification = c(0, 0)) # legends at the bottom of the right column, leaving its top for the inset
+
+# Piedemonte zoom panel: point count locations per data collector in 0.05 degree cells, on the main map's size scale, drawn in the main map's empty bottom-right corner and joined to the Piedemonte box
+Pdm_bbox <- st_bbox(Pdm_cells)
+Zoom_xlim <- c(Pdm_bbox[["xmin"]], Pdm_bbox[["xmax"]]) + c(-0.05, 0.05)
+Zoom_ylim <- c(Pdm_bbox[["ymin"]], Pdm_bbox[["ymax"]]) + c(-0.05, 0.05)
+Piedemonte_zoom <- ggplot() +
+  geom_raster(data = filter(ColElev_df, between(x, Zoom_xlim[1] - 0.1, Zoom_xlim[2] + 0.1), between(y, Zoom_ylim[1] - 0.1, Zoom_ylim[2] + 0.1)),
+              aes(x = x, y = y, fill = Elev_m)) +
+  scale_fill_viridis_c(trans = "log10", limits = range(ColElev_df$Elev_m), guide = "none") +
+  geom_sf(data = rivers_co, colour = "#1f5fbf", linewidth = 0.45) +
+  geom_sf(data = Pdm_cells, aes(shape = Uniq_db, size = n), colour = "black", stroke = 0.6) +
+  Collector_shape_scale(guide = "none") +
+  Size_scale + guides(size = "none") +
+  annotation_scale(location = "bl", width_hint = 0.4, text_cex = 0.55, height = unit(0.12, "cm"), pad_x = unit(0.08, "cm"), pad_y = unit(0.08, "cm")) +
+  coord_sf(xlim = Zoom_xlim, ylim = Zoom_ylim, expand = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.6),
+        plot.background = element_blank())
+# Panel position in main-map degrees: anchor it to the bottom-right corner and enlarge the zoom extent as far as the empty corner allows (west to Zoom_room_x, north to Zoom_room_y, clear of the Cordillera Oriental outline)
+Zoom_room_x <- -73.05
+Zoom_room_y <- 5.35
+Zoom_box <- c(xmax = Main_xlim[2] - 0.08, ymin = Main_ylim[1] + 0.08)
+Zoom_scale <- min((Zoom_box[["xmax"]] - Zoom_room_x) / diff(Zoom_xlim), (Zoom_room_y - Zoom_box[["ymin"]]) / diff(Zoom_ylim))
+Zoom_box[c("xmin", "ymax")] <- c(Zoom_box[["xmax"]] - Zoom_scale * diff(Zoom_xlim), Zoom_box[["ymin"]] + Zoom_scale * diff(Zoom_ylim))
+# Leader lines from the zoomed area's right-hand corners to the panel's left-hand corners
+Zoom_leaders <- tibble(x = Zoom_xlim[2], y = Zoom_ylim, xend = Zoom_box[["xmin"]], yend = c(Zoom_box[["ymin"]], Zoom_box[["ymax"]]))
+Sampling_map <- Sampling_map +
+  annotate("rect", xmin = Zoom_xlim[1], xmax = Zoom_xlim[2], ymin = Zoom_ylim[1], ymax = Zoom_ylim[2], fill = NA, colour = "black", linewidth = 0.4) +
+  geom_segment(data = Zoom_leaders, aes(x = x, y = y, xend = xend, yend = yend), colour = "black", linewidth = 0.3) +
+  annotation_custom(ggplotGrob(Piedemonte_zoom), xmin = Zoom_box[["xmin"]], xmax = Zoom_box[["xmax"]], ymin = Zoom_box[["ymin"]], ymax = Zoom_box[["ymax"]]) +
+  coord_sf(xlim = Main_xlim, ylim = Main_ylim, expand = FALSE)
+
+# Inset: northern South America with country borders, Colombia shaded, and the main map's extent boxed; no coordinates
+Sampling_inset <- ggplot() +
+  geom_sf(data = Countries, fill = "grey92", colour = "grey45", linewidth = 0.25) +
+  geom_sf(data = filter(Countries, adm0_a3 == "COL"), fill = "grey55", colour = "black", linewidth = 0.4) +
+  annotate("rect", xmin = Main_xlim[1], xmax = Main_xlim[2], ymin = Main_ylim[1], ymax = Main_ylim[2],
+           fill = NA, colour = "red", linewidth = 0.5) +
+  coord_sf(xlim = c(-80, -60), ylim = c(-10, 13), expand = FALSE) +
+  theme_void() +
+  theme(panel.background = element_rect(fill = "#dceaf5"),
+        panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5))
+
+# Combine: the inset sits at the top of the legend column, outside the map panel so it hides no sampling. Saved at the manuscript's text width (6.5 in) so font and symbol sizes are what the reader sees
+Sampling_map_full <- ggdraw(Sampling_map) +
+  draw_plot(Sampling_inset, x = 0.785, y = 0.75, width = 0.205, height = 0.235)
+ggsave("Figures/Map_sampling/Sampling_map.png", Sampling_map_full, bg = "white", width = 6.5, height = 7, dpi = 300)
+print(Sampling_map_full)
 
 # >inset prec map ------------------------------------------------------
 Col_prec_map + 
@@ -219,16 +314,9 @@ Col_prec_map +
           aes(shape = Uniq_db, size = n, alpha = desc(n))) +
   # Rivers
   geom_sf(data = rivers_co, color = "blue") +
-  geom_text_repel(
-    data = rivers_co2,
-    aes(label = name, geometry = geometry),
-    stat = "sf_coordinates",
-    size = 4, color = "red",
-    max.overlaps = Inf
-  ) +
-  geom_sf_text(data = river_labels, aes(label = name), color = "red", size = 4) +
+  geom_sf_text(data = river_labels, aes(label = name), color = "#1f5fbf", size = 4) +
   coord_sf(
-    xlim = c(bbox_all[1], bbox_all[3]), ylim = c(bbox_all[2], bbox_all[4]),
+    xlim = Main_xlim, ylim = Main_ylim,
     label_axes = "____", expand = TRUE
   ) + annotation_scale(location = "bl") +
   scale_shape_discrete(
@@ -244,17 +332,6 @@ Col_prec_map +
     size = guide_legend(title = "Number of \npoint counts"),
     shape = guide_legend(title = "Data collector")
   )
-
-# >South America map ------------------------------------------------------
-# Plot map of Colombia within South America
-ggplot(data = SA) +
-  geom_sf() +
-  geom_sf(data = SA[SA$adm0_a3 == "COL", ], linewidth = 2, color = "black") #+
-  #layer_spatial(st_bbox(Pc_locs_jit), color = "red")
-
-ggsave("Figures/Map_sampling/South_america_grayscale.png", bg = "white", dpi = 300)
-
-# Combine inset map + South America map in powerpoint
 
 # Fig2: Temporal distribution of sampling plot ------------------------------
 # Boxplots showing the temporal distribution of sampling in each ecoregion 

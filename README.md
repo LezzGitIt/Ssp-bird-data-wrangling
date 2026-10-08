@@ -64,7 +64,7 @@ Scripts/        01–06 pipeline; Data_paper/ (figure + example scripts); qmd/ (
 DataS1/         curated deposit (tracked)
 Suppfiles/      bibliography, author/affiliation metadata, title-page partial
 _extensions/    Elsevier Quarto format (gitignored; `quarto add quarto-journals/elsevier`)
-Figures/Static/ manuscript figures no script regenerates (sampling map, example landscape, phylogeny)
+Figures/Static/ manuscript figures no script regenerates (example landscape, phylogeny)
 Figures/        script-generated figures (gitignored, rebuilt by the Data_paper/ scripts)
 Data/ Derived/ Rdata/   raw + recreatable (gitignored); geospatial outputs in Derived/Geospatial/
 ```
