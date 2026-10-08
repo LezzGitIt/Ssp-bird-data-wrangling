@@ -1,5 +1,5 @@
 ---
-title: Bird diversity in productive landscapes of Colombia 
+title: Bird diversity in cattle ranching landscapes of Colombia 
 subtitle: Data paper
 date: last-modified
 bibliography: ../../../Suppfiles/PhD.bib
@@ -73,6 +73,14 @@ dual_table <- function(df, headers = names(df), latex_fn) {
   if (is.function(headers)) headers <- headers(names(df))
   knitr::kable(df, col.names = headers)
 }
+
+# Give LaTeX table columns fixed widths (cm; NA = natural width) and centre every cell vertically. Pair with kable(align = table_align(...)) so cells are also centred horizontally, except long-text Description / Definition columns, which stay left-aligned (house style for all tables).
+table_align <- function(col_names) if_else(col_names %in% c("Description", "Definition"), "l", "c")
+set_col_widths <- function(kbl, widths) {
+  reduce(seq_along(widths), \(tbl, i) {
+    if (is.na(widths[i])) tbl else column_spec(tbl, i, width = paste0(widths[i], "cm"), latex_valign = "m")
+  }, .init = kbl)
+}
 ```
 
 ```{r}
@@ -89,6 +97,9 @@ Num_ft <- Data$Functional_traits %>%
   select(-any_of("Species_ayerbe")) %>%
   ncol()
 Num_farms <- unique(Data$Site_covs$Id_scr) %>% length()
+Num_datasets <- n_distinct(Data$Event_covs$Uniq_db)
+Year_first <- min(Data$Event_covs$Year)
+Year_last <- max(Data$Event_covs$Year)
 
 # Visits per physical location, pooled across data collectors -- the Event_covs 'N_reps' column counts repeats per Id_survey (one collector's point count) and so tops out lower than this
 Visits_per_loc <- Data$Event_covs %>% count(Id_survey_no_dc, name = "n_visits")
@@ -113,11 +124,76 @@ Implementing silvopastoral systems – an agroforestry technique involving the i
 
 Bird communities are structured by a mix of local and landscape level processes. The local management of agroecosystems is important as this greatly influences resource and niche space availability, predominantly through the vegetative cover and structural diversity. For example, agrobiodiversity can range from homogenous monocultures to highly diversified polycultures, management can be minimally or highly disruptive (e.g., mowing, tilling, harvesting), and pests can be controlled by leveraging ecosystem services or through the application of pesticides [@stantonAnalysisTrendsAgricultural2018]. Past work in silvopastoral systems has found greater taxonomic diversity compared to monoculture pasture, but less than forested habitat [@mendozaConsistencyBirdUse2014; @auspreySensitivityTropicalMontane2023], although there are exceptions reporting equivalent or higher levels of diversity in silvopasture relative to forest patches [@broomSustainableEfficientLivestock2013; @prevedelloImportanceScatteredTrees2018]. Furthermore, the impact of local management is likely moderated by climatic conditions like temperature and rainfall, as bird affiliation with agricultural systems tends to be greater in cooler / wetter environments [@frishkoffClimateChangeHabitat2016; @boyleHygricNichesTropical2020; @soberonGrinnellianEltonianNiches2007]. Given these complexities, our understanding of silvopasture's impact on bird biodiversity is limited by studies with small spatiotemporal and taxonomic coverage.
 
-Here we present the 'Bird diversity in productive landscapes of Colombia' dataset, collating and standardizing data across `r Tot_pc_prty` surveys at `r Num_sites` unique point count locations from 2013 - 2026. We recorded `r Num_obs_prty` bird observations of `r Num_spp` species in `r Num_fam` families across five ecologically distinct regions (hereafter, ‘ecoregions’), including tropical dry forest, Andean montane forest, and the plains of the Orinoco river basin (@fig-sampling-map). The most speciose orders were Passeriformes, Apodiformes, Piciformes, Psittaciformes, and Accipitriformes (@fig-phylogeny), and the species that were both widespread and abundant tended to thrive in highly dynamic and heterogeneous landscapes (e.g., *Tyrannus melancholicus, Cyanocorax violaceus, Bubulcus ibis, Milvago chimachima,* and *Crotophaga ani*; @fig-abund-widespread-spp).
+Here we present the 'Bird diversity in cattle ranching landscapes of Colombia' dataset, which collates and standardizes data across `r Tot_pc_prty` surveys conducted at `r Num_sites` unique point count locations from `r Year_first` to `r Year_last`, drawn from `r Num_datasets` datasets (@tbl-datasets). We recorded `r Num_obs_prty` bird observations of `r Num_spp` species in `r Num_fam` families across five ecologically distinct regions (hereafter, ‘ecoregions’), including tropical dry forest, Andean montane forest, and the plains of the Orinoco river basin (@fig-sampling-map). The most speciose orders were Passeriformes, Apodiformes, Piciformes, Psittaciformes, and Accipitriformes (@fig-phylogeny), and the species that were both widespread and abundant tended to thrive in highly dynamic and heterogeneous landscapes (e.g., *Tyrannus melancholicus, Cyanocorax violaceus, Bubulcus ibis, Milvago chimachima,* and *Crotophaga ani*; @fig-abund-widespread-spp).
 
-![The locations of 504 point count sites in 73 farms across five ecoregions in Colombia. Colombia is extremely topographically diverse, with the Andes mountain range trifurcating into three distinct chains (i.e., 'cordilleras'), in addition to more isolated 'sierras' (e.g., Sierra Nevada de Santa Marta), that are critical for understanding bird distributions in Colombia. In between the chains of the Andes lie two major river valleys, the Cauca and Magdalena (labeled in red). Major rivers also run off the Eastern slope of the Andes into the plains and eventually into the Orinoco and Amazon rivers. The shape of the symbol corresponds to the data collector, and the size corresponds to the number of point counts within a quarter degree squared grid cell. Note that a small jitter was applied to all points, and a larger jitter was applied to points in the Piedemonte region to improve visibility. Elevation was log-transformed to emphasize altitudinal gradients at lower elevations.](../../../Figures/Static/Map_sampling/TNC_Field_Map_Final.png){#fig-sampling-map}
+```{r}
+#| label: tbl-datasets
+#| tbl-cap: "Overview of the datasets, ordered by first survey year. Each dataset is one data collector's survey campaign, named as in the `Uniq_db` column of `Event_covs.csv`. CIPAV = Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria; GAICA = Asociación GAICA; Unillanos = Universidad de los Llanos; UBC = University of British Columbia. Locations are unique point count locations and surveys are point counts (a location surveyed on several visits counts once per visit). Habitats are the dominant land cover within the point count radius. CIPAV's duration is the span between the first and last bird recorded, since they extended counts when few birds were detected; every other dataset used a fixed 10-minute count. GAICA distancia used no fixed radius; observers estimated the distance to each bird."
 
-The `r Num_sites` point count locations were each surveyed 1–`r Max_visits_loc` times (`r Tot_pc_prty` surveys in total, pooled across data collectors), and `r Per_three_plus_loc`% were sampled $\geq$ 3 times within a closed sampling period (nearly all of the point counts other than CIPAV's, which were surveyed once), enabling estimation of detection probabilities through hierarchical models. Land-use landcover types surveyed include mature forest, forest fragments, riparian forest, crops, intensive pasture, several types of silvopasture, and heterogeneous mosaics (i.e., no single dominant landcover type). This dataset permits analyses of bird diversity patterns and community composition across land-use gradients, especially the effects of silvopastoral practices on biodiversity in tropical productive landscapes. We also provide complementary datasets of taxonomic equivalents (BirdLife, BirdTree, and eBird / Clements), functional traits, site covariates, and survey covariates (@tbl-file-info), facilitating a variety of research questions and analytical approaches. For example, one could examine the interacting effects of local management practices and climate, while controlling for phylogenetic non-independence, to understand silvopasture's influence on functional diversity and ecosystem service provisioning. Importantly, the longitudinal nature of these data allow for analyses of population trends or colonization/extinction dynamics, which is critical for conservation practitioners [@leesRoadmapIdentifyingFilling2020].
+# Fixed point count radius (m) of each dataset's protocol (see Research methods); GAICA distancia had no fixed radius, only an estimated distance to each bird
+Dataset_radius <- c("Cipav mbd" = "25", "Gaica mbd" = "50", "Gaica distancia" = "–",
+                    "Unillanos mbd" = "50", "Ubc mbd" = "50", "Ubc gaica mbd" = "50")
+
+# Collapse a set of years into runs, e.g. 2013, 2014, 2016, 2017 -> "2013–14, 2016–17"
+collapse_years <- function(years) {
+  years <- sort(unique(years))
+  runs <- split(years, cumsum(c(1, diff(years) != 1)))
+  map_chr(runs, \(r) if (length(r) == 1) as.character(r) else paste0(min(r), "–", max(r) %% 100)) %>%
+    str_c(collapse = ", ")
+}
+
+Covs_join <- Data$Event_covs %>%
+  left_join(Data$Site_covs[c("Id_survey_no_dc", "Id_scr", "Habitat", "Ecoregion")], by = "Id_survey_no_dc") %>%
+  mutate(
+    Ecoregion = case_match(Ecoregion, "Cafetera" ~ "Coffee region", "Cordillera oriental" ~ "Cordillera Oriental",
+                           "Bajo magdalena" ~ "Bajo Magdalena", "Rio cesar" ~ "Río Cesar", .default = Ecoregion),
+    Habitat = factor(Habitat, levels = c("Bosque", "Ssp", "Pastizales", "Mosaic", "Cultivos"),
+                     labels = c("forest", "silvopasture", "pasture", "mosaic", "crops"))
+  )
+Num_ecor <- n_distinct(Covs_join$Ecoregion)
+
+Dataset_tbl <- Covs_join %>%
+  summarise(
+    First_year = min(Year),
+    Years = collapse_years(Year),
+    Ecoregions = if (n_distinct(Ecoregion) == Num_ecor) "All five" else str_c(sort(unique(Ecoregion)), collapse = ", "),
+    Habitats = str_c(sort(unique(Habitat)), collapse = ", ") %>% str_to_sentence(),
+    Farms = n_distinct(Id_scr),
+    Locations = n_distinct(Id_survey_no_dc),
+    Surveys = n(),
+    # Duration: CIPAV's counts vary in length (Pc_duration); the rest are a fixed 10 minutes
+    Min_dur = round(as.numeric(min(Pc_duration, na.rm = TRUE)) / 60),
+    Max_dur = round(as.numeric(max(Pc_duration, na.rm = TRUE)) / 60),
+    .by = Uniq_db
+  ) %>%
+  mutate(
+    Radius = Dataset_radius[Uniq_db],
+    Duration = if_else(Min_dur == Max_dur, as.character(Min_dur), paste0(Min_dur, "–", Max_dur)),
+    Surveys = prettyNum(Surveys, big.mark = ",")
+  ) %>%
+  arrange(First_year, Uniq_db) %>%
+  select(Dataset = Uniq_db, Years, Ecoregions, Habitats, Farms, Locations, Surveys, Radius, Duration)
+
+# Every column gets a fixed width (cm) so long cells wrap; small font and tight column padding keep nine columns inside the text block
+Dataset_widths <- c(1.9, 1.6, 2.3, 3.0, 0.9, 1.3, 1.1, 1.1, 1.3)
+dual_table(
+  Dataset_tbl,
+  headers = c("Dataset", "Years", "Ecoregions", "Habitats", "Farms", "Locations", "Surveys", "Radius (m)", "Duration (min)"),
+  latex_fn = \(d) {
+    out <- d %>%
+      kable("latex", booktabs = TRUE, longtable = TRUE, align = "c",
+            col.names = c("Dataset", "Years", "Ecoregions", "Habitats", "Farms", "Locations", "Surveys", "Radius (m)", "Duration (min)")) %>%
+      kable_styling(latex_options = c("striped", "hold_position"), position = "center", font_size = 9)
+    out <- set_col_widths(out, Dataset_widths)
+    # Tighter column padding for this table only, restored to the LaTeX default (6pt) afterwards
+    structure(paste0("\\setlength{\\tabcolsep}{3pt}\n", out, "\n\\setlength{\\tabcolsep}{6pt}"), format = "latex", class = "knitr_kable")
+  }
+)
+```
+
+![`r Num_sites` point count locations surveyed across `r Num_farms` farms in `r Num_ecor` ecoregions of Colombia. Symbol shape shows the data collector, and symbol size the number of point count locations each data collector surveyed within a quarter-degree grid cell. Dashed outlines enclose each ecoregion's sampling locations. Where several data collectors surveyed the same cell, their symbols are spaced evenly around the cell centre so that none hides another. The densely sampled Piedemonte (solid box) is enlarged at bottom right, where symbols summarize finer grid cells (0.05°, about 5.5 km) on the same size scale. Colombia is extremely topographically diverse: the Andes trifurcate into three distinct chains ('cordilleras'), separated by the Cauca and Magdalena river valleys, and more isolated 'sierras' (e.g., Sierra Nevada de Santa Marta) are critical for understanding bird distributions. Major rivers also run off the eastern slope of the Andes into the plains and eventually into the Orinoco and Amazon rivers. Background shading shows elevation on a log scale to emphasize relief at lower elevations. The upper-right inset locates the map (red box) in northern South America.](../../../Figures/Map_sampling/Sampling_map.png){#fig-sampling-map}
+
+The `r Num_sites` point count locations were each surveyed 1–`r Max_visits_loc` times (`r Tot_pc_prty` surveys in total, pooled across data collectors), and `r Per_three_plus_loc`% were sampled $\geq$ 3 times within a closed sampling period (nearly all of the point counts other than CIPAV's, which were surveyed once), enabling estimation of detection probabilities through hierarchical models. Land-use landcover types surveyed include mature forest, forest fragments, riparian forest, crops, intensive pasture, several types of silvopasture, and heterogeneous mosaics (i.e., no single dominant landcover type). This dataset permits analyses of bird diversity patterns and community composition across land-use gradients, especially the effects of silvopastoral practices on biodiversity in tropical cattle ranching landscapes. We also provide complementary datasets of taxonomic equivalents (BirdLife, BirdTree, and eBird / Clements), functional traits, site covariates, and survey covariates (@tbl-file-info), facilitating a variety of research questions and analytical approaches. For example, one could examine the interacting effects of local management practices and climate, while controlling for phylogenetic non-independence, to understand silvopasture's influence on functional diversity and ecosystem service provisioning. Importantly, the longitudinal nature of these data allow for analyses of population trends or colonization/extinction dynamics, which is critical for conservation practitioners [@leesRoadmapIdentifyingFilling2020].
 
 ![Phylogenetic relationships of the 587 bird species observed in our data set, represented by 585 tips (some species share a tip due to taxonomic differences between BirdTree and Ayerbe). There were 25 orders, of which 19 are shown using grayscale representative species (downloaded from phylopic). The number of species in each order is listed in parentheses.](../../../Figures/Static/Phylogeny_equal_sizes.png){#fig-phylogeny}
 
@@ -153,7 +229,6 @@ file_names_and_sizes <- tibble(
   relocate(Description, .after = File_name)
 
 # Print and format
-## align = per column: File name / Description stay left (long strings read better), the two short columns centre under their headers
 ## A "\n" in a LaTeX header is not a line break -- kableExtra::linebreak() wraps it in \makecell (the makecell package is loaded in the qmd preamble); escape = FALSE is then required, so the underscores in File name / Description are pre-escaped
 dual_table(
   file_names_and_sizes,
@@ -161,10 +236,10 @@ dual_table(
   latex_fn = \(d) d %>%
     mutate(across(c(File_name, Description), ~str_replace_all(.x, "_", "\\\\_"))) %>%
     kable("latex", booktabs = TRUE, longtable = TRUE, escape = FALSE,
-          align = c("l", "l", "c", "c"),
+          align = table_align(names(d)),
           col.names = kableExtra::linebreak(c("File name", "Description", "Number of\nobservations", "Size (MB)"), align = "c")) %>%
     kable_styling(latex_options = c("striped", "hold_position"), position = "center") %>%
-    column_spec(2, width = "8cm")
+    set_col_widths(c(NA, 8))
 )
 ```
 
@@ -174,7 +249,7 @@ dual_table(
 
 ## A. Data set identity:
 
-Bird diversity in productive landscapes of Colombia
+Bird diversity in cattle ranching landscapes of Colombia
 
 ## B. Data set identification code: Bird_pcs_all.csv
 
@@ -275,7 +350,7 @@ area_km2_ecor <- calc_km2(Pc_locs_sf, group = Ecoregion) # By ecoregion
 
 ```{r}
 #| label: tbl-elev
-#| tbl-cap: Minimum and maximum elevations (m), the elevational range (m), and the area (km²) of bird sampling locations in each ecoregion.
+#| tbl-cap: The departments that make up each ecoregion, and the minimum and maximum elevations (m), the elevational range (m), and the area (km²) of bird sampling locations in each ecoregion.
 
 Data$Site_covs %>%
   summarize(Min = min(Elev, na.rm = TRUE),
@@ -283,6 +358,16 @@ Data$Site_covs %>%
             Range = Max - Min,
             .by = Ecoregion) %>%
   left_join(area_km2_ecor) %>%
+  # Departments: ecoregions are project-defined groupings of departments (01_Gen_wrangling.R), so list the members to define each one; restore the accents the pipeline strips
+  left_join(
+    Data$Site_covs %>%
+      distinct(Ecoregion, Department) %>%
+      mutate(Department = case_match(Department,
+        "Atlantico" ~ "Atlántico", "Bolivar" ~ "Bolívar", "Boyaca" ~ "Boyacá",
+        "Quindio" ~ "Quindío", "Valle del cauca" ~ "Valle del Cauca", "Guajira" ~ "La Guajira",
+        .default = Department)) %>%
+      summarize(Departments = str_c(sort(Department), collapse = ", "), .by = Ecoregion)
+  ) %>%
   # Ecoregion: Spanish primary name; Description: English descriptor (see the ecoregion list in the site description)
   mutate(
     Description = case_match(Ecoregion,
@@ -300,23 +385,26 @@ Data$Site_covs %>%
       "Rio cesar"           ~ "Río Cesar"
     )
   ) %>%
-  relocate(Description, .after = Ecoregion) %>%
+  relocate(Description, Departments, .after = Ecoregion) %>%
   arrange(Range) %>%
   dual_table(latex_fn = \(d) d %>%
-    kable("latex", booktabs = TRUE, longtable = TRUE, escape = FALSE, align = "c") %>%
-    kable_styling(latex_options = c("striped", "hold_position"), position = "center")
+    kable("latex", booktabs = TRUE, longtable = TRUE, escape = FALSE, align = table_align(names(d))) %>%
+    kable_styling(latex_options = c("striped", "hold_position"), position = "center") %>%
+    set_col_widths(c(NA, 4, 3.6))
   )
 ```
 
-Our study area covered nearly 8$^{\circ}$ of latitude, 3.5$^{\circ}$ of longitude, and `r area_km2_all$Area` $\text{km}^2$. See @tbl-elev for the area (the convex hull) of bird sampling locations in each ecoregion.
+Our study area covered nearly 8$^{\circ}$ of latitude, 3.5$^{\circ}$ of longitude, and `r format(round(as.numeric(area_km2_all$Area)), big.mark = ",")` $\text{km}^2$. See @tbl-elev for the area (the convex hull) of bird sampling locations in each ecoregion.
 
 Habitat: Detailed characteristics of habitats sampled
 
 ```{r}
 #| label: Hab-tbls
 
-Create_hab_tbl <- function(col){
+# Count point count locations per habitat class; habitat restricts the count to one Habitat so sub-habitat counts sum to that habitat's total
+Create_hab_tbl <- function(col, habitat = NULL){
   Data$Site_covs %>% 
+  filter(is.null(habitat) | Habitat %in% habitat) %>%
   distinct(Id_survey_no_dc, {{ col }}) %>%
   count( {{ col }}) %>%
   pivot_wider(names_from = {{ col }}, values_from = n) %>% 
@@ -324,7 +412,15 @@ Create_hab_tbl <- function(col){
 }
 
 Hab_tbl <- Create_hab_tbl(col = Habitat)
-Hab_sub_tbl <- Create_hab_tbl(col = Habitat_sub)
+Hab_forest_tbl <- Create_hab_tbl(col = Habitat_sub, habitat = "Bosque")
+Hab_ssp_tbl <- Create_hab_tbl(col = Habitat_sub, habitat = "Ssp")
+
+# Where the mature-forest locations are (Otún Quimbaya = "OQ_", Reserva El Hatico = "EH_" in Id_survey_no_dc)
+Maduro_locs <- Data$Site_covs %>% filter(Habitat_sub == "Maduro")
+N_maduro_cafetera <- sum(Maduro_locs$Ecoregion == "Cafetera")
+N_maduro_oq <- sum(str_detect(Maduro_locs$Id_survey_no_dc, "OQ_"))
+N_maduro_eh <- sum(str_detect(Maduro_locs$Id_survey_no_dc, "EH_"))
+N_maduro_pdm <- sum(Maduro_locs$Ecoregion == "Piedemonte")
 
 #Pc_hab %>% filter(Habitat_sub == "Maduro") %>% view()
 ```
@@ -333,23 +429,23 @@ Hab_sub_tbl <- Create_hab_tbl(col = Habitat_sub)
 
 - Forest (Total n = `r Hab_tbl$Bosque` point counts)
 
-  - Forest fragments (n = `r Hab_sub_tbl$Secundario`): Small fragments embedded in cattle ranching landscapes. Forest fragments were generally \< 5 ha, although many were connected to other forested elements in the landscape. Surveys were conducted on the forest edge, either inside the forest (\<50 m from the edge) or just outside the forest (\<15 m outside the forest), although this was not recorded systematically.
+  - Forest fragments (n = `r Hab_forest_tbl$Secundario`): Small fragments embedded in cattle ranching landscapes. Forest fragments were generally \< 5 ha, although many were connected to other forested elements in the landscape. Surveys were conducted on the forest edge, either inside the forest (\<50 m from the edge) or just outside the forest (\<15 m outside the forest), although this was not recorded systematically.
 
-  - Riparian forest (n = `r Hab_sub_tbl$Ripario`): Gallery forests on either side of a stream or river
+  - Riparian forest (n = `r Hab_forest_tbl$Ripario`): Gallery forests on either side of a stream or river
 
-  - Mature forest (n = `r Hab_sub_tbl$Maduro`): Taller, older, and larger contiguous forests. 10 of these points were in the Ecorregion Cafetera (9 in the ecological reserve Otún Quimbaya, 4 in Reserva El Hatico) and 2 were in a large forest in the Piedemonte.
+  - Mature forest (n = `r Hab_forest_tbl$Maduro`): Taller, older, and larger contiguous forests. `r N_maduro_cafetera` of these points were in the Cafetera ecoregion (`r N_maduro_oq` in the ecological reserve Otún Quimbaya, `r N_maduro_eh` in Reserva El Hatico) and `r N_maduro_pdm` were in a large forest in the Piedemonte.
 
 - Silvopasture (Total n = `r Hab_tbl$Ssp`): Silvopastoral systems consist of a variety of practices and range across a spectrum regarding the diversity and intensity of practices implemented. For example, silvopastural systems can be tree (and grass) monocultures planted to be homogeneous in spacing and age, or, alternatively, they can be highly diverse polycultures composed of remnant vegetation and naturally recruited tree species [@cubbageComparingSilvopastoralSystems2012]. See @murgueitioNativeTreesShrubs2011, @calleStrategyScalingUpIntensive2013, and @cubbageComparingSilvopastoralSystems2012 to better understand the full extent of management practices that can be incorporated in silvopastoral systems. In our bird sampling efforts, the project differentiated between several types of silvopasture:
 
-  - Dispersed trees (n = `r Hab_sub_tbl$Arboles_dispersos`): Trees integrated directly into the pasture where cows graze, providing shade as well as direct forage in some cases
+  - Dispersed trees (n = `r Hab_ssp_tbl$Arboles_dispersos`): Trees integrated directly into the pasture where cows graze, providing shade as well as direct forage in some cases
 
-  - Live fences (n = `r Hab_sub_tbl$Cerca_viva`): Linear rows of trees that serve to reduce wind and the drying of grass forage, as well as to divide paddocks.
+  - Live fences (n = `r Hab_ssp_tbl$Cerca_viva`): Linear rows of trees that serve to reduce wind and the drying of grass forage, as well as to divide paddocks.
 
-  - Shrub live fences (n = `r Hab_sub_tbl$Setos`): Linear rows of shrubs used to divide paddocks and provide direct forage for cattle.
+  - Shrub live fences (hedgerows; n = `r Hab_ssp_tbl$Setos`): Linear rows of shrubs used to divide paddocks and provide direct forage for cattle.
 
-  - Multi-species fodder banks (n = `r Hab_sub_tbl$Banco_de_forraje`): Forage that is cut and transported to paddocks for consumption.
+  - Multi-species fodder banks (n = `r Hab_ssp_tbl$Banco_de_forraje`): Forage that is cut and transported to paddocks for consumption.
 
-  - Intensive SPS (n = `r Hab_sub_tbl$Intensivo`): Incorporation of several of the aforementioned practices, including high densities of fodder shrubs, a variety of native grasses for direct foraging by cattle, and tropical trees for timber or fruit.
+  - Intensive SPS (n = `r Hab_ssp_tbl$Intensivo`): Incorporation of several of the aforementioned practices, including high densities of fodder shrubs, a variety of native grasses for direct foraging by cattle, and tropical trees for timber or fruit.
 
 - Intensive pasture (n = `r Hab_tbl$Pastizales`): Monoculture cattle ranching systems that are generally hotter, drier, and more homogenous than the other habitat types surveyed.
 
@@ -371,77 +467,28 @@ Hab_sub_tbl <- Create_hab_tbl(col = Habitat_sub)
 
 a.  Design characteristics: Description of statistical/sampling design
 
-    To understand silvopasture’s impact on avian biodiversity, The Nature Conservancy coordinated several data collectors — CIPAV (Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria), GAICA, and Unillanos (Universidad de los Llanos) — who conducted `r Tot_pc_prty` avian point counts at `r Num_sites` unique sites across agricultural intensity gradients. Point counts were conducted on (or near) `r Num_farms` different farms across 12 geopolitical departments of Colombia in 5 ecoregions (@fig-sampling-map, @tbl-by-data-set).
+    To understand silvopasture’s impact on avian biodiversity, The Nature Conservancy coordinated several data collectors — CIPAV (Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria), GAICA, and Unillanos (Universidad de los Llanos) — who conducted `r Tot_pc_prty` avian point counts at `r Num_sites` unique sites across agricultural intensity gradients. Point counts were conducted on (or near) `r Num_farms` different farms across 12 geopolitical departments of Colombia in 5 ecoregions (@fig-sampling-map, @tbl-datasets).
 
 b.  Permanent plots: Dimension, location, general vegetation characteristics (if applicable).
 
 ```{r}
-#| label: Prep-tbl-by-data-set
+#| label: El-hatico-2025
 
-# Join covs
-Site_covs <- Data$Site_covs[c("Id_survey_no_dc", "Id_scr", "Habitat", "Ecoregion", "Department")]
-Covs_join <- Data$Event_covs %>% 
-  left_join(Site_covs) 
-
-# Duration range for CIPAV (the only data set with variable-length counts); every other data set used a fixed 10-minute protocol
-Cipav_duration <- Covs_join %>% filter(Uniq_db == "Cipav mbd") %>%
-  summarize(min_dur = as.numeric(min(Pc_duration, na.rm = TRUE)) / 60,
-            max_dur = as.numeric(max(Pc_duration, na.rm = TRUE)) / 60) %>%
-  mutate(Duration = paste0(round(min_dur), " - ", round(max_dur))) %>%
-  pull(Duration)
-Duration_minutes <- c(Cipav_duration, rep("10", 5))
-# Years sampled
-Years_sampled <- Covs_join %>% 
-  summarize(min_year = min(Year),
-            max_year = max(Year), 
-            .by = Uniq_db) %>% 
-  mutate(Years_sampled = case_when(
-    min_year != max_year ~ paste(min_year, "-", max_year), 
-    min_year == max_year ~ as.character(max_year)
-    )) %>% 
-  pull(Years_sampled)
-
-#  Calculate the number of ecoregions and departments
-Ecoregions_departments <- Covs_join %>% 
-  summarize(Num_depts = length(unique(Department)), 
-            Num_ecor = length(unique(Ecoregion)),
-            .by = Uniq_db) %>% 
-  mutate(Ecoregions_departments = paste0(Num_ecor, " (", Num_depts, ")")) %>% 
-  pull(Ecoregions_departments)
-
-Data_set_tbl <- tibble(Uniq_db = unique(Covs_join$Uniq_db),
-                       Years_sampled, 
-                       Duration_minutes, 
-                       Radius_m = c(25, rep(50, 5)), 
-                       Ecoregions_departments)
-Data_set_tbl_summ <- Covs_join %>%
-  summarise(Point_counts = length(unique(Id_survey)),
-            Farms = length(unique(Id_scr)), 
-            Habitats_surveyed = str_c(unique(Habitat), collapse = ", "),
-            .by = Uniq_db)
+# UBC's 2025 surveys at El Hatico (Coffee region): the only 2025 sampling in the dataset
+Hatico_ev <- Data$Event_covs %>% filter(Uniq_db == "Ubc mbd", Year == 2025)
+Hatico_ids <- unique(Hatico_ev$Id_survey_no_dc)
+Hatico_n <- length(Hatico_ids)
+Hatico_hab <- Data$Site_covs %>% filter(Id_survey_no_dc %in% Hatico_ids) %>% count(Habitat)
+Hatico_forest <- Hatico_hab$n[Hatico_hab$Habitat == "Bosque"]
+Hatico_ssp <- Hatico_hab$n[Hatico_hab$Habitat == "Ssp"]
+Hatico_prev_cipav <- Data$Event_covs %>% filter(Id_survey_no_dc %in% Hatico_ids, Uniq_db == "Cipav mbd") %>% distinct(Id_survey_no_dc) %>% nrow()
+Hatico_dates <- paste0(as.integer(format(min(Hatico_ev$Date), "%d")), "–", as.integer(format(max(Hatico_ev$Date), "%d")), format(max(Hatico_ev$Date), " %B %Y"))
+Hatico_visits <- Hatico_ev %>% count(Id_survey_no_dc) %>% pull(n)
 ```
 
-```{r}
-#| label: tbl-by-data-set
-#| tbl-cap: The number of unique point count locations conducted by each contracting institution, as well as the methodology, the habitats surveyed, and the respective years they surveyed.
+c.  Data collection period, frequency, etc.: Information necessary to understand temporal sampling regime
 
-
-Data_set_tbl %>% full_join(Data_set_tbl_summ) %>%
-  rename(Dataset = Uniq_db,
-         "Duration (minutes)" = Duration_minutes,
-         "Radius (m)" = Radius_m,
-         "Ecoregions (departments)" = Ecoregions_departments) %>%
-  rename_with(~str_replace_all(., "_", " ")) %>%
-  dual_table(latex_fn = \(d) d %>%
-    rename_with(.cols = everything(), .fn = ~linebreak(str_replace_all(., " ", "\n"), align = "c")) %>%
-    kable("latex", booktabs = TRUE, longtable = TRUE, escape = FALSE, align = "c") %>%
-    kable_styling(latex_options = c("striped", "hold_position"), position = "center")
-  )
-```
-
-a.  Data collection period, frequency, etc.: Information necessary to understand temporal sampling regime
-
-    Point count locations were sampled in multiple closed sampling periods by the same data collector using (essentially) the same methodology in several ecoregions. For example, in the Ecorregion Cafetera, GAICA surveyed the same point count locations in June 2013, November 2016, and June 2024 (with guidance from UBC in 2024; @fig-temporal-sampling). No point count locations were sampled in more than four distinct sampling periods. Generally, point count locations were not sampled by multiple institutions, with the exception of the University of British Columbia (UBC). In 2022 UBC resampled 54 point count locations that were sampled in 2019 by Universidad de los Llanos; in 2024 UBC, with the help of GAICA, resampled 42 point counts that were surveyed in the 2010's by GAICA in the Cafetera and Piedemonte ecoregions (14 Cafetera, 28 Piedemonte); finally in 2026, UBC resampled the 54 point counts surveyed originally by Universidad de los Llanos, as well as 28 point counts originally sampled by GAICA in the 2010s (22 of which were also resampled in 2024).
+    Point count locations were sampled in multiple closed sampling periods by the same data collector using (essentially) the same methodology in several ecoregions. For example, in the Ecorregion Cafetera, GAICA surveyed the same point count locations in June 2013, November 2016, and June 2024 (with guidance from UBC in 2024; @fig-temporal-sampling). No point count locations were sampled in more than four distinct sampling periods. Generally, point count locations were not sampled by multiple institutions, with the exception of the University of British Columbia (UBC). In 2022 UBC resampled 54 point count locations that were sampled in 2019 by Universidad de los Llanos; in 2024 UBC, with the help of GAICA, resampled 42 point counts that were surveyed in the 2010's by GAICA in the Cafetera and Piedemonte ecoregions (14 Cafetera, 28 Piedemonte); finally in 2026, UBC resampled the 54 point counts surveyed originally by Universidad de los Llanos, as well as 28 point counts originally sampled by GAICA in the 2010s (22 of which were also resampled in 2024). UBC also surveyed `r Hatico_n` point count locations at El Hatico (Valle del Cauca, Cafetera ecoregion) on `r Hatico_dates`, `r Hatico_forest` in forest and `r Hatico_ssp` in silvopasture, each `r min(Hatico_visits)`–`r max(Hatico_visits)` times; `r Hatico_prev_cipav` of these locations had been surveyed once by CIPAV in 2017.
 
     Excluding the point counts conducted by CIPAV, which were surveyed only once, `r Per_three_plus`% of point count locations were sampled at least 3 times within a closed sampling period (i.e., assumption of no births, deaths, immigration, or emigration; @fig-pc-farm-db). This 'robust' sampling design allows for modeling detectability and ultimately more robust estimates of occupancy and abundance [@mackenzieEstimatingSiteOccupancy2003], although only Ubc mbd and Ubc gaica mbd recorded detection covariates (e.g., weather, noise) systematically.
 
@@ -471,7 +518,7 @@ Ecor_pc_no_pdm <- Ecor_pc %>%
 
 a.  Field/laboratory: Description or reference to standard field/laboratory methods\
     \
-    Generally, point counts were conducted for 10 minutes in the morning, between sunrise and 11 AM (`r Per_bfor_11`%), recording all birds seen or heard within a 50-m fixed radius. CIPAV mbd employed a different methodology, using a 25-m radius and surveying for a variable amount of time (see `Pc_duration` in `Event_covs.csv`). GAICA Distancia did not employ a fixed point count radius, but instead estimated the distance to any bird seen or heard, and surveyed both mornings and afternoons (@tbl-by-data-set). Data sets differ in the intensity with which farms were surveyed – some data sets contain fewer farms that were more heavily sampled (e.g., Unillanos mbd), whereas others surveyed many farms but with less sampling intensity (e.g., Cipav mbd; @fig-pc-farm-db). Within each farm, point counts were generally separated by 100 - 150 meters to ensure independence (but there were exceptions). Note that excluding CIPAV, all data collectors recorded whether observations were flyovers (i.e., they did not use the habitat). Please see the 'Birds_SSP_Colombia_Detailed_methodologies' document for a more detailed accounting of the methods utilized by each data collector. The Piedemonte ecoregion had the most comprehensive sampling, with about half of the total point count locations (n = `r Pc_piedemonte`) sampled there. All other ecoregions were surveyed at `r min(Ecor_pc_no_pdm$n)` – `r max(Ecor_pc_no_pdm$n)` unique locations.\
+    Generally, point counts were conducted for 10 minutes in the morning, between sunrise and 11 AM (`r Per_bfor_11`%), recording all birds seen or heard within a 50-m fixed radius. CIPAV mbd employed a different methodology, using a 25-m radius and surveying for a variable amount of time (see `Pc_duration` in `Event_covs.csv`). GAICA Distancia did not employ a fixed point count radius, but instead estimated the distance to any bird seen or heard, and surveyed both mornings and afternoons (@tbl-datasets). Data sets differ in the intensity with which farms were surveyed – some data sets contain fewer farms that were more heavily sampled (e.g., Unillanos mbd), whereas others surveyed many farms but with less sampling intensity (e.g., Cipav mbd; @fig-pc-farm-db). Within each farm, point counts were generally separated by 100 - 150 meters to ensure independence (but there were exceptions). Note that excluding CIPAV, all data collectors recorded whether observations were flyovers (i.e., they did not use the habitat). Please see the 'Birds_SSP_Colombia_Detailed_methodologies' document for a more detailed accounting of the methods utilized by each data collector. The Piedemonte ecoregion had the most comprehensive sampling, with about half of the total point count locations (n = `r Pc_piedemonte`) sampled there. All other ecoregions were surveyed at `r min(Ecor_pc_no_pdm$n)` – `r max(Ecor_pc_no_pdm$n)` unique locations.\
 
 ![Each data set has bird information from point counts clustered within farms. Each point represents a farm and the x-axis conveys the number of unique point count locations at each farm. The colors correspond to the number of repeat surveys at each point count, rounded to the nearest whole number. The number of distinct farms within each data set is printed to the right of each boxplot. Note that this text is to the left of the most heavily sampled farm in the 'Unillanos mbd' and 'Ubc mbd' data sets (24 point counts) for display reasons.](../../../Figures/Pc_per_farm_db.png){#fig-pc-farm-db}
 
@@ -577,7 +624,7 @@ The R pipeline on [github](https://github.com/LezzGitIt/Ssp-bird-data-wrangling.
 
 ## B. Variable information
 
-Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see 'Data_joining_example.R'). The `Bird_abundances` and `Event_covs` data sets have the join keys `Id_survey` and `Id_survey_no_dc`. The `Site_covs` data set has the join key `Id_survey_no_dc`. The `Bird_pcs_all`, `Taxonomy`, and `Functional_traits` data sets all share the join key `Species_ayerbe`.
+Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see 'Data_joining_example.R'). The `Bird_pcs_all` and `Event_covs` data sets have the join keys `Id_survey` and `Id_survey_no_dc`. The `Site_covs` data set has the join key `Id_survey_no_dc`. The `Bird_pcs_all`, `Taxonomy`, and `Functional_traits` data sets all share the join key `Species_ayerbe`.
 
 For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird_pcs_analysis` data set because it is just a subset of `Bird_pcs_all`. Specifically, `Bird_pcs_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see 'Scripts/06_Analysis_wrangling.R'). Similarly, definitions of the join keys (`Field_names`) are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see the 'Column_definitions_final.xlsx', particularly the 'Column_content_definition' column, for additional information about variables. Within the .csv files, missing values are shown as blank cells `" "`.
 
@@ -605,43 +652,35 @@ Print_tbl <- function(df, join_df = NULL, remove_field = NULL, drop_datatype = F
     return(df %>% rename_with(.fn = ~str_replace(., "_", " ")) %>% kable())
   }
 
-  escape_latex <- TRUE
+  # Every column gets a fixed width so long cells wrap instead of running off the page. Narrow columns hold unbreakable runs (Id_survey_no_dc, Long_distance, HBW/BirdLife, Beak.Length_Culmen), so escape LaTeX specials ourselves, then allow a line break after every "." "_" "/".
+  tex_esc <- function(x){
+    x <- gsub("\\\\", "\\\\textbackslash{}", x)
+    x <- gsub("([#$%&_{}])", "\\\\\\1", x)
+    x <- gsub("~", "\\\\textasciitilde{}", x)
+    x <- gsub("\\^", "\\\\textasciicircum{}", x)
+    x <- gsub("\\\\textasciicircum\\{\\}([0-9]+)", "\\\\textsuperscript{\\1}", x)   # km^2 -> km with superscript 2
+    x
+  }
+  break_all <- function(x) gsub("(\\\\_|[./])", "\\1\\\\allowbreak{}", x)   # Field name / Source: break after "." "_" "/"
+  break_us  <- function(x) gsub("(\\\\_)", "\\1\\\\allowbreak{}", x)         # Values: only after "_" (keep numbers intact)
+  df <- df %>%
+    mutate(across(everything(), tex_esc)) %>%
+    mutate(across(any_of(c("Field_name", "Source")), break_all)) %>%
+    mutate(across(any_of("Values"), break_us))
 
-  if(drop_datatype){
-    # Narrow columns hold values with unbreakable runs (Long_distance, HBW/BirdLife,
-    # Beak.Length_Culmen). Escape LaTeX specials ourselves, then allow a line break
-    # after every "." "_" "/" so those cells wrap instead of overflowing.
-    tex_esc <- function(x){
-      x <- gsub("\\\\", "\\\\textbackslash{}", x)
-      x <- gsub("([#$%&_{}])", "\\\\\\1", x)
-      x <- gsub("~", "\\\\textasciitilde{}", x)
-      x <- gsub("\\^", "\\\\textasciicircum{}", x)
-      x <- gsub("\\\\textasciicircum\\{\\}([0-9]+)", "\\\\textsuperscript{\\1}", x)   # km^2 -> km with superscript 2
-      x
-    }
-    break_all <- function(x) gsub("(\\\\_|[./])", "\\1\\\\allowbreak{}", x)   # Field name / Source: break after "." "_" "/"
-    break_us  <- function(x) gsub("(\\\\_)", "\\1\\\\allowbreak{}", x)         # Values: only after "_" (keep numbers intact)
-    df <- df %>%
-      mutate(across(everything(), tex_esc)) %>%
-      mutate(across(any_of(c("Field_name", "Source")), break_all)) %>%
-      mutate(across(any_of("Values"), break_us))
-    escape_latex <- FALSE
+  # Column widths (cm), keyed by column name; together they fill the text block
+  ## Functional_traits (drop_datatype): Definition gets the room; Field name, Source, and Values hold short strings, so keep them tight
+  widths <- if (drop_datatype) {
+    c(Field_name = 3.2, Definition = 7, Source = 1.8, Values = 3)
+  } else {
+    c(Field_name = 3, Definition = 5.4, Data_type = 1.7, Values = 4.9)
   }
 
   out <- df %>%
     rename_with(.fn = ~str_replace(., "_", " ")) %>%
-    kable("latex", booktabs = TRUE, longtable = TRUE, escape = escape_latex) %>%
-    kable_styling(latex_options = c("striped", "hold_position"), position = "center") %>%
-    column_spec(2, width = if (drop_datatype) "6.2cm" else "5cm")
-  if(drop_datatype){
-    # Functional_traits table: hand-tuned widths so Definition gets the room. Field name, Source, and Values hold short strings, so keep them tight.
-    # The last column is always Values; Source (when present) sits between Definition and it.
-    n <- ncol(df)
-    out <- out %>% column_spec(1, width = "3.2cm")
-    if("Source" %in% names(df)) out <- out %>% column_spec(3, width = "1.8cm")
-    out <- out %>% column_spec(n, width = "2.6cm")
-  }
-  out
+    kable("latex", booktabs = TRUE, longtable = TRUE, escape = FALSE, align = table_align(names(df))) %>%
+    kable_styling(latex_options = c("striped", "hold_position"), position = "center")
+  set_col_widths(out, unname(widths[names(df)]))
 }
 ```
 

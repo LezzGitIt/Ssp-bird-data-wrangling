@@ -1,6 +1,6 @@
-# Bird diversity in productive landscapes of Colombia
+# Bird diversity in cattle ranching landscapes of Colombia
 
-This repository holds the curated Sustainable Cattle Ranching (SCR) bird point-count dataset together with the **pipeline that produces and documents it**. The **Ecology data paper** ("Bird diversity in productive landscapes of Colombia") is the write-up of that dataset — what it contains, how it was collected, and how it was processed — and `Scripts/01_…06_` is the executable provenance behind it, assembling the raw provider data into the clean, covariate-linked tables deposited as `DataS1/`.
+This repository holds the curated Sustainable Cattle Ranching (SCR) bird point-count dataset together with the **pipeline that produces and documents it**. The **Ecology data paper** ("Bird diversity in cattle ranching landscapes of Colombia") is the write-up of that dataset — what it contains, how it was collected, and how it was processed — and `Scripts/01_…06_` is the executable provenance behind it, assembling the raw provider data into the clean, covariate-linked tables deposited as `DataS1/`.
 
 The project uses data from 500+ unique point count locations surveyed 2013–2026 across five Colombian ecoregions to study how silvopasture affects bird taxonomic, functional, and phylogenetic diversity in fragmented landscapes. Downstream dissertation-chapter repositories consume this repo's outputs for the analyses (multi-species occupancy/abundance, alpha/beta diversity, functional and phylogenetic diversity).
 
@@ -9,7 +9,7 @@ The project uses data from 500+ unique point count locations surveyed 2013–202
 `DataS1/` is the curated deposit that accompanies the data paper. Tables are joined with 'join keys':
 
 | File | Contents | Join keys |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | `Bird_pcs_all.csv` | every point-count observation | `Id_survey`, `Id_survey_no_dc`, `Species_ayerbe` |
 | `Bird_pcs_analysis.csv` | analysis-ready subset (50 m radius, used the habitat) | same |
 | `Event_covs.csv` | per-survey covariates (e.g., date, time, observer) | `Id_survey`, `Id_survey_no_dc` |
@@ -28,7 +28,7 @@ On publication, the versioned deposit of record (with a DOI) will be archived on
 `Scripts/01_…` through `Scripts/06_…` run in sequence; most end with a deliberate `stop()` before their export section. Each script's header comment notes its inputs and outputs.
 
 | Script | Builds |
-|------------------------------------|------------------------------------|
+|----|----|
 | `01_Gen_wrangling.R` | base point-count df, site/event covariates, point locations, climate |
 | `02_Taxonomy.R` | `Taxonomy.csv`, taxonomy-standardized observations |
 | `03_FT_elev.R` | `Functional_traits.csv`, elevational ranges |

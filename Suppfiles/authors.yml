@@ -107,6 +107,10 @@ author:
     affiliations:
       - ref: UW
       
+  - name: Lina Giraldo
+    affiliations: 
+      - ref: cipav
+      
   - name: Alexander Velasquez 
     affiliations: 
       - ref: cipav
