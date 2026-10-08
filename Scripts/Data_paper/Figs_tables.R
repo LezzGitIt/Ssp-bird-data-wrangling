@@ -305,7 +305,7 @@ Sampling_inset <- ggplot() +
 # Combine: the inset sits at the top of the legend column, outside the map panel so it hides no sampling. Saved at the manuscript's text width (6.5 in) so font and symbol sizes are what the reader sees
 Sampling_map_full <- ggdraw(Sampling_map) +
   draw_plot(Sampling_inset, x = 0.785, y = 0.75, width = 0.205, height = 0.235)
-ggsave("Figures/Map_sampling/Sampling_map.png", Sampling_map_full, bg = "white", width = 6.5, height = 7, dpi = 300)
+ggsave("Figures/Sampling_map.png", Sampling_map_full, bg = "white", width = 6.5, height = 7, dpi = 300)
 print(Sampling_map_full)
 
 # >inset prec map ------------------------------------------------------
@@ -633,6 +633,78 @@ Species_counts_p <- (p1 + p2) +
 ggsave("Figures/Species_counts_localities.png", Species_counts_p,
        bg = "white", width = 9, height = 11)
 print(Species_counts_p)
+
+# Fig: Example landscape + silvopasture illustrations ------------------
+## (A) aerial view of a surveyed Piedemonte farm; (B) the two silvopastoral arrangements it shows, drawn by the SCR project (Proyecto Ganadería Colombiana Sostenible). Inputs (both tracked): Figures/Static/Example_landscape/Live_fences_SCR.jpeg (the project's live-fences poster panel, extracted unchanged from its slide deck) and Figures/Static/Example_landscape/Dispersed_trees_adapted.png (the project's live-fences drawing with the fence-line trees and wires removed and green trees scattered over the pasture, edited by hand once; tracked).
+
+# Crop a project poster panel to its farm diorama (the vertical window the slide shows), trimming the frame at the sides
+crop_diorama <- function(img, top = 0.39, bottom = 0.645, side = 0.07) {
+  info <- magick::image_info(img)
+  magick::image_crop(img, magick::geometry_area(round(info$width * (1 - 2 * side)), round(info$height * (bottom - top)),
+                                                round(info$width * side), round(info$height * top)))
+}
+
+# Replace a poster panel's coloured, leaf-patterned background with white: a pixel is background if it is saturated and close in hue to the panel's corner colour, and it is whitened only if that region touches the image border (so small same-hue details inside the farm survive)
+whiten_background <- function(img, hue_tol = 30, min_sat = 0.2) {
+  arr <- as.integer(magick::image_data(img, "rgb"))
+  dims <- dim(arr)[1:2]
+  hsv_px <- rgb2hsv(t(matrix(arr, ncol = 3)))
+  hue <- hsv_px["h", ] * 360
+  corners <- c(1, dims[1], prod(dims) - dims[1] + 1, prod(dims))
+  bg_hue <- median(hue[corners])
+  hue_dist <- pmin(abs(hue - bg_hue), 360 - abs(hue - bg_hue))
+  is_bg <- matrix(hue_dist < hue_tol & hsv_px["s", ] > min_sat, nrow = dims[1])
+  # Flood fill from every border pixel through background pixels
+  keep <- matrix(FALSE, nrow = dims[1], ncol = dims[2])
+  frontier <- which(is_bg & (row(is_bg) %in% c(1, dims[1]) | col(is_bg) %in% c(1, dims[2])))
+  keep[frontier] <- TRUE
+  while (length(frontier)) {
+    r <- (frontier - 1) %% dims[1] + 1; cl <- (frontier - 1) %/% dims[1] + 1
+    nb <- c(frontier[r > 1] - 1, frontier[r < dims[1]] + 1, frontier[cl > 1] - dims[1], frontier[cl < dims[2]] + dims[1])
+    nb <- unique(nb[is_bg[nb] & !keep[nb]])
+    keep[nb] <- TRUE; frontier <- nb
+  }
+  for (k in 1:3) arr[, , k][keep] <- 255L
+  magick::image_read(arr / 255)
+}
+
+Ssp_illus <- list(
+  "Live fences"     = crop_diorama(magick::image_read("Figures/Static/Example_landscape/Live_fences_SCR.jpeg")),
+  "Dispersed trees" = magick::image_read("Figures/Static/Example_landscape/Dispersed_trees_adapted.png")
+)
+
+# Layout: the aerial view on the left; the two illustrations stacked on the right, labels on their outer sides and a dashed divider between them, so each word clearly belongs to one picture
+Aerial <- magick::image_read("Figures/Static/Example_landscape/Example_landscape.png")
+Aerial_h <- magick::image_info(Aerial)$height
+Label_h <- 110; Gap_px <- 30
+Panel_h <- (Aerial_h - Gap_px) / 2 - Label_h
+Illus <- map(Ssp_illus, \(im) im %>%
+  magick::image_scale(paste0("x", round(Panel_h))) %>%
+  whiten_background() %>%
+  magick::image_trim(fuzz = 2) %>%
+  magick::image_border("white", "20x25"))
+Col_w <- max(map_int(Illus, \(x) magick::image_info(x)$width))
+make_label <- function(lab) {
+  magick::image_blank(Col_w, Label_h, "white") %>%
+    magick::image_annotate(lab, size = 48, gravity = "center", font = "Helvetica", color = "black")
+}
+Divider <- magick::image_graph(width = Col_w, height = Gap_px, bg = "white")
+grid::grid.lines(x = c(0.03, 0.97), y = 0.5, gp = grid::gpar(lty = "22", lwd = 3, col = "grey35"))
+dev.off()
+Illus_col <- magick::image_append(c(make_label(names(Illus)[1]), Illus[[1]], Divider, Illus[[2]], make_label(names(Illus)[2])), stack = TRUE)
+# Pad the column to the aerial's height, centred
+Col_h <- magick::image_info(Illus_col)$height
+Pad_top <- (Aerial_h - Col_h) %/% 2
+Illus_col <- magick::image_append(c(magick::image_blank(Col_w, Pad_top, "white"), Illus_col,
+                                    magick::image_blank(Col_w, Aerial_h - Col_h - Pad_top, "white")), stack = TRUE)
+# Panel letters
+Aerial <- magick::image_annotate(Aerial, "A", size = 110, gravity = "northwest", location = "+25+10", color = "white", font = "Helvetica-Bold")
+Illus_col <- magick::image_annotate(Illus_col, "B", size = 110, gravity = "northwest", location = "+0+0", color = "black", font = "Helvetica-Bold")
+Landscape_fig <- magick::image_append(c(Aerial, magick::image_blank(Gap_px, Aerial_h, "white"), Illus_col))
+# Flatten to 8-bit RGB on white: xelatex renders a 16-bit RGBA PNG (what image_read() of a numeric array produces) as a blank space
+Landscape_fig <- Landscape_fig %>% magick::image_background("white") %>% magick::image_flatten()
+magick::image_write(Landscape_fig, "Figures/Example_landscape_ssp.png", format = "png", depth = 8, density = 300)
+print(Landscape_fig)
 
 # Supplementary figs ------------------------------------------------------
 ## Plot showing numer of point counts per farm, the number of farms each data collector surveyed, and the average number of times each point count was repeated within a season (< 80 days)
