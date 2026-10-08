@@ -31,10 +31,10 @@ MB-BL-EP_01,2658,Bajo magdalena,Bolivar,-75.2018,10.3419,MB-BL-EP,El palacio,84,
 MB-BL-EP_02,2658,Bajo magdalena,Bolivar,-75.2031,10.3404,MB-BL-EP,El palacio,0,1,30,27.933,1280,Ssp,Cerca viva
 MB-BL-EP_03,2658,Bajo magdalena,Bolivar,-75.203,10.3394,MB-BL-EP,El palacio,0,1,29,27.933,1280,Pastizales,
 MB-BL-EP_04,2658,Bajo magdalena,Bolivar,-75.2026,10.3386,MB-BL-EP,El palacio,0,1,28,27.933,1280,Cultivos,
-MB-CD-LMO_01,2390,Cafetera,Caldas,-75.5325,5.0236,MB-CD-LMO,La morelia,0,1,1791,18.675,2283,Bosque,Secundario
-MB-CD-LMO_02,2390,Cafetera,Caldas,-75.5318,5.0233,MB-CD-LMO,La morelia,76,1,1769,18.675,2283,Ssp,Setos
-MB-CD-LMO_03,2390,Cafetera,Caldas,-75.5339,5.0246,MB-CD-LMO,La morelia,0,1,1823,18.183,2250,Pastizales,
-MB-CD-LMO_04,2390,Cafetera,Caldas,-75.5339,5.0249,MB-CD-LMO,La morelia,0,1,1823,18.183,2250,Pastizales,
+MB-CD-LMO_01,2390,Eje cafetero,Caldas,-75.5325,5.0236,MB-CD-LMO,La morelia,0,1,1791,18.675,2283,Bosque,Secundario
+MB-CD-LMO_02,2390,Eje cafetero,Caldas,-75.5318,5.0233,MB-CD-LMO,La morelia,76,1,1769,18.675,2283,Ssp,Setos
+MB-CD-LMO_03,2390,Eje cafetero,Caldas,-75.5339,5.0246,MB-CD-LMO,La morelia,0,1,1823,18.183,2250,Pastizales,
+MB-CD-LMO_04,2390,Eje cafetero,Caldas,-75.5339,5.0249,MB-CD-LMO,La morelia,0,1,1823,18.183,2250,Pastizales,
 MB-CS-CA_01,3264,Rio cesar,Cesar,-73.269,10.222,MB-CS-CA,Casanare,0,1,96,28.567,1337,Ssp,Arboles dispersos
 MB-CS-CA_02,3264,Rio cesar,Cesar,-73.2714,10.2213,MB-CS-CA,Casanare,0,1,93,28.567,1337,Pastizales,
 MB-CS-CA_03,3264,Rio cesar,Cesar,-73.2694,10.2184,MB-CS-CA,Casanare,0,1,95,28.567,1337,Ssp,Banco de forraje
@@ -80,10 +80,10 @@ MB-M-S_01,1556,Piedemonte,Meta,-73.5353,3.711,MB-M-S,Sion,0,1,323,25.792,3047,Bo
 MB-M-S_02,1556,Piedemonte,Meta,-73.5351,3.7087,MB-M-S,Sion,0,1,318,25.792,3047,Pastizales,
 MB-M-S_03,1556,Piedemonte,Meta,-73.5373,3.7094,MB-M-S,Sion,0,1,319,25.792,3047,Ssp,Intensivo
 MB-M-S_04,1556,Piedemonte,Meta,-73.5366,3.7092,MB-M-S,Sion,0,1,319,25.792,3047,Pastizales,
-MB-R-LES_01,1383,Cafetera,Risaralda,-75.68,4.7219,MB-R-LES,La esperanza,0,1,1651,19,2139,Ssp,Arboles dispersos
-MB-R-LES_02,1383,Cafetera,Risaralda,-75.6803,4.7215,MB-R-LES,La esperanza,0,1,1645,19,2139,Ssp,Intensivo
-MB-R-LES_03,1383,Cafetera,Risaralda,-75.6812,4.7206,MB-R-LES,La esperanza,0,1,1656,19,2139,Ssp,Intensivo
-MB-R-LES_04,1383,Cafetera,Risaralda,-75.6804,4.7219,MB-R-LES,La esperanza,0,1,1651,19,2139,Ssp,Intensivo
+MB-R-LES_01,1383,Eje cafetero,Risaralda,-75.68,4.7219,MB-R-LES,La esperanza,0,1,1651,19,2139,Ssp,Arboles dispersos
+MB-R-LES_02,1383,Eje cafetero,Risaralda,-75.6803,4.7215,MB-R-LES,La esperanza,0,1,1645,19,2139,Ssp,Intensivo
+MB-R-LES_03,1383,Eje cafetero,Risaralda,-75.6812,4.7206,MB-R-LES,La esperanza,0,1,1656,19,2139,Ssp,Intensivo
+MB-R-LES_04,1383,Eje cafetero,Risaralda,-75.6804,4.7219,MB-R-LES,La esperanza,0,1,1651,19,2139,Ssp,Intensivo
 MB-S-BA_01,3580,Cordillera oriental,Santander,-73.13,6.2711,MB-S-BA,Buenos aires,21,1,1429,20.825,2301,Bosque,Secundario
 MB-S-BA_02,3580,Cordillera oriental,Santander,-73.127,6.2684,MB-S-BA,Buenos aires,70,1,1394,20.825,2301,Ssp,Intensivo
 MB-S-BA_03,3580,Cordillera oriental,Santander,-73.1274,6.2682,MB-S-BA,Buenos aires,43,1,1404,20.825,2301,Ssp,Arboles dispersos
@@ -96,37 +96,37 @@ MB-S-V_01,3576,Cordillera oriental,Santander,-73.0364,6.3064,MB-S-V,Valparaiso,0
 MB-S-V_02,3576,Cordillera oriental,Santander,-73.0385,6.3066,MB-S-V,Valparaiso,0,1,1640,19.275,1997,Pastizales,
 MB-S-V_03,3576,Cordillera oriental,Santander,-73.0409,6.3051,MB-S-V,Valparaiso,0,1,1712,19.275,1997,Ssp,Arboles dispersos
 MB-S-V_04,3576,Cordillera oriental,Santander,-73.0389,6.3044,MB-S-V,Valparaiso,0,1,1633,19.275,1997,Ssp,Setos
-MB-T-ECH_01,1262,Cafetera,Tolima,-74.99,4.4776,MB-T-ECH,El chaco,0,1,580,26.125,1840,Bosque,Secundario
-MB-T-ECH_02,1262,Cafetera,Tolima,-74.9876,4.4781,MB-T-ECH,El chaco,0,1,574,26.125,1840,Ssp,Intensivo
-MB-T-ECH_03,1262,Cafetera,Tolima,-74.983,4.4821,MB-T-ECH,El chaco,0,1,563,26.225,1892,Ssp,Intensivo
-MB-T-ECH_04,1262,Cafetera,Tolima,-74.9813,4.4814,MB-T-ECH,El chaco,0,1,561,26.225,1892,Ssp,Arboles dispersos
-MB-T-SA_01,1353,Cafetera,Tolima,-74.7938,4.8763,MB-T-SA,Santaren,169,1,235,27.058,2216,Bosque,Secundario
-MB-T-SA_02,1353,Cafetera,Tolima,-74.7932,4.8785,MB-T-SA,Santaren,0,1,237,27.058,2216,Ssp,Arboles dispersos
-MB-T-SA_03,1353,Cafetera,Tolima,-74.7915,4.8805,MB-T-SA,Santaren,0,1,239,27.042,2231,Pastizales,
-MB-T-SA_04,1353,Cafetera,Tolima,-74.7906,4.8798,MB-T-SA,Santaren,0,1,234,27.042,2231,Ssp,Intensivo
-MB-VC-EB_01,344,Cafetera,Valle del cauca,-75.9154,3.9477,MB-VC-EB,El brillante,0,1,3284,9.783,1391,Bosque,Ripario
-MB-VC-EB_02,344,Cafetera,Valle del cauca,-75.9147,3.9478,MB-VC-EB,El brillante,0,1,3279,9.783,1391,Bosque,Ripario
-MB-VC-EB_03,344,Cafetera,Valle del cauca,-75.9154,3.9498,MB-VC-EB,El brillante,0,1,3327,9.783,1391,Bosque,Ripario
-MB-VC-EH_01,Ref_El hatico,Cafetera,Valle del cauca,-76.3242,3.6434,MB-VC-EH,El hatico,0,4,1014,23.35,1466,Bosque,Maduro
-MB-VC-EH_02,Ref_El hatico,Cafetera,Valle del cauca,-76.321,3.6451,MB-VC-EH,El hatico,0,4,1000,23.35,1466,Bosque,Ripario
-MB-VC-EH_03,Ref_El hatico,Cafetera,Valle del cauca,-76.3162,3.6437,MB-VC-EH,El hatico,0,4,1000,23.333,1406,Ssp,Intensivo
-MB-VC-EH_04,Ref_El hatico,Cafetera,Valle del cauca,-76.3142,3.6443,MB-VC-EH,El hatico,0,4,1004,23.333,1406,Ssp,Cerca viva
-MB-VC-LCH_01,995,Cafetera,Valle del cauca,-76.2264,3.8786,MB-VC-LCH,Los chagualos,51,1,1374,20.417,1517,Bosque,Secundario
-MB-VC-LCH_02,995,Cafetera,Valle del cauca,-76.2278,3.8776,MB-VC-LCH,Los chagualos,65,1,1418,20.417,1517,Pastizales,
-MB-VC-LCH_03,995,Cafetera,Valle del cauca,-76.2267,3.8773,MB-VC-LCH,Los chagualos,0,1,1417,20.417,1517,Ssp,Intensivo
-MB-VC-LCH_04,995,Cafetera,Valle del cauca,-76.2265,3.8763,MB-VC-LCH,Los chagualos,0,1,1428,20.417,1517,Ssp,Banco de forraje
-MB-VC-L_01,Ref_Lucerna,Cafetera,Valle del cauca,-76.1446,4.2452,MB-VC-L,Lucerna,0,1,933,23.817,1582,Bosque,Secundario
-MB-VC-L_02,Ref_Lucerna,Cafetera,Valle del cauca,-76.1427,4.2457,MB-VC-L,Lucerna,0,1,934,23.817,1582,Ssp,Cerca viva
-MB-VC-L_03,Ref_Lucerna,Cafetera,Valle del cauca,-76.1421,4.242,MB-VC-L,Lucerna,0,1,938,23.817,1582,Ssp,Intensivo
-MB-VC-L_04,Ref_Lucerna,Cafetera,Valle del cauca,-76.1464,4.24,MB-VC-L,Lucerna,0,1,933,23.825,1562,Pastizales,
-MB-VC-P_01,735,Cafetera,Valle del cauca,-75.7884,4.6814,MB-VC-P,Pinzacua,0,1,1220,21.75,1922,Ssp,Arboles dispersos
-MB-VC-P_02,735,Cafetera,Valle del cauca,-75.7893,4.6817,MB-VC-P,Pinzacua,0,1,1216,21.75,1922,Bosque,Secundario
-MB-VC-P_03,735,Cafetera,Valle del cauca,-75.7893,4.6812,MB-VC-P,Pinzacua,0,1,1213,21.75,1922,Ssp,Arboles dispersos
-MB-VC-P_04,735,Cafetera,Valle del cauca,-75.7881,4.6808,MB-VC-P,Pinzacua,0,1,1215,21.75,1922,Ssp,Setos
-MB-VC-SJ_01,1607,Cafetera,Valle del cauca,-75.7388,4.6949,MB-VC-SJ,San jose,0,1,1378,20.733,2019,Bosque,Ripario
-MB-VC-SJ_02,1607,Cafetera,Valle del cauca,-75.7361,4.6932,MB-VC-SJ,San jose,0,1,1412,20.733,2019,Ssp,Cerca viva
-MB-VC-SJ_03,1607,Cafetera,Valle del cauca,-75.7368,4.6938,MB-VC-SJ,San jose,0,1,1401,20.733,2019,Pastizales,
-MB-VC-SJ_04,1607,Cafetera,Valle del cauca,-75.7384,4.6944,MB-VC-SJ,San jose,0,1,1378,20.733,2019,Ssp,Intensivo
+MB-T-ECH_01,1262,Eje cafetero,Tolima,-74.99,4.4776,MB-T-ECH,El chaco,0,1,580,26.125,1840,Bosque,Secundario
+MB-T-ECH_02,1262,Eje cafetero,Tolima,-74.9876,4.4781,MB-T-ECH,El chaco,0,1,574,26.125,1840,Ssp,Intensivo
+MB-T-ECH_03,1262,Eje cafetero,Tolima,-74.983,4.4821,MB-T-ECH,El chaco,0,1,563,26.225,1892,Ssp,Intensivo
+MB-T-ECH_04,1262,Eje cafetero,Tolima,-74.9813,4.4814,MB-T-ECH,El chaco,0,1,561,26.225,1892,Ssp,Arboles dispersos
+MB-T-SA_01,1353,Eje cafetero,Tolima,-74.7938,4.8763,MB-T-SA,Santaren,169,1,235,27.058,2216,Bosque,Secundario
+MB-T-SA_02,1353,Eje cafetero,Tolima,-74.7932,4.8785,MB-T-SA,Santaren,0,1,237,27.058,2216,Ssp,Arboles dispersos
+MB-T-SA_03,1353,Eje cafetero,Tolima,-74.7915,4.8805,MB-T-SA,Santaren,0,1,239,27.042,2231,Pastizales,
+MB-T-SA_04,1353,Eje cafetero,Tolima,-74.7906,4.8798,MB-T-SA,Santaren,0,1,234,27.042,2231,Ssp,Intensivo
+MB-VC-EB_01,344,Eje cafetero,Valle del cauca,-75.9154,3.9477,MB-VC-EB,El brillante,0,1,3284,9.783,1391,Bosque,Ripario
+MB-VC-EB_02,344,Eje cafetero,Valle del cauca,-75.9147,3.9478,MB-VC-EB,El brillante,0,1,3279,9.783,1391,Bosque,Ripario
+MB-VC-EB_03,344,Eje cafetero,Valle del cauca,-75.9154,3.9498,MB-VC-EB,El brillante,0,1,3327,9.783,1391,Bosque,Ripario
+MB-VC-EH_01,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3242,3.6434,MB-VC-EH,El hatico,0,4,1014,23.35,1466,Bosque,Maduro
+MB-VC-EH_02,Ref_El hatico,Eje cafetero,Valle del cauca,-76.321,3.6451,MB-VC-EH,El hatico,0,4,1000,23.35,1466,Bosque,Ripario
+MB-VC-EH_03,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3162,3.6437,MB-VC-EH,El hatico,0,4,1000,23.333,1406,Ssp,Intensivo
+MB-VC-EH_04,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3142,3.6443,MB-VC-EH,El hatico,0,4,1004,23.333,1406,Ssp,Cerca viva
+MB-VC-LCH_01,995,Eje cafetero,Valle del cauca,-76.2264,3.8786,MB-VC-LCH,Los chagualos,51,1,1374,20.417,1517,Bosque,Secundario
+MB-VC-LCH_02,995,Eje cafetero,Valle del cauca,-76.2278,3.8776,MB-VC-LCH,Los chagualos,65,1,1418,20.417,1517,Pastizales,
+MB-VC-LCH_03,995,Eje cafetero,Valle del cauca,-76.2267,3.8773,MB-VC-LCH,Los chagualos,0,1,1417,20.417,1517,Ssp,Intensivo
+MB-VC-LCH_04,995,Eje cafetero,Valle del cauca,-76.2265,3.8763,MB-VC-LCH,Los chagualos,0,1,1428,20.417,1517,Ssp,Banco de forraje
+MB-VC-L_01,Ref_Lucerna,Eje cafetero,Valle del cauca,-76.1446,4.2452,MB-VC-L,Lucerna,0,1,933,23.817,1582,Bosque,Secundario
+MB-VC-L_02,Ref_Lucerna,Eje cafetero,Valle del cauca,-76.1427,4.2457,MB-VC-L,Lucerna,0,1,934,23.817,1582,Ssp,Cerca viva
+MB-VC-L_03,Ref_Lucerna,Eje cafetero,Valle del cauca,-76.1421,4.242,MB-VC-L,Lucerna,0,1,938,23.817,1582,Ssp,Intensivo
+MB-VC-L_04,Ref_Lucerna,Eje cafetero,Valle del cauca,-76.1464,4.24,MB-VC-L,Lucerna,0,1,933,23.825,1562,Pastizales,
+MB-VC-P_01,735,Eje cafetero,Valle del cauca,-75.7884,4.6814,MB-VC-P,Pinzacua,0,1,1220,21.75,1922,Ssp,Arboles dispersos
+MB-VC-P_02,735,Eje cafetero,Valle del cauca,-75.7893,4.6817,MB-VC-P,Pinzacua,0,1,1216,21.75,1922,Bosque,Secundario
+MB-VC-P_03,735,Eje cafetero,Valle del cauca,-75.7893,4.6812,MB-VC-P,Pinzacua,0,1,1213,21.75,1922,Ssp,Arboles dispersos
+MB-VC-P_04,735,Eje cafetero,Valle del cauca,-75.7881,4.6808,MB-VC-P,Pinzacua,0,1,1215,21.75,1922,Ssp,Setos
+MB-VC-SJ_01,1607,Eje cafetero,Valle del cauca,-75.7388,4.6949,MB-VC-SJ,San jose,0,1,1378,20.733,2019,Bosque,Ripario
+MB-VC-SJ_02,1607,Eje cafetero,Valle del cauca,-75.7361,4.6932,MB-VC-SJ,San jose,0,1,1412,20.733,2019,Ssp,Cerca viva
+MB-VC-SJ_03,1607,Eje cafetero,Valle del cauca,-75.7368,4.6938,MB-VC-SJ,San jose,0,1,1401,20.733,2019,Pastizales,
+MB-VC-SJ_04,1607,Eje cafetero,Valle del cauca,-75.7384,4.6944,MB-VC-SJ,San jose,0,1,1378,20.733,2019,Ssp,Intensivo
 AD-M-CO_01,3886,Piedemonte,Meta,-73.6735,3.335,AD-M-CO,Corinto,0,5,311,26.108,2845,Mosaic,
 AD-M-CO_02,3886,Piedemonte,Meta,-73.6739,3.3339,AD-M-CO,Corinto,0,5,314,26.108,2845,Ssp,Cerca viva
 AD-M-CO_03,3886,Piedemonte,Meta,-73.6728,3.3328,AD-M-CO,Corinto,0,5,316,26.008,2811,Ssp,Cerca viva
@@ -361,51 +361,51 @@ MB-M-LP1_03,1518,Piedemonte,Meta,-73.8216,3.8235,MB-M-LP1,La pradera 1,0,15,564,
 MB-M-LP1_04,1518,Piedemonte,Meta,-73.8206,3.8252,MB-M-LP1,La pradera 1,0,15,560,24.45,4192,Bosque,Ripario
 MB-M-LP1_05,1518,Piedemonte,Meta,-73.821,3.8261,MB-M-LP1,La pradera 1,18,15,578,24.45,4192,Bosque,Ripario
 MB-M-LP1_06,1518,Piedemonte,Meta,-73.822,3.8266,MB-M-LP1,La pradera 1,47,15,580,24.45,4192,Bosque,Ripario
-MB-Q-ECOR_01,350,Cafetera,Quindio,-75.5615,4.6493,MB-Q-ECOR,El cortijo,0,15,1891,17.358,2051,Bosque,Ripario
-MB-Q-ECOR_02,350,Cafetera,Quindio,-75.5617,4.65,MB-Q-ECOR,El cortijo,0,15,1895,17.358,2051,Bosque,Secundario
-MB-Q-ECOR_03,350,Cafetera,Quindio,-75.5602,4.6509,MB-Q-ECOR,El cortijo,0,15,1951,16.717,2242,Bosque,Ripario
-MB-Q-ECOR_04,350,Cafetera,Quindio,-75.5597,4.6518,MB-Q-ECOR,El cortijo,0,15,1943,16.717,2242,Bosque,Ripario
-MB-Q-ECOR_05,350,Cafetera,Quindio,-75.5612,4.6505,MB-Q-ECOR,El cortijo,0,15,1937,16.717,2242,Bosque,Secundario
-MB-Q-ECOR_06,350,Cafetera,Quindio,-75.5612,4.6499,MB-Q-ECOR,El cortijo,0,15,1891,17.358,2051,Bosque,Secundario
-MB-Q-EC_01,731,Cafetera,Quindio,-75.5475,4.6357,MB-Q-EC,El cairo,466,8,2072,16.617,1888,Bosque,Secundario
-MB-Q-EC_02,731,Cafetera,Quindio,-75.5481,4.6355,MB-Q-EC,El cairo,505,8,2084,16.617,1888,Bosque,Secundario
-MB-Q-EC_03,731,Cafetera,Quindio,-75.5489,4.6353,MB-Q-EC,El cairo,578,8,2075,16.617,1888,Bosque,Secundario
-MB-Q-EC_04,731,Cafetera,Quindio,-75.5486,4.6366,MB-Q-EC,El cairo,438,8,2052,16.617,1888,Bosque,Secundario
-MB-Q-EC_05,731,Cafetera,Quindio,-75.5483,4.6343,MB-Q-EC,El cairo,626,8,2097,16.617,1888,Bosque,Secundario
-MB-Q-EC_06,731,Cafetera,Quindio,-75.5471,4.6346,MB-Q-EC,El cairo,552,8,2107,16.617,1888,Bosque,Secundario
-MB-Q-EC_07,731,Cafetera,Quindio,-75.5471,4.6379,MB-Q-EC,El cairo,225,3,2014,16.617,1888,Bosque,Secundario
-MB-Q-EC_08,731,Cafetera,Quindio,-75.5483,4.6386,MB-Q-EC,El cairo,233,3,1979,16.617,1888,Bosque,Secundario
-MB-Q-EC_09,731,Cafetera,Quindio,-75.5496,4.6384,MB-Q-EC,El cairo,355,3,1952,16.617,1888,Bosque,Secundario
-MB-Q-EC_10,731,Cafetera,Quindio,-75.5503,4.6372,MB-Q-EC,El cairo,499,3,1992,16.767,2033,Bosque,Secundario
-MB-Q-EC_11,731,Cafetera,Quindio,-75.5499,4.636,MB-Q-EC,El cairo,566,3,2018,16.617,1888,Bosque,Secundario
-MB-Q-EC_12,731,Cafetera,Quindio,-75.5494,4.6347,MB-Q-EC,El cairo,663,3,2089,16.617,1888,Bosque,Secundario
-MB-Q-JB_01,855,Cafetera,Quindio,-75.4839,4.6369,MB-Q-JB,Juan b,0,3,2383,14.167,1834,Bosque,Ripario
-MB-Q-JB_02,855,Cafetera,Quindio,-75.4835,4.6355,MB-Q-JB,Juan b,0,3,2408,14.167,1834,Ssp,Cerca viva
-MB-Q-JB_03,855,Cafetera,Quindio,-75.4826,4.6344,MB-Q-JB,Juan b,0,3,2422,13.383,1799,Ssp,Arboles dispersos
-MB-Q-JB_04,855,Cafetera,Quindio,-75.4846,4.6348,MB-Q-JB,Juan b,0,3,2425,14.167,1834,Ssp,Cerca viva
-MB-Q-JB_05,855,Cafetera,Quindio,-75.4853,4.6338,MB-Q-JB,Juan b,0,3,2427,14.167,1834,Bosque,Ripario
-MB-Q-JB_06,855,Cafetera,Quindio,-75.4859,4.6346,MB-Q-JB,Juan b,0,3,2392,14.167,1834,Ssp,Arboles dispersos
-MB-Q-LA_01,899,Cafetera,Quindio,-75.5021,4.6318,MB-Q-LA,Los arboles,283,8,2234,14.733,1867,Bosque,Secundario
-MB-Q-LA_02,899,Cafetera,Quindio,-75.5031,4.6318,MB-Q-LA,Los arboles,188,8,2228,14.733,1867,Bosque,Secundario
-MB-Q-LA_03,899,Cafetera,Quindio,-75.5042,4.6319,MB-Q-LA,Los arboles,95,8,2211,14.733,1867,Bosque,Secundario
-MB-Q-LA_04,899,Cafetera,Quindio,-75.5053,4.6316,MB-Q-LA,Los arboles,0,8,2228,14.733,1867,Bosque,Secundario
-MB-Q-LA_05,899,Cafetera,Quindio,-75.5065,4.6311,MB-Q-LA,Los arboles,0,8,2219,14.733,1867,Bosque,Secundario
-MB-Q-LA_06,899,Cafetera,Quindio,-75.507,4.6304,MB-Q-LA,Los arboles,0,8,2234,14.733,1867,Bosque,Secundario
-MB-Q-LCA_01,2229,Cafetera,Quindio,-75.5083,4.6398,MB-Q-LCA,La carelia,0,15,2223,14.758,1807,Bosque,Ripario
-MB-Q-LCA_02,2229,Cafetera,Quindio,-75.5075,4.6392,MB-Q-LCA,La carelia,0,15,2249,14.758,1807,Bosque,Secundario
-MB-Q-LCA_03,2229,Cafetera,Quindio,-75.5065,4.6383,MB-Q-LCA,La carelia,0,12,2229,14.758,1807,Bosque,Secundario
-MB-Q-LCA_04,2229,Cafetera,Quindio,-75.5054,4.6394,MB-Q-LCA,La carelia,74,8,2308,14.758,1807,Bosque,Secundario
-MB-Q-LCA_05,2229,Cafetera,Quindio,-75.5055,4.6404,MB-Q-LCA,La carelia,107,8,2361,14.758,1807,Bosque,Secundario
-MB-Q-LCA_06,2229,Cafetera,Quindio,-75.5064,4.6408,MB-Q-LCA,La carelia,61,8,2320,14.758,1807,Bosque,Secundario
-MB-Q-LCA_07,2229,Cafetera,Quindio,-75.5072,4.6398,MB-Q-LCA,La carelia,0,5,2249,14.758,1807,Bosque,Secundario
-MB-Q-LCA_08,2229,Cafetera,Quindio,-75.5072,4.6409,MB-Q-LCA,La carelia,0,5,2318,14.758,1807,Bosque,Secundario
-MB-Q-LCA_09,2229,Cafetera,Quindio,-75.5072,4.642,MB-Q-LCA,La carelia,8,5,2386,12.942,1729,Bosque,Ripario
-MB-Q-PORT_01,1629,Cafetera,Quindio,-75.5322,4.6407,MB-Q-PORT,Portugal,0,15,2041,16.117,1959,Bosque,Ripario
-MB-Q-PORT_02,1629,Cafetera,Quindio,-75.5314,4.6409,MB-Q-PORT,Portugal,0,15,2089,16.117,1959,Bosque,Ripario
-MB-Q-PORT_03,1629,Cafetera,Quindio,-75.5307,4.6407,MB-Q-PORT,Portugal,0,15,2077,16.117,1959,Bosque,Secundario
-MB-Q-PORT_04,1629,Cafetera,Quindio,-75.5301,4.6412,MB-Q-PORT,Portugal,0,15,2117,16.117,1959,Bosque,Secundario
-MB-Q-PORT_05,1629,Cafetera,Quindio,-75.5298,4.6423,MB-Q-PORT,Portugal,0,15,2159,15.75,2093,Bosque,Secundario
-MB-Q-PORT_06,1629,Cafetera,Quindio,-75.5303,4.6426,MB-Q-PORT,Portugal,0,15,2167,15.75,2093,Bosque,Secundario
+MB-Q-ECOR_01,350,Eje cafetero,Quindio,-75.5615,4.6493,MB-Q-ECOR,El cortijo,0,15,1891,17.358,2051,Bosque,Ripario
+MB-Q-ECOR_02,350,Eje cafetero,Quindio,-75.5617,4.65,MB-Q-ECOR,El cortijo,0,15,1895,17.358,2051,Bosque,Secundario
+MB-Q-ECOR_03,350,Eje cafetero,Quindio,-75.5602,4.6509,MB-Q-ECOR,El cortijo,0,15,1951,16.717,2242,Bosque,Ripario
+MB-Q-ECOR_04,350,Eje cafetero,Quindio,-75.5597,4.6518,MB-Q-ECOR,El cortijo,0,15,1943,16.717,2242,Bosque,Ripario
+MB-Q-ECOR_05,350,Eje cafetero,Quindio,-75.5612,4.6505,MB-Q-ECOR,El cortijo,0,15,1937,16.717,2242,Bosque,Secundario
+MB-Q-ECOR_06,350,Eje cafetero,Quindio,-75.5612,4.6499,MB-Q-ECOR,El cortijo,0,15,1891,17.358,2051,Bosque,Secundario
+MB-Q-EC_01,731,Eje cafetero,Quindio,-75.5475,4.6357,MB-Q-EC,El cairo,466,8,2072,16.617,1888,Bosque,Secundario
+MB-Q-EC_02,731,Eje cafetero,Quindio,-75.5481,4.6355,MB-Q-EC,El cairo,505,8,2084,16.617,1888,Bosque,Secundario
+MB-Q-EC_03,731,Eje cafetero,Quindio,-75.5489,4.6353,MB-Q-EC,El cairo,578,8,2075,16.617,1888,Bosque,Secundario
+MB-Q-EC_04,731,Eje cafetero,Quindio,-75.5486,4.6366,MB-Q-EC,El cairo,438,8,2052,16.617,1888,Bosque,Secundario
+MB-Q-EC_05,731,Eje cafetero,Quindio,-75.5483,4.6343,MB-Q-EC,El cairo,626,8,2097,16.617,1888,Bosque,Secundario
+MB-Q-EC_06,731,Eje cafetero,Quindio,-75.5471,4.6346,MB-Q-EC,El cairo,552,8,2107,16.617,1888,Bosque,Secundario
+MB-Q-EC_07,731,Eje cafetero,Quindio,-75.5471,4.6379,MB-Q-EC,El cairo,225,3,2014,16.617,1888,Bosque,Secundario
+MB-Q-EC_08,731,Eje cafetero,Quindio,-75.5483,4.6386,MB-Q-EC,El cairo,233,3,1979,16.617,1888,Bosque,Secundario
+MB-Q-EC_09,731,Eje cafetero,Quindio,-75.5496,4.6384,MB-Q-EC,El cairo,355,3,1952,16.617,1888,Bosque,Secundario
+MB-Q-EC_10,731,Eje cafetero,Quindio,-75.5503,4.6372,MB-Q-EC,El cairo,499,3,1992,16.767,2033,Bosque,Secundario
+MB-Q-EC_11,731,Eje cafetero,Quindio,-75.5499,4.636,MB-Q-EC,El cairo,566,3,2018,16.617,1888,Bosque,Secundario
+MB-Q-EC_12,731,Eje cafetero,Quindio,-75.5494,4.6347,MB-Q-EC,El cairo,663,3,2089,16.617,1888,Bosque,Secundario
+MB-Q-JB_01,855,Eje cafetero,Quindio,-75.4839,4.6369,MB-Q-JB,Juan b,0,3,2383,14.167,1834,Bosque,Ripario
+MB-Q-JB_02,855,Eje cafetero,Quindio,-75.4835,4.6355,MB-Q-JB,Juan b,0,3,2408,14.167,1834,Ssp,Cerca viva
+MB-Q-JB_03,855,Eje cafetero,Quindio,-75.4826,4.6344,MB-Q-JB,Juan b,0,3,2422,13.383,1799,Ssp,Arboles dispersos
+MB-Q-JB_04,855,Eje cafetero,Quindio,-75.4846,4.6348,MB-Q-JB,Juan b,0,3,2425,14.167,1834,Ssp,Cerca viva
+MB-Q-JB_05,855,Eje cafetero,Quindio,-75.4853,4.6338,MB-Q-JB,Juan b,0,3,2427,14.167,1834,Bosque,Ripario
+MB-Q-JB_06,855,Eje cafetero,Quindio,-75.4859,4.6346,MB-Q-JB,Juan b,0,3,2392,14.167,1834,Ssp,Arboles dispersos
+MB-Q-LA_01,899,Eje cafetero,Quindio,-75.5021,4.6318,MB-Q-LA,Los arboles,283,8,2234,14.733,1867,Bosque,Secundario
+MB-Q-LA_02,899,Eje cafetero,Quindio,-75.5031,4.6318,MB-Q-LA,Los arboles,188,8,2228,14.733,1867,Bosque,Secundario
+MB-Q-LA_03,899,Eje cafetero,Quindio,-75.5042,4.6319,MB-Q-LA,Los arboles,95,8,2211,14.733,1867,Bosque,Secundario
+MB-Q-LA_04,899,Eje cafetero,Quindio,-75.5053,4.6316,MB-Q-LA,Los arboles,0,8,2228,14.733,1867,Bosque,Secundario
+MB-Q-LA_05,899,Eje cafetero,Quindio,-75.5065,4.6311,MB-Q-LA,Los arboles,0,8,2219,14.733,1867,Bosque,Secundario
+MB-Q-LA_06,899,Eje cafetero,Quindio,-75.507,4.6304,MB-Q-LA,Los arboles,0,8,2234,14.733,1867,Bosque,Secundario
+MB-Q-LCA_01,2229,Eje cafetero,Quindio,-75.5083,4.6398,MB-Q-LCA,La carelia,0,15,2223,14.758,1807,Bosque,Ripario
+MB-Q-LCA_02,2229,Eje cafetero,Quindio,-75.5075,4.6392,MB-Q-LCA,La carelia,0,15,2249,14.758,1807,Bosque,Secundario
+MB-Q-LCA_03,2229,Eje cafetero,Quindio,-75.5065,4.6383,MB-Q-LCA,La carelia,0,12,2229,14.758,1807,Bosque,Secundario
+MB-Q-LCA_04,2229,Eje cafetero,Quindio,-75.5054,4.6394,MB-Q-LCA,La carelia,74,8,2308,14.758,1807,Bosque,Secundario
+MB-Q-LCA_05,2229,Eje cafetero,Quindio,-75.5055,4.6404,MB-Q-LCA,La carelia,107,8,2361,14.758,1807,Bosque,Secundario
+MB-Q-LCA_06,2229,Eje cafetero,Quindio,-75.5064,4.6408,MB-Q-LCA,La carelia,61,8,2320,14.758,1807,Bosque,Secundario
+MB-Q-LCA_07,2229,Eje cafetero,Quindio,-75.5072,4.6398,MB-Q-LCA,La carelia,0,5,2249,14.758,1807,Bosque,Secundario
+MB-Q-LCA_08,2229,Eje cafetero,Quindio,-75.5072,4.6409,MB-Q-LCA,La carelia,0,5,2318,14.758,1807,Bosque,Secundario
+MB-Q-LCA_09,2229,Eje cafetero,Quindio,-75.5072,4.642,MB-Q-LCA,La carelia,8,5,2386,12.942,1729,Bosque,Ripario
+MB-Q-PORT_01,1629,Eje cafetero,Quindio,-75.5322,4.6407,MB-Q-PORT,Portugal,0,15,2041,16.117,1959,Bosque,Ripario
+MB-Q-PORT_02,1629,Eje cafetero,Quindio,-75.5314,4.6409,MB-Q-PORT,Portugal,0,15,2089,16.117,1959,Bosque,Ripario
+MB-Q-PORT_03,1629,Eje cafetero,Quindio,-75.5307,4.6407,MB-Q-PORT,Portugal,0,15,2077,16.117,1959,Bosque,Secundario
+MB-Q-PORT_04,1629,Eje cafetero,Quindio,-75.5301,4.6412,MB-Q-PORT,Portugal,0,15,2117,16.117,1959,Bosque,Secundario
+MB-Q-PORT_05,1629,Eje cafetero,Quindio,-75.5298,4.6423,MB-Q-PORT,Portugal,0,15,2159,15.75,2093,Bosque,Secundario
+MB-Q-PORT_06,1629,Eje cafetero,Quindio,-75.5303,4.6426,MB-Q-PORT,Portugal,0,15,2167,15.75,2093,Bosque,Secundario
 MB-S-EDE_01,237,Cordillera oriental,Santander,-73.0406,6.1123,MB-S-EDE,El desengaño,0,4,2176,15.467,1339,Bosque,Secundario
 MB-S-EDE_02,330,Cordillera oriental,Santander,-73.0399,6.1128,MB-S-EDE,El desengaño,0,4,2137,15.467,1339,Bosque,Secundario
 MB-S-EDE_03,330,Cordillera oriental,Santander,-73.0396,6.1137,MB-S-EDE,El desengaño,0,4,2163,15.467,1339,Bosque,Secundario
@@ -430,23 +430,23 @@ MB-S-MF_09,197,Cordillera oriental,Santander,-73.0471,6.1075,MB-S-MF,Martina flo
 MB-S-MF_10,197,Cordillera oriental,Santander,-73.0465,6.1068,MB-S-MF,Martina florez,0,4,2329,14.683,1192,Bosque,Secundario
 MB-S-MF_11,197,Cordillera oriental,Santander,-73.0463,6.1074,MB-S-MF,Martina florez,10,4,2329,14.683,1192,Bosque,Secundario
 MB-S-MF_12,197,Cordillera oriental,Santander,-73.0466,6.1079,MB-S-MF,Martina florez,0,4,2304,14.683,1192,Bosque,Secundario
-MB-R-OQ_01,,Cafetera,Risaralda,-75.5639,4.7192,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,1960,16.633,2052,Bosque,Maduro
-MB-R-OQ_02,,Cafetera,Risaralda,-75.5669,4.723,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,1925,16.567,2005,Bosque,Maduro
-MB-R-OQ_03,,Cafetera,Risaralda,-75.5575,4.7146,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2023,16.283,1908,Bosque,Maduro
-MB-R-OQ_04,,Cafetera,Risaralda,-75.5419,4.7088,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2063,15.933,1862,Bosque,Maduro
-MB-R-OQ_05,,Cafetera,Risaralda,-75.5392,4.705,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2188,15.6,2095,Bosque,Maduro
-MB-R-OQ_06,,Cafetera,Risaralda,-75.5334,4.7008,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2123,15.6,2095,Bosque,Maduro
-MB-R-OQ_07,,Cafetera,Risaralda,-75.5311,4.6999,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2139,14.7,1957,Bosque,Maduro
-MB-R-OQ_08,,Cafetera,Risaralda,-75.5287,4.6996,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2148,14.7,1957,Bosque,Maduro
-MB-R-OQ_09,,Cafetera,Risaralda,-75.5268,4.699,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2166,14.7,1957,Bosque,Maduro
-MB-VC-EH_05,Ref_El hatico,Cafetera,Valle del cauca,-76.3142,3.6411,MB-VC-EH,El hatico,,4,1009,23.342,1458,Ssp,Arboles dispersos
-MB-VC-EH_06,Ref_El hatico,Cafetera,Valle del cauca,-76.3152,3.6428,MB-VC-EH,El hatico,,3,1003,23.333,1406,Ssp,Cerca viva
-MB-VC-EH_07,Ref_El hatico,Cafetera,Valle del cauca,-76.3196,3.6431,MB-VC-EH,El hatico,,3,997,23.35,1466,Ssp,Intensivo
-MB-VC-EH_08,Ref_El hatico,Cafetera,Valle del cauca,-76.3228,3.6448,MB-VC-EH,El hatico,,3,996,23.35,1466,Ssp,Arboles dispersos
-MB-VC-EH_09,Ref_El hatico,Cafetera,Valle del cauca,-76.325,3.6425,MB-VC-EH,El hatico,,3,1011,23.375,1411,Bosque,Maduro
-MB-VC-EH_10,Ref_El hatico,Cafetera,Valle del cauca,-76.3251,3.641,MB-VC-EH,El hatico,,3,1001,23.367,1463,Bosque,Secundario
-MB-VC-EH_11,Ref_El hatico,Cafetera,Valle del cauca,-76.3262,3.6419,MB-VC-EH,El hatico,,3,1005,23.375,1411,Bosque,Maduro
-MB-VC-EH_12,Ref_El hatico,Cafetera,Valle del cauca,-76.3268,3.6436,MB-VC-EH,El hatico,,2,991,23.375,1411,Bosque,Secundario
+MB-R-OQ_01,,Eje cafetero,Risaralda,-75.5639,4.7192,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,1960,16.633,2052,Bosque,Maduro
+MB-R-OQ_02,,Eje cafetero,Risaralda,-75.5669,4.723,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,1925,16.567,2005,Bosque,Maduro
+MB-R-OQ_03,,Eje cafetero,Risaralda,-75.5575,4.7146,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2023,16.283,1908,Bosque,Maduro
+MB-R-OQ_04,,Eje cafetero,Risaralda,-75.5419,4.7088,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2063,15.933,1862,Bosque,Maduro
+MB-R-OQ_05,,Eje cafetero,Risaralda,-75.5392,4.705,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2188,15.6,2095,Bosque,Maduro
+MB-R-OQ_06,,Eje cafetero,Risaralda,-75.5334,4.7008,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2123,15.6,2095,Bosque,Maduro
+MB-R-OQ_07,,Eje cafetero,Risaralda,-75.5311,4.6999,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2139,14.7,1957,Bosque,Maduro
+MB-R-OQ_08,,Eje cafetero,Risaralda,-75.5287,4.6996,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2148,14.7,1957,Bosque,Maduro
+MB-R-OQ_09,,Eje cafetero,Risaralda,-75.5268,4.699,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2166,14.7,1957,Bosque,Maduro
+MB-VC-EH_05,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3142,3.6411,MB-VC-EH,El hatico,,4,1009,23.342,1458,Ssp,Arboles dispersos
+MB-VC-EH_06,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3152,3.6428,MB-VC-EH,El hatico,,3,1003,23.333,1406,Ssp,Cerca viva
+MB-VC-EH_07,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3196,3.6431,MB-VC-EH,El hatico,,3,997,23.35,1466,Ssp,Intensivo
+MB-VC-EH_08,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3228,3.6448,MB-VC-EH,El hatico,,3,996,23.35,1466,Ssp,Arboles dispersos
+MB-VC-EH_09,Ref_El hatico,Eje cafetero,Valle del cauca,-76.325,3.6425,MB-VC-EH,El hatico,,3,1011,23.375,1411,Bosque,Maduro
+MB-VC-EH_10,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3251,3.641,MB-VC-EH,El hatico,,3,1001,23.367,1463,Bosque,Secundario
+MB-VC-EH_11,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3262,3.6419,MB-VC-EH,El hatico,,3,1005,23.375,1411,Bosque,Maduro
+MB-VC-EH_12,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3268,3.6436,MB-VC-EH,El hatico,,2,991,23.375,1411,Bosque,Secundario
 MB-M-A_01,1734,Piedemonte,Meta,-73.8067,3.8105,MB-M-A,Andorra,1133,11,530,24.742,3611,Ssp,Arboles dispersos
 MB-M-A_02,1734,Piedemonte,Meta,-73.8085,3.8096,MB-M-A,Andorra,1282,11,530,24.692,3869,Pastizales,
 MB-M-A_03,1734,Piedemonte,Meta,-73.8104,3.8091,MB-M-A,Andorra,1218,11,534,24.692,3869,Ssp,Cerca viva

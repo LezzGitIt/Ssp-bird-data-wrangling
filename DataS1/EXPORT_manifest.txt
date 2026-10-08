@@ -1,6 +1,6 @@
 DataS1 export manifest
-exported_at: 2026-10-07T21:13:29-0700
-pipeline_commit: 6977c98
+exported_at: 2026-10-08T14:45:20-0700
+pipeline_commit: a4dff61
 headers: English
 
 file,source,rows
