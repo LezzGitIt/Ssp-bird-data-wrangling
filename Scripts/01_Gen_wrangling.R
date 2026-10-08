@@ -196,13 +196,13 @@ df_birds_red <- map(df_birds_red, \(df){
       Protocolo_muestreo == "Observacion ad hoc en recorridos libres" ~ "Ad hoc",
       .default = Protocolo_muestreo
     ), 
-    # Create Ecoregions based on related Departments
+    # Create Ecoregions based on related Departments (sentence-cased with the other text columns below, e.g. "Eje cafetero"; the manuscript and figures display them as proper names)
     Department = ifelse(Department == "La Guajira", "Guajira", Department),
     Ecoregion = case_when(
       Department %in% c("Atlantico", "Bolivar") ~ "Bajo Magdalena",
       Department %in% c("Cesar", "Guajira") ~ "Rio Cesar",
       Department %in% c("Boyaca", "Santander") ~ "Cordillera Oriental",
-      Department %in% c("Caldas", "Risaralda", "Tolima", "Quindio", "Valle del Cauca") ~ "Cafetera",
+      Department %in% c("Caldas", "Risaralda", "Tolima", "Quindio", "Valle del Cauca") ~ "Eje Cafetero",
       Department == "Meta" ~ "Piedemonte",
       .default = Department
     )
@@ -789,8 +789,8 @@ Pc_locs_sf <- st_as_sf(Pc_locs,
 
 if(FALSE){
   # Export shapefiles
-  st_write(Pc_locs_dc_sf, "Derived/Geospatial/shp/Pc_locs_dc.gpkg", layer = "Pc_locs_dc")
-  st_write(Pc_locs_sf, "Derived/Geospatial/shp/Pc_locs.gpkg", layer = "Pc_locs")
+  st_write(Pc_locs_dc_sf, "Derived/Geospatial/shp/Pc_locs_dc.gpkg", layer = "Pc_locs_dc", delete_dsn = TRUE)
+  st_write(Pc_locs_sf, "Derived/Geospatial/shp/Pc_locs.gpkg", layer = "Pc_locs", delete_dsn = TRUE)
 stop()
 }
 
