@@ -63,6 +63,7 @@ names(Data) <- str_remove(File_names, ".csv")
 
 # Load functions
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
+source("Scripts/Data_paper/Data_paper_fns.R") # ecoregion_label(): data values -> display names
 
 # Emit a table for whichever format is rendering. `latex_fn` receives the data frame and
 # returns the kableExtra-styled LaTeX kable for the PDF; every other format (Word, HTML)
@@ -154,8 +155,7 @@ collapse_years <- function(years) {
 Covs_join <- Data$Event_covs %>%
   left_join(Data$Site_covs[c("Id_survey_no_dc", "Id_scr", "Habitat", "Ecoregion")], by = "Id_survey_no_dc") %>%
   mutate(
-    Ecoregion = case_match(Ecoregion, "Cafetera" ~ "Coffee region", "Cordillera oriental" ~ "Cordillera Oriental",
-                           "Bajo magdalena" ~ "Bajo Magdalena", "Rio cesar" ~ "Río Cesar", .default = Ecoregion),
+    Ecoregion = ecoregion_label(Ecoregion),
     Habitat = factor(Habitat, levels = c("Bosque", "Ssp", "Pastizales", "Mosaic", "Cultivos"),
                      labels = c("forest", "silvopasture", "pasture", "mosaic", "crops"))
   )
@@ -275,7 +275,7 @@ The Nature Conservancy, Bogota, Colombia
 
 Location (spatial scale), time period and sampling frequency (temporal scale), theme or contents (thematic scale)
 
-Colombia, Bajo Magdalena, Cafetera, Río Cesar, Piedemonte, Cordillera Oriental, 2013 - 2026, longitudinal data
+Colombia, Bajo Magdalena, Eje Cafetero, Río Cesar, Piedemonte, Cordillera Oriental, 2013 - 2026, longitudinal data
 
 # Class II. Research origin descriptors
 
@@ -311,11 +311,11 @@ Colombia, Bajo Magdalena, Cafetera, Río Cesar, Piedemonte, Cordillera Oriental,
 
 - Site type: Descriptive (e.g., short-grass prairie, blackwater stream, etc.)\
   \
-  Sampling was conducted in five broad ecoregions: the coffee region (the central Andes), the Cordillera Oriental (the Eastern Andes), Piedemonte (Orinoco piedmont), Bajo Magdalena (lower basin of the Magdalena River), and Río Cesar (Cesar river basin) (@fig-sampling-map). Colombia is a tropical country with extreme topographic complexity but little temperature variation throughout the year. Thus, climate and seasonality are primarily defined by elevation and rainfall patterns (@fig-envi-boxplots). Rainfall is unimodal closer to the equator (e.g., sites in the Piedemonte region are closer to unimodal) and generally bimodal further from the equator (@fig-prec-smooth), although local topography complicates these patterns.
+  Sampling was conducted in five broad ecoregions: the Eje Cafetero (the coffee-growing region of the central Andes), the Cordillera Oriental (the Eastern Andes), Piedemonte (Orinoco piedmont), Bajo Magdalena (lower basin of the Magdalena River), and Río Cesar (Cesar river basin) (@fig-sampling-map). We grouped departments into five ecoregions (@tbl-elev) reflecting the main biogeographic settings sampled. Colombia is a tropical country with extreme topographic complexity but little temperature variation throughout the year. Thus, climate and seasonality are primarily defined by elevation and rainfall patterns (@fig-envi-boxplots). Rainfall is unimodal closer to the equator (e.g., sites in the Piedemonte region are closer to unimodal) and generally bimodal further from the equator (@fig-prec-smooth), although local topography complicates these patterns.
 
-![Elevation (m a.s.l.; A), mean annual temperature (°C; B), and mean annual precipitation (mm; C) of each point count location within five ecoregions. A jitter was applied to aid in visualization.](../../../Figures/Envi_vars.png){#fig-envi-boxplots}
+![Elevation (A), mean annual temperature (B), and mean annual precipitation (C) of each point count location within five ecoregions. A jitter was applied to aid in visualization.](../../../Figures/Envi_vars.png){#fig-envi-boxplots}
 
-[The Andes:]{.underline} The coffee region and Cordillera Oriental ecoregions reside in the Andes, a region defined by complex mountain topography, highly regional microclimates, and extreme elevational and climatic gradients over short geographic distances. The Andes trifurcate in Colombia into three distinct ranges or 'cordilleras' and two major intermontane valleys, the Cauca Valley between the Western and Central cordilleras, and the Magdalena Valley between the Central and Eastern cordilleras. The eastern slopes of the cordilleras tend to be wetter than the western slopes (although the western side of the westernmost cordillera is an exception due to the extreme humidity from the Pacific Ocean characteristic of the Chocó region), and there are small rain shadows at lower elevations at the bottom of the valleys. Topographic complexity and highly regional microclimates have resulted in high bird diversity, including a large influx of migrants in the northern hemisphere's winter months. Note that sites in the coffee region span both the Magdalena and Cauca river valleys, as well as the Central cordillera; sites in the Cordillera Oriental are only in the East Andean highlands.\
+[Eje Cafetero and Cordillera Oriental:]{.underline} The Eje Cafetero and Cordillera Oriental ecoregions reside in the Andes, a region defined by complex mountain topography, highly regional microclimates, and extreme elevational and climatic gradients over short geographic distances. The Andes trifurcate in Colombia into three distinct ranges or 'cordilleras' and two major intermontane valleys, the Cauca Valley between the Western and Central cordilleras, and the Magdalena Valley between the Central and Eastern cordilleras. The eastern slopes of the cordilleras tend to be wetter than the western slopes (although the western side of the westernmost cordillera is an exception due to the extreme humidity from the Pacific Ocean characteristic of the Chocó region), and there are small rain shadows at lower elevations at the bottom of the valleys. Topographic complexity and highly regional microclimates have resulted in high bird diversity, including a large influx of migrants in the northern hemisphere's winter months. Note that sites in the Eje Cafetero span both the Magdalena and Cauca river valleys, as well as the Central cordillera; sites in the Cordillera Oriental are only in the East Andean highlands.\
 [Piedemonte:]{.underline} On the East side of the Eastern-most chain of the Andes is the 'Piedemonte' (piedmont or foothills) region, a complex transition zone between the Andes and the flat plains (i.e. los Llanos) to the East. Heavy rainfall on the Eastern slope of the Andes results in many rivers and gallery forests dissecting the landscape as they flow East towards the grassland plains of the upper Orinoco River basin and south towards the Amazon rainforest biome. Little forest remains and cattle ranching is the predominant agricultural activity of the region. The birds of the Piedemonte are quite diverse as it is a mix of Andean and Llanos birds, with some widespread Amazonian birds reaching our sampling sites.\
 [Bajo Magdalena:]{.underline} This region is near the delta of the Magdalena River in the Caribbean. The region is dry, particularly the windswept coastal regions, although it gets wetter further inland. Vegetation is dominated by short stature trees that drop their leaves (tropical dry forest) and desert-like scrub. [\
 Río Cesar:]{.underline} A dry river valley nestled between the Sierra Nevada de Santa Marta (the world's tallest isolated coastal mountain range) and the Serranía del Perijá mountains that straddle the Colombia-Venezuela border. The vegetation is similar to the Bajo Magdalena region. High temperatures and low precipitation result in desert conditions, with scrubby acacia-like trees and large cacti dominating the vegetation. This unique region has relatively high endemism, sharing some species only with similar desert areas in neighboring Venezuela.
@@ -327,8 +327,12 @@ Río Cesar:]{.underline} A dry river valley nestled between the Sierra Nevada de
 ```{r}
 #| label: Geo-extent
 
-Pc_locs_sf %>% st_bbox() 
+# Bounding box of the point count locations (WGS 84 longitude/latitude), for the Geography statement below
+Geo_bbox <- st_bbox(Pc_locs_sf)
+fmt_deg <- function(x) format(round(abs(x), 2), nsmall = 2)
 ```
+
+Sampling locations span `r fmt_deg(Geo_bbox[["xmin"]])`–`r fmt_deg(Geo_bbox[["xmax"]])`° W and `r fmt_deg(Geo_bbox[["ymin"]])`–`r fmt_deg(Geo_bbox[["ymax"]])`° N (WGS 84).
 
 ```{r}
 #| label: mcp-study-area
@@ -377,22 +381,16 @@ Data$Site_covs %>%
         .default = Department)) %>%
       summarize(Departments = str_c(sort(Department), collapse = ", "), .by = Ecoregion)
   ) %>%
-  # Ecoregion: Spanish primary name; Description: English descriptor (see the ecoregion list in the site description)
+  # Ecoregion: Spanish proper name; Description: English descriptor (see the ecoregion list in the site description)
   mutate(
     Description = case_match(Ecoregion,
-      "Cafetera"            ~ "Central Andes and surrounding river valleys",
+      "Eje cafetero"        ~ "Coffee-growing region; Central Andes and surrounding river valleys",
       "Cordillera oriental" ~ "East-Andean Highlands",
       "Piedemonte"          ~ "East-Andean piedmont, transition to Orinoquian plains",
       "Bajo magdalena"      ~ "Lower Magdalena Basin",
       "Rio cesar"           ~ "Cesar river valley"
     ),
-    Ecoregion = case_match(Ecoregion,
-      "Cafetera"            ~ "Coffee region",
-      "Cordillera oriental" ~ "Cordillera Oriental",
-      "Piedemonte"          ~ "Piedemonte",
-      "Bajo magdalena"      ~ "Bajo Magdalena",
-      "Rio cesar"           ~ "Río Cesar"
-    )
+    Ecoregion = ecoregion_label(Ecoregion)
   ) %>%
   relocate(Description, Departments, .after = Ecoregion) %>%
   arrange(Range) %>%
@@ -426,7 +424,7 @@ Hab_ssp_tbl <- Create_hab_tbl(col = Habitat_sub, habitat = "Ssp")
 
 # Where the mature-forest locations are (Otún Quimbaya = "OQ_", Reserva El Hatico = "EH_" in Id_survey_no_dc)
 Maduro_locs <- Data$Site_covs %>% filter(Habitat_sub == "Maduro")
-N_maduro_cafetera <- sum(Maduro_locs$Ecoregion == "Cafetera")
+N_maduro_eje <- sum(Maduro_locs$Ecoregion == "Eje cafetero")
 N_maduro_oq <- sum(str_detect(Maduro_locs$Id_survey_no_dc, "OQ_"))
 N_maduro_eh <- sum(str_detect(Maduro_locs$Id_survey_no_dc, "EH_"))
 N_maduro_pdm <- sum(Maduro_locs$Ecoregion == "Piedemonte")
@@ -442,7 +440,7 @@ N_maduro_pdm <- sum(Maduro_locs$Ecoregion == "Piedemonte")
 
   - Riparian forest (n = `r Hab_forest_tbl$Ripario`): Gallery forests on either side of a stream or river
 
-  - Mature forest (n = `r Hab_forest_tbl$Maduro`): Taller, older, and larger contiguous forests. `r N_maduro_cafetera` of these points were in the Cafetera ecoregion (`r N_maduro_oq` in the ecological reserve Otún Quimbaya, `r N_maduro_eh` in Reserva El Hatico) and `r N_maduro_pdm` were in a large forest in the Piedemonte.
+  - Mature forest (n = `r Hab_forest_tbl$Maduro`): Taller, older, and larger contiguous forests. `r N_maduro_eje` of these points were in the Eje Cafetero ecoregion (`r N_maduro_oq` in the ecological reserve Otún Quimbaya, `r N_maduro_eh` in Reserva El Hatico) and `r N_maduro_pdm` were in a large forest in the Piedemonte.
 
 - Silvopasture (Total n = `r Hab_tbl$Ssp`): Silvopastoral systems consist of a variety of practices and range across a spectrum regarding the diversity and intensity of practices implemented. For example, silvopastural systems can be tree (and grass) combinations planted to be homogeneous in spacing and age, or, alternatively, they can be highly diverse polycultures composed of remnant vegetation and naturally recruited tree species [@cubbageComparingSilvopastoralSystems2012]. See @murgueitioNativeTreesShrubs2011, @calleStrategyScalingUpIntensive2013, and @cubbageComparingSilvopastoralSystems2012 to better understand the full extent of management practices that can be incorporated in silvopastoral systems. In our bird sampling efforts, the project differentiated between several types of silvopasture:
 
@@ -466,7 +464,7 @@ N_maduro_pdm <- sum(Maduro_locs$Ecoregion == "Piedemonte")
 
 - Geology, landform: Soils, slope/elevation/aspect, terrain/physiography, geology/lithology
 
-  At high elevations (coffee region, Cordillera Oriental), steep slopes generate thin, rocky, volcanic soils that underlie deeply dissected river valleys. These steep slopes grade into rolling, soil-mantled landscapes in the foothills and into the alluvial lowlands of Bajo Magdalena and the Piedemonte. The Río Cesar valley is characterized by thin, rocky, and often saline soils. Elevation and topography shape soil development as well as local climate and vegetation patterns.
+  At high elevations (Eje Cafetero, Cordillera Oriental), steep slopes generate thin, rocky, volcanic soils that underlie deeply dissected river valleys. These steep slopes grade into rolling, soil-mantled landscapes in the foothills and into the alluvial lowlands of Bajo Magdalena and the Piedemonte. The Río Cesar valley is characterized by thin, rocky, and often saline soils. Elevation and topography shape soil development as well as local climate and vegetation patterns.
 
 - Site history: Site management practices, disturbance history, etc.\
   \
@@ -483,7 +481,7 @@ b.  Permanent plots: Dimension, location, general vegetation characteristics (if
 ```{r}
 #| label: El-hatico-2025
 
-# UBC's 2025 surveys at El Hatico (Coffee region): the only 2025 sampling in the dataset
+# UBC's 2025 surveys at El Hatico (Eje Cafetero): the only 2025 sampling in the dataset
 Hatico_ev <- Data$Event_covs %>% filter(Uniq_db == "Ubc mbd", Year == 2025)
 Hatico_ids <- unique(Hatico_ev$Id_survey_no_dc)
 Hatico_n <- length(Hatico_ids)
@@ -497,11 +495,11 @@ Hatico_visits <- Hatico_ev %>% count(Id_survey_no_dc) %>% pull(n)
 
 c.  Data collection period, frequency, etc.: Information necessary to understand temporal sampling regime
 
-    Point count locations were sampled in multiple closed sampling periods by the same data collector using (essentially) the same methodology in several ecoregions. For example, in the Ecorregion Cafetera, GAICA surveyed the same point count locations in June 2013, November 2016, and June 2024 (with guidance from UBC in 2024; @fig-temporal-sampling). No point count locations were sampled in more than four distinct sampling periods. Generally, point count locations were not sampled by multiple institutions, with the exception of the University of British Columbia (UBC). In 2022 UBC resampled 54 point count locations that were sampled in 2019 by Universidad de los Llanos; in 2024 UBC, with the help of GAICA, resampled 42 point counts that were surveyed in the 2010's by GAICA in the Cafetera and Piedemonte ecoregions (14 Cafetera, 28 Piedemonte); finally in 2026, UBC resampled the 54 point counts surveyed originally by Universidad de los Llanos, as well as 28 point counts originally sampled by GAICA in the 2010s (22 of which were also resampled in 2024). UBC also surveyed `r Hatico_n` point count locations at El Hatico (Valle del Cauca, Cafetera ecoregion) on `r Hatico_dates`, `r Hatico_forest` in forest and `r Hatico_ssp` in silvopasture, each `r min(Hatico_visits)`–`r max(Hatico_visits)` times; `r Hatico_prev_cipav` of these locations had been surveyed once by CIPAV in 2017.
+    Point count locations were sampled in multiple closed sampling periods by the same data collector using (essentially) the same methodology in several ecoregions. For example, in the Eje Cafetero, GAICA surveyed the same point count locations in June 2013, November 2016, and June 2024 (with guidance from UBC in 2024; @fig-temporal-sampling). No point count locations were sampled in more than four distinct sampling periods. Generally, point count locations were not sampled by multiple institutions, with the exception of the University of British Columbia (UBC). In 2022 UBC resampled 54 point count locations that were sampled in 2019 by Universidad de los Llanos; in 2024 UBC, with the help of GAICA, resampled 42 point counts that were surveyed in the 2010's by GAICA in the Eje Cafetero and Piedemonte ecoregions (14 Eje Cafetero, 28 Piedemonte); finally in 2026, UBC resampled the 54 point counts surveyed originally by Universidad de los Llanos, as well as 28 point counts originally sampled by GAICA in the 2010s (22 of which were also resampled in 2024). UBC also surveyed `r Hatico_n` point count locations at El Hatico (Valle del Cauca, Eje Cafetero ecoregion) on `r Hatico_dates`, `r Hatico_forest` in forest and `r Hatico_ssp` in silvopasture, each `r min(Hatico_visits)`–`r max(Hatico_visits)` times; `r Hatico_prev_cipav` of these locations had been surveyed once by CIPAV in 2017.
 
     Excluding the point counts conducted by CIPAV, which were surveyed only once, `r Per_three_plus`% of point count locations were sampled at least 3 times within a closed sampling period (i.e., assumption of no births, deaths, immigration, or emigration; @fig-pc-farm-db). This 'robust' sampling design allows for modeling detectability and ultimately more robust estimates of occupancy and abundance [@mackenzieEstimatingSiteOccupancy2003], although only Ubc mbd and Ubc gaica mbd recorded detection covariates (e.g., weather, noise) systematically.
 
-![The temporal distribution of point count sampling across 5 ecoregions, where the shape of the points indicates the survey group within a given ecoregion, i.e. a set of locations surveyed at least once (but often tracked across sampling periods). For example, in El Piedemonte GAICA resampled the same point count locations in October of 2016 and March of 2017 (depicted with the '+' symbol). Each point represents a date that point counts were sampled, with point count locations resampled across sampling periods in four ecoregions (Bajo Magdalena, Cafetera, Piedemonte, Rio Cesar).](../../../Figures/Pc_month_year_day_ecoregion.png){#fig-temporal-sampling}
+![The temporal distribution of point count sampling across 5 ecoregions, where the shape of the points indicates the survey group within a given ecoregion, i.e. a set of locations surveyed at least once (but often tracked across sampling periods). For example, in El Piedemonte GAICA resampled the same point count locations in October of 2016 and March of 2017 (depicted with the '+' symbol). Each point represents a date that point counts were sampled, with point count locations resampled across sampling periods in four ecoregions (Bajo Magdalena, Eje Cafetero, Piedemonte, Río Cesar).](../../../Figures/Pc_month_year_day_ecoregion.png){#fig-temporal-sampling}
 
 ### Research methods
 

@@ -40,6 +40,13 @@ Event_covs <- read_csv(file = "DataS1/Event_covs.csv")
 Prec_df <- read_csv(file = "Derived/Excels/Prec_df.csv")
 
 source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
+source("Scripts/Data_paper/Data_paper_fns.R")
+
+# Every figure shows the ecoregions by their display names (Eje Cafetero, Río Cesar, ...), so convert them once here; code below filters on display names
+Pc_locs_sf <- Pc_locs_sf %>% mutate(Ecoregion = ecoregion_label(Ecoregion))
+Pc_locs_dc_sf <- Pc_locs_dc_sf %>% mutate(Ecoregion = ecoregion_label(Ecoregion))
+Site_covs <- Site_covs %>% mutate(Ecoregion = ecoregion_label(Ecoregion))
+Prec_df <- Prec_df %>% mutate(Ecoregion = ecoregion_label(Ecoregion))
 
 # Fig1: Sampling map ------------------------------------------------------
 ### Create map showing point count locations on informative background (elevation)
@@ -173,8 +180,6 @@ Pc_locs_jit <- Pc_locs_round %>%
 ## Main map: elevation background, ecoregion outlines, rivers, and point count locations; an inset locates it in northern South America. Built entirely in R (it replaces the figure assembled by hand in PowerPoint).
 
 # Ecoregions are drawn as the convex hull of each ecoregion's plotted point count locations, buffered so the symbols sit inside. Ecoregions are formally groups of departments (Table 2), but whole departments are large and adjacent, so their outlines hid where sampling actually was; the hull matches the per-ecoregion area reported in Table 2
-Ecor_names <- c("Cafetera" = "Coffee region", "Cordillera oriental" = "Cordillera Oriental", "Piedemonte" = "Piedemonte",
-                "Bajo magdalena" = "Bajo Magdalena", "Rio cesar" = "Río Cesar")
 Ecor_buffer_m <- 15000
 # The Piedemonte is shown in a zoom panel rather than on the main map, so its true locations stand in for its plotted ones
 Pc_locs_pdm <- Pc_locs_dc_sf %>% filter(Ecoregion == "Piedemonte")
@@ -189,12 +194,11 @@ Ecor_polys <- bind_rows(
   st_convex_hull() %>%
   st_transform(32618) %>%
   st_buffer(Ecor_buffer_m) %>%
-  st_transform(4326) %>%
-  mutate(Ecoregion = Ecor_names[Ecoregion])
+  st_transform(4326)
 
 # Ecoregion labels, hand-placed just outside each hull
 Ecor_labels <- tibble(
-  Ecoregion = c("Coffee region", "Cordillera Oriental", "Piedemonte", "Bajo Magdalena", "Río Cesar"),
+  Ecoregion = c("Eje Cafetero", "Cordillera Oriental", "Piedemonte", "Bajo Magdalena", "Río Cesar"),
   x = c(-75.75, -73.0, -73.95, -75.2, -72.45),
   y = c(5.4, 6.62, 4.12, 11.2, 11.05)
 )
@@ -362,7 +366,7 @@ Pc_date9 <- Es_covs %>%
     TRUE ~ "Other"
   )) %>%
   # One specific case for CIPAV
-  mutate(Grp_spat = ifelse(Uniq_db == "Cipav mbd" & Year == 17 & Ecoregion == "Cordillera oriental" & Month == 4, "CIPAV1", Grp_spat)) %>%
+  mutate(Grp_spat = ifelse(Uniq_db == "Cipav mbd" & Year == 17 & Ecoregion == "Cordillera Oriental" & Month == 4, "CIPAV1", Grp_spat)) %>%
   # UBC's solo resurveys (2022 Unillanos, 2025 El Hatico, 2026 Meta) inherit the shape of whoever first surveyed that location, so the resurvey series reads as one set of points; locations UBC surveyed for the first time (e.g. the newer El Hatico points) get their own group rather than folding into "Other"
   mutate(Grp_spat = {
     orig <- Grp_spat[Uniq_db != "Ubc mbd" & !is.na(Grp_spat)]
@@ -377,7 +381,7 @@ Pc_date_p <- Pc_date9 %>% distinct( #PC_date_plot
 ) %>% 
   mutate(Year = str_remove(Year, "20")) #%>% 
  #Add a random Ecoregion so it doesn't add a 6th 'NA' panel
- #add_row(Year = as.character(25), Ecoregion = "Cafetera") 
+ #add_row(Year = as.character(25), Ecoregion = "Eje Cafetero") 
 
 # Plot 
 Pc_temporal_plot <- ggplot(data = Pc_date_p, aes(x = factor(Year), y = Month)) +
@@ -413,8 +417,8 @@ ggsave("Figures/Pc_month_year_day_ecoregion.png", bg = "white", width = 12)
 # Boxplots for Elevation, temp, & precipitation
 p <- list()
 var_names <- c("Elev", "Avg_temp", "Tot_prec")
-ylab <- c("meters", "Celsius", "millimeters")
-title <- c("Elevation", "Temperature", "Precipitation")
+# Units sit in the panel titles, so the y axes need no label
+title <- c("Elevation (m)", "Temperature (°C)", "Precipitation (mm)")
 
 for (i in c(1:3)) {
   print(i)
@@ -426,7 +430,7 @@ for (i in c(1:3)) {
     )) +
     geom_boxplot(alpha = 1.0, outliers = FALSE, aes(color = Ecoregion)) +
     geom_jitter(alpha = 0.2) +
-    labs(y = ylab[i], title = title[i], color = "Ecoregion") +
+    labs(y = NULL, title = title[i], color = "Ecoregion") +
     theme(
       axis.title.x = element_blank(),
       axis.text.x = element_blank(),
@@ -542,7 +546,7 @@ Plot_prec_samp <- function(regions = "All", dyn_occ = FALSE, facet = TRUE){
 
 # Plot regions with potential for dynamic occupancy modeling. This plot goes into Powerpoint and then draw arrows to connect sets of points 
 # NOTE: Would likely want to remove Bajo Magdalena
-Plot_prec_samp(regions = c("Piedemonte", "Bajo magdalena", "Cafetera"), dyn_occ = TRUE, facet = FALSE)
+Plot_prec_samp(regions = c("Piedemonte", "Bajo Magdalena", "Eje Cafetero"), dyn_occ = TRUE, facet = FALSE)
 ggsave("Figures/Rainfall/Prec_sampling.png", bg = "white")
 
 # Faceted plot, with all data collectors and all regions shown 
@@ -806,7 +810,7 @@ extract_metadata <- function(df){
 Bird_pcs_all_meta <- Bird_pcs_all %>% extract_metadata()
 
 ## Site covariates
-Site_covs_meta <- extract_metadata(Site_covs)
+Site_covs_meta <- extract_metadata(read_csv("DataS1/Site_covs.csv", show_col_types = FALSE)) # the deposit as written (Site_covs above carries display names for the figures)
 
 ## Taxonomy file
 Taxonomy_meta <- extract_metadata(Taxonomy)
