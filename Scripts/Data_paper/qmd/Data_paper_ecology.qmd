@@ -204,7 +204,9 @@ dual_table(
 
 The `r Num_sites` point count locations were each surveyed 1–`r Max_visits_loc` times (`r Tot_pc_prty` surveys in total, pooled across data collectors), and `r Per_three_plus_loc`% were sampled $\geq$ 3 times within a closed sampling period (nearly all of the point counts other than CIPAV's, which were surveyed once), enabling estimation of detection probabilities through hierarchical occupancy models. Land-use landcover types surveyed include mature forest, forest fragments, riparian forest, crops, intensive pasture, several types of silvopasture, and heterogeneous mosaics (i.e., no single dominant landcover type). This dataset permits analyses of bird diversity patterns and community composition across land-use gradients, especially the effects of silvopastoral practices on biodiversity in tropical cattle ranching landscapes. We also provide complementary datasets of taxonomic equivalents (BirdLife, BirdTree, and eBird / Clements), functional traits, site covariates, and survey covariates (@tbl-file-info), facilitating a variety of research questions and analytical approaches. For example, one could examine the interacting effects of local management practices and climate, while controlling for phylogenetic non-independence, to understand silvopasture's influence on functional diversity and ecosystem service provisioning. Importantly, the repeated sampling of many locations across years also enables analyses of temporal changes in occupancy, colonization, extinction dynamics, and community turnover [@leesRoadmapIdentifyingFilling2020].
 
-![Phylogenetic relationships of the 587 bird species observed in our data set, represented by 585 tips (some species share a tip due to taxonomic differences between BirdTree and Ayerbe). There were 25 orders, of which 19 are shown using grayscale representative species (downloaded from phylopic). The number of species in each order is listed in parentheses.](../../../Figures/Static/Phylogeny_equal_sizes.png){#fig-phylogeny}
+![Phylogenetic relationships of the 587 bird species observed in our data set, represented by 585 tips (some species share a tip due to taxonomic differences between BirdTree and Ayerbe). There were 25 orders, of which 19 are shown using grayscale representative species (downloaded from phylopic). The number of species in each order is listed in parentheses.](../../../Figures/Static/Phylogeny_equal_sizes.png){#fig-phylogeny width="66%"}
+
+![The most abundant and widespread bird species in the project (before filtering observations). The total count refers to the summed count across all surveys, and localities refers to the number of unique point count locations where the species was detected at least once (total = 504).](../../../Figures/Species_counts_localities.png){#fig-abund-widespread-spp}
 
 ```{r}
 #| label: tbl-file-info
@@ -252,7 +254,6 @@ dual_table(
 )
 ```
 
-![The most abundant and widespread bird species in the project (before filtering observations). The total count refers to the summed count across all surveys, and localities refers to the number of unique point count locations where the species was detected at least once (total = 504).](../../../Figures/Species_counts_localities.png){#fig-abund-widespread-spp}
 
 # Class I. Data Set Descriptors
 

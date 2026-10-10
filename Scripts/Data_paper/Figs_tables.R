@@ -604,7 +604,7 @@ p1 <- Species_summary %>%
   )) %>%
   ggplot(aes(x = Count, y = Species_ayerbe,
              fill = Ecoregion)) +
-  geom_col(color = "black", width = .8) +
+  geom_col(color = "black", linewidth = 0.2, width = .8) +
   labs(x = "Total count", y = "Species") +
   theme(legend.position = "none")
 
@@ -616,7 +616,7 @@ p2 <- Species_summary %>%
   )) %>%
   ggplot(aes(x = Localities, y = Species_ayerbe,
              fill = Ecoregion)) +
-  geom_col(color = "black", width = .8) +
+  geom_col(color = "black", linewidth = 0.2, width = .8) +
   scale_x_reverse() +
   scale_y_discrete(
     labels = Sj_local$Species_ayerbe, # right-side species
@@ -628,15 +628,16 @@ p2 <- Species_summary %>%
         axis.title.y.left = element_blank())
 
 # Combine plots side by side and use a common legend
-# The 5-ecoregion legend is wrapped to two rows so it fits the narrower portrait width.
+# Saved at its printed size (full text width, short enough to share a page with the phylogeny), so the font sizes below are what the reader sees
 Species_counts_p <- (p1 + p2) +
   plot_layout(guides = "collect") &
-  theme(legend.position = "top") &
-  guides(fill = guide_legend(nrow = 2))
+  theme(legend.position = "top",
+        text = element_text(size = 7), axis.text = element_text(size = 6),
+        legend.key.size = unit(0.3, "cm")) &
+  guides(fill = guide_legend(nrow = 1))
 
-# Portrait aspect: 30 species per panel need vertical room, and this keeps the figure filling the page it occupies rather than floating alone with wide blank margins.
 ggsave("Figures/Species_counts_localities.png", Species_counts_p,
-       bg = "white", width = 9, height = 11)
+       bg = "white", width = 6.5, height = 3.6, dpi = 300)
 print(Species_counts_p)
 
 # Fig: Example landscape + silvopasture illustrations ------------------

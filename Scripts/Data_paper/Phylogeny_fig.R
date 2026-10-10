@@ -233,7 +233,7 @@ Phylo_plot <- ggtree(phylo_obs, layout='circular', aes(color = Family)) %<+%
   ) + scale_size_identity() +
   guides(color = "none") +
   # This geom_cladelab() controls the text
-  geom_cladelab(data = Orders_plot,
+  geom_cladelab(data = filter(Orders_plot, Order != "Passeriformes"), # Passeriformes is labelled separately below
                 mapping = aes(node = Mrca_node, label = Label),
                 fontsize = 3,
                 angle = "auto",
@@ -241,8 +241,25 @@ Phylo_plot <- ggtree(phylo_obs, layout='circular', aes(color = Family)) %<+%
                 barsize = 0) + # auto-rotates text radially
   theme(plot.margin = margin(30, 30, 20, -40)) # Control
 
+# Passeriformes: a horizontal label beside its icon, joined by a short leader line. Its radial label hung below the circle and added empty height, which limited how large the figure could print.
+Pass_tips <- tidytree::offspring(as_tibble(phylo_obs), Orders_plot$Mrca_node[Orders_plot$Order == "Passeriformes"]) %>%
+  filter(!is.na(label))
+Pass_y <- mean(range(Phylo_plot$data$y[Phylo_plot$data$label %in% Pass_tips$label])) # clade midpoint = icon position
+Tip_x <- max(Phylo_plot$data$x, na.rm = TRUE)
+Pass_label <- tibble(x = Tip_x + 20, y = Pass_y - 30, xend = Tip_x + 4, yend = Pass_y,
+                     label = Orders_plot$Label[Orders_plot$Order == "Passeriformes"])
+Phylo_plot <- Phylo_plot +
+  geom_segment(data = Pass_label, aes(x = x, y = y, xend = xend, yend = yend), inherit.aes = FALSE, linewidth = 0.3) +
+  geom_text(data = Pass_label, aes(x = x, y = y, label = label), inherit.aes = FALSE, size = 3, hjust = 0.5, vjust = -0.3)
+
+# Square now that nothing hangs below the circle
 ggsave("Figures/Static/Phylogeny_equal_sizes.png", plot = Phylo_plot,
-       height = 8, width = 7.35)
+       height = 7.35, width = 7.35)
+# Trim the blank plot margins so the tree fills the image, and the figure can print larger
+magick::image_read("Figures/Static/Phylogeny_equal_sizes.png") %>%
+  magick::image_trim() %>%
+  magick::image_border("white", "30x30") %>%
+  magick::image_write("Figures/Static/Phylogeny_equal_sizes.png", density = 300)
 print(Phylo_plot)
 
 ## Visualize each order that has more than 1 species
