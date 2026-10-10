@@ -439,8 +439,7 @@ for (i in c(1:3)) {
   # guides(color = FALSE) +
   # scale_x_discrete(labels = ecoreg_labs)
 }
-ggarrange(p[[1]], p[[2]], p[[3]], nrow = 1, common.legend = T, labels = "AUTO")
-ggsave("Figures/Envi_vars.png", bg = "white", width = 10)
+# The boxplots are combined with the rainfall curves (panel D) into one climate figure, built after the rainfall section below
 
 
 # Fig4a: Rainfall density plota -------------------------------------------
@@ -453,11 +452,7 @@ Site_covs %>%
   data.frame() %>%
   mutate(across(everything(), round, 2))
 
-# Rainfall seasonality plot
-# For rainfall seasonality plot for determining ideal repeat survey timing for dynamic occupancy models, best to exclude Distancia & CIPAV b/c they only have 1 repeat survey 
-Prec_df2 <- Prec_df %>% 
-  filter(Uniq_db != "GAICA Distancia" & Uniq_db != "CIPAV MBD")
-table(Prec_df2$Uniq_db)
+# Rainfall seasonality plot: 30-year monthly averages at every point count location
 
 Calc_mean_prec <- function(df, group_variable){
   df %>%
@@ -468,20 +463,26 @@ Calc_mean_prec <- function(df, group_variable){
     mutate(Month = as.numeric(str_remove(Month, "prec_")))
 }
 #Per Ecoregion
-Prec_ecor <- Calc_mean_prec(df = Prec_df2, group_variable = Ecoregion)
+Prec_ecor <- Calc_mean_prec(df = Prec_df, group_variable = Ecoregion)
 #Per department
-Prec_depts <- Calc_mean_prec(df = Prec_df2, group_variable = Department)
+Prec_depts <- Calc_mean_prec(df = Prec_df, group_variable = Department)
 
 ## Plot precip for all ecoregions using smoothed GAM
 # cc = cyclic cubic regression spline - Use because the function value at month 12 is constrained to join smoothly back to month 1.
 # k = the basis dimension, i.e. the maximal degrees of freedom. This allows the smoother to be as wiggly as one wiggle per month.
-ggplot(Prec_ecor, aes(x = Month, y = Prec, color = Ecoregion)) +
+Prec_smooth_plot <- ggplot(Prec_ecor, aes(x = Month, y = Prec, color = Ecoregion)) +
   stat_smooth(method = "gam", formula = y ~ s(x, bs = "cc", k = 12), se = FALSE) +
   scale_x_continuous(breaks = c(0, 2, 4, 6, 8, 10, 12)) +
-  labs(x = "Month", y = "Precipitation (mm)") + 
-  theme(legend.position = "right")
-ggsave("Figures/Rainfall/Prec_smoothed.png", bg = "white", 
-       width = 8, height = 5)
+  labs(x = "Month", y = NULL, title = "Monthly precipitation (mm)") +
+  guides(color = "none") # the ecoregion legend comes from the boxplots, whose colours match (guides(), not theme(), so the figure-wide legend position below cannot re-enable it)
+
+## Climate figure: elevation (A) and annual precipitation (B) by ecoregion on top, monthly rainfall curves (C) full width below; one shared ecoregion legend. Temperature is not shown: across the locations it is almost perfectly determined by elevation (r = -0.995), so the manuscript caption reports it instead
+Climate_fig <- (p[[1]] | p[[3]]) / Prec_smooth_plot +
+  plot_layout(guides = "collect", heights = c(1, 0.85)) +
+  plot_annotation(tag_levels = "A") &
+  theme(legend.position = "bottom", plot.tag = element_text(face = "bold"))
+ggsave("Figures/Envi_climate.png", Climate_fig, bg = "white", width = 10, height = 8.5)
+print(Climate_fig)
 
 # Fig4b: Precipitation with sampling dates ---------------------------------
 # PCs_prec are the points that go on the rainfall seasonality plot
