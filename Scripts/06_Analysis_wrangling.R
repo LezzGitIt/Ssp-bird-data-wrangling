@@ -53,10 +53,9 @@ Bird_pcs_analysis5 <- Bird_pcs_analysis4 %>%
     Distance_bird == "0-15" ~ "15",
     Distance_bird == "15-30" ~ "30",
     Distance_bird == "30-50" ~ "50",
-    Distance_bird == "< 25" ~ "25",
+    Distance_bird == "<25" ~ "25",
     Distance_bird == "<50" ~ "50",
     Distance_bird == ">50" ~ "51",
-    Distance_bird == "> 50" ~ "51",
     .default = Distance_bird
   )) %>%
   mutate(Distance_bird = as.numeric(Distance_bird))

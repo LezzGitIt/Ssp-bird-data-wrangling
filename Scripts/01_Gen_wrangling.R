@@ -353,20 +353,17 @@ df_birds_red[4:8] <- map(df_birds_red[4:8], \(df){
   df %>% rename(Nombre_cientifico_final = Nombre_cientifico_final_ayerbe_2018)
 })
 
-# Add 'Vuelo' information to Obs_type column, and change distance to >50
+# UBC-GAICA wrote flyovers ("Vuelo") in the distance column: move that to Obs_type and leave the distance blank, since no distance was estimated
 df_birds_red[4:6] <- map(df_birds_red[4:6], \(df){
-  df %>% mutate(Obs_type = if_else(
-    Distance_bird %in% c("Vuelo", "Sobrevuelo"), "Sobrevuelo", Obs_type
-  ), 
-  Distance_bird = if_else(
-    Distance_bird %in% c("Vuelo", "Sobrevuelo"), ">50", Distance_bird
-  ))
+  df %>% mutate(
+    Obs_type = if_else(Distance_bird %in% c("Vuelo", "Sobrevuelo"), "Sobrevuelo", Obs_type),
+    Distance_bird = if_else(Distance_bird %in% c("Vuelo", "Sobrevuelo"), NA_character_, Distance_bird)
+  )
 })
 
 df_birds_red$Ubc_meta26 <- df_birds_red$Ubc_meta26 %>%
-  # Santiago's 2026 sheet has no Tipo_registro/Obs_type column -- create it (flyovers only; no visual/auditory distinction was recorded)
-  {if (!"Obs_type" %in% names(.)) mutate(., Obs_type = NA_character_) else .} %>%
-  mutate(Obs_type = ifelse(Observaciones == "Vuelo", "Sobrevuelo", Obs_type))
+  # Santiago noted flyovers in Observaciones rather than Tipo_registro; %in% (not ==) so a blank Observaciones keeps the recorded Obs_type instead of returning NA
+  mutate(Obs_type = if_else(Observaciones %in% "Vuelo", "Sobrevuelo", Obs_type))
 
 # A few observations have Registered_by as just Robert or just Yuri, but this notation was due to my indicisiveness in the field. These should be both Yuri and Robert 
 df_birds_red[4:6] <- map(df_birds_red[4:6], \(df){
@@ -595,6 +592,13 @@ Birds_comb2 <- Birds_comb %>%
     Obs_type == "Va" ~ "Visual/auditivo",
     Obs_type == "Sv" ~ "Sobrevuelo",
     .default =  Obs_type
+  )) %>%
+  # One spelling per distance class across datasets (GAICA mbd wrote "> 50", CIPAV "< 25"); the 2025 El Hatico sheet entered "-" for birds with no distance estimate, which is missing
+  mutate(Distance_bird = case_when(
+    Distance_bird == "> 50" ~ ">50",
+    Distance_bird == "< 25" ~ "<25",
+    Distance_bird == "-" ~ NA_character_,
+    .default = Distance_bird
   )) %>%
   mutate(Species_original = ifelse(
     is.na(Species_original), Species_ayerbe, Species_original
