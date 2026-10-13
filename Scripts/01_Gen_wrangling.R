@@ -1199,8 +1199,17 @@ Event_covs_pcs <- Event_covs_all %>%
       str_to_lower(Cows_50m) %in% c("yes", "si", "sí") ~ "Yes",
       str_to_lower(Cows_50m) %in% c("no") ~ "No",
       .default = Cows_50m
-    )
+    ),
+    # Yes/No rather than 1/0 so the binary covariates read as categorical, matching Cows_50m (Spp_obs is numeric up to here because the joins above filter on it)
+    Spp_obs = case_when(Spp_obs == 1 ~ "Yes", Spp_obs == 0 ~ "No")
   ) %>%
+  # Point counts with no birds carry no observer (it comes from the bird rows); fill it from the farm's other counts that day when a single observer team surveyed it (Unillanos Andorra on 2019-11-19/20 had two teams, so stays NA)
+  group_by(Uniq_db, Id_group, Date) %>%
+  mutate(Registered_by = if_else(
+    is.na(Registered_by) & n_distinct(Registered_by, na.rm = TRUE) == 1,
+    first(na.omit(Registered_by)), Registered_by
+  )) %>%
+  ungroup() %>%
   # Column order matches the Event_covs sheet of Column_definitions_final.xlsx (Pc_obs_span is the exception -- QA-only, kept in Event_covs_pcs.csv, dropped by 05_wvsc.R; 05 appends the canopy columns)
   select(Id_survey, Id_survey_no_dc, Institution_name, Uniq_db, Id_group, Date, Year_grp, Year, Month, Day, Julian_day, Pc_start, Pc_duration, Pc_obs_span, N_samp_periods, N_reps, Rep_year_grp, Season, Rep_season, Spp_obs, Noise, Weather, Cows_50m, Registered_by, Sampling_day)
 
@@ -1260,11 +1269,15 @@ Envi_df2 <- Envi_df %>%
 # >Site covs --------------------------------------------------------------
 ### Distance (m) to the nearest GCS farm, one value per point count location
 # max() over Id_survey_no_dc collapses the ~25 sites whose GCS distance varies slightly across records (reprojection noise) and carries the distance from early surveys onto later UBC re-surveys of the same point; result is rounded to whole metres (sub-metre precision is spurious given GPS error)
-# Only clusters GCS never processed stay NA -- Otun Quimbaya and El Hatico points 05-12; the 4 sites GCS gave conflicting distances are corrected upstream in Birds_comb5
+# Only Otun Quimbaya, which GCS never processed and which is a reserve rather than a farm, stays NA; the 4 sites GCS gave conflicting distances are corrected upstream in Birds_comb5
+# El Hatico points 05-12 (added by UBC in 2025) were never processed by GCS, but every El Hatico point lies within the farm, so they take 0 like points 01-04
 Distance_farm_site <- Bird_pcs_all %>%
   group_by(Id_survey_no_dc) %>%
   summarise(Distance_farm = round(suppressWarnings(max(Distance_farm, na.rm = TRUE))), .groups = "drop") %>%
-  mutate(Distance_farm = na_if(Distance_farm, -Inf))
+  mutate(
+    Distance_farm = na_if(Distance_farm, -Inf),
+    Distance_farm = if_else(str_starts(Id_survey_no_dc, "MB-VC-EH_") & is.na(Distance_farm), 0, Distance_farm)
+  )
 
 ### Number of surveys per physical location, pooled across data collectors and sampling periods
 # This is the location-level count behind the "surveyed 1-19 times" statement; Event_covs$N_reps instead counts repeats of one data collector's point count (Id_survey)
@@ -1335,7 +1348,7 @@ Event_covs_pcs %>% Na_rows_cols(cols_inc = -c(Noise, Weather, Cows_50m, Pc_obs_s
 
 # Site covariates - There are 504 unique locations, so all of these are stable irrespective of which data collector
 nrow(Site_covs)
-# Should be no NAs -- Distance_farm is filled across years within Id_survey_no_dc, so only the never-surveyed-by-GCS clusters stay NA (Otun Quimbaya, and El Hatico points 05-12 added by UBC in 2025)
+# Should be no NAs -- Distance_farm is filled across years within Id_survey_no_dc, so only Otun Quimbaya (never processed by GCS) stays NA
 Site_covs %>%
   filter(Id_group_no_dc != "MB-R-OQ") %>% # OQ doesn't have Id_scr
   # No sub_ut for these habitat types

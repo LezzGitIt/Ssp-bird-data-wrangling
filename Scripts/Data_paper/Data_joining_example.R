@@ -69,7 +69,7 @@ Data$Bird_pcs_all %>%
 # Missing data ------------------------------------------------------------
 # >No species observed at a point count  ---------------------------------
 # There are 79 point count surveys where no birds were observed, and thus they have no data in Bird_pcs_all
-Data$Event_covs %>% filter(Spp_obs == 0) %>%
+Data$Event_covs %>% filter(Spp_obs == "No") %>%
   nrow()
 # Note that a full_join() was used to create Birds_event_covs, thus this tibble now has data for the point counts where no species were observed
 nrow(Birds_event_covs) - nrow(Data$Bird_pcs_all)
@@ -82,7 +82,7 @@ Data$Bird_pcs_analysis %>% filter(Id_survey == "UBC-MB-M-EPO3_06", Date == "2022
 # The difference: surveys with birds recorded in Bird_pcs_all but no rows in Bird_pcs_analysis
 Birds_event_covs_analysis <- Data$Bird_pcs_analysis %>%
   right_join(Data$Event_covs) %>%
-  filter(Spp_obs == 1)
+  filter(Spp_obs == "Yes")
 nrow(Birds_event_covs_analysis) - nrow(Data$Bird_pcs_analysis)
 
 # >Missing values ---------------------------------------------------------
