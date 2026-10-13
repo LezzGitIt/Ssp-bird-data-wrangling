@@ -97,7 +97,7 @@ Tot_pc_prty <- prettyNum(Tot_pc, big.mark = ",")
 Num_ft <- Data$Functional_traits %>%
   select(-any_of("Species_ayerbe")) %>%
   ncol()
-Num_farms <- unique(Data$Site_covs$Id_scr) %>% length()
+Num_farms <- n_distinct(Data$Site_covs$Id_scr, na.rm = TRUE) # the Otún Quimbaya reserve sites (MB-R-OQ) have no farm ID (NA), so they are not counted as a farm
 Num_datasets <- n_distinct(Data$Event_covs$Uniq_db)
 Year_first <- min(Data$Event_covs$Year)
 Year_last <- max(Data$Event_covs$Year)
@@ -459,7 +459,7 @@ N_maduro_pdm <- sum(Maduro_locs$Ecoregion == "Piedemonte")
 
   - Multi-species fodder banks (n = `r Hab_ssp_tbl$Banco_de_forraje`): Forage that is cut and transported to paddocks or stables for consumption.
 
-  - Intensive SPS (n = `r Hab_ssp_tbl$Intensivo`): Incorporation of several of the aforementioned practices, including high densities of fodder shrubs, a variety of native grasses for direct foraging by cattle, and tropical trees for timber or fruit.
+  - Intensive SPS (n = `r Hab_ssp_tbl$Intensivo`): Incorporation of several of the aforementioned practices, including high densities of fodder shrubs, a variety of native grasses for direct foraging by cattle, and tropical trees for timber, fruit, shade, and division of paddocks.
 
 - Intensive pasture (n = `r Hab_tbl$Pastizales`): Monoculture cattle ranching systems that are generally hotter, drier, and more homogeneous than neighbouring forest and silvopasture.
 
@@ -467,11 +467,11 @@ N_maduro_pdm <- sum(Maduro_locs$Ecoregion == "Piedemonte")
 
 - Crops (n = `r Hab_tbl$Cultivos`): Other agricultural systems unrelated to rearing cattle.
 
-![(A) Example landscape on a cattle ranching farm surveyed in the Piedemonte Ecoregion. Red circles represent the location of 50-m radius point counts. Four common habitat types surveyed in the project are labeled. (B) Illustrations of the two silvopastoral arrangements visible in A, live fences and dispersed trees, adapted from materials of the Sustainable Cattle Ranching project (Proyecto Ganadería Colombiana Sostenible).](../../../Figures/Example_landscape_ssp.png){#fig-example-landscape}
+![(A) Example landscape on a cattle ranching farm surveyed in the Piedemonte Ecoregion. Red circles represent the location of 50-m radius point counts. Four of the most common habitat types surveyed in the project are labeled. (B) Illustrations of the two silvopastoral arrangements visible in A, live fences and dispersed trees, adapted from materials of the Sustainable Cattle Ranching project (Proyecto Ganadería Colombiana Sostenible).](../../../Figures/Example_landscape_ssp.png){#fig-example-landscape}
 
 - Geology, landform: Soils, slope/elevation/aspect, terrain/physiography, geology/lithology
 
-  At high elevations (Eje Cafetero, Cordillera Oriental), steep slopes generate thin, rocky, volcanic soils that underlie deeply dissected river valleys. These steep slopes grade into rolling, soil-mantled landscapes in the foothills and into the alluvial lowlands of Bajo Magdalena and the Piedemonte. The Río Cesar valley is characterized by thin, rocky, and often saline soils. Elevation and topography shape soil development as well as local climate and vegetation patterns.
+  At high elevations (e.g., Eje Cafetero, Cordillera Oriental), steep slopes generate thin, rocky, volcanic soils that underlie deeply dissected river valleys. These steep slopes grade into rolling, soil-mantled landscapes in the foothills and into the alluvial lowlands of Bajo Magdalena and the Piedemonte. The Río Cesar valley is characterized by thin, rocky, and often saline soils. Elevation and topography shape soil development as well as local climate and vegetation patterns.
 
 - Site history: Site management practices, disturbance history, etc.\
   \
@@ -481,9 +481,7 @@ N_maduro_pdm <- sum(Maduro_locs$Ecoregion == "Piedemonte")
 
 a.  Design characteristics: Description of statistical/sampling design
 
-    To understand silvopasture’s impact on avian biodiversity, The Nature Conservancy coordinated several data collectors — CIPAV (Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria), GAICA, and Unillanos (Universidad de los Llanos) — who conducted `r Tot_pc_prty` avian point counts at `r Num_sites` unique sites across agricultural intensity gradients. Point counts were conducted on (or near) `r Num_farms` different farms across 12 geopolitical departments of Colombia in 5 ecoregions (@fig-sampling-map, @tbl-datasets).
-
-b.  Permanent plots: Dimension, location, general vegetation characteristics (if applicable).
+    To understand silvopasture’s impact on avian biodiversity, The Nature Conservancy coordinated several data collectors — CIPAV, GAICA, and Unillanos — to conduct avian point counts in forest fragments and across an agricultural intensity gradient. UBC followed up on these efforts in 2022, 2024 (with the help of GAICA), and in 2025-2026, bringing the total number of point counts to `r Tot_pc_prty` across `r Num_sites`. Point counts were conducted on (or near) `r Num_farms` different farms across 12 geopolitical departments of Colombia in 5 ecoregions (@fig-sampling-map, @tbl-datasets).
 
 ```{r}
 #| label: El-hatico-2025
@@ -502,7 +500,7 @@ Hatico_visits <- Hatico_ev %>% count(Id_survey_no_dc) %>% pull(n)
 
 c.  Data collection period, frequency, etc.: Information necessary to understand temporal sampling regime
 
-    Point count locations were sampled in multiple closed sampling periods by the same data collector using (essentially) the same methodology in several ecoregions. For example, in the Eje Cafetero, GAICA surveyed the same point count locations in June 2013, November 2016, and June 2024 (with guidance from UBC in 2024; @fig-temporal-sampling). No point count locations were sampled in more than four distinct sampling periods. Generally, point count locations were not sampled by multiple institutions, with the exception of the University of British Columbia (UBC). In 2022 UBC resampled 54 point count locations that were sampled in 2019 by Universidad de los Llanos; in 2024 UBC, with the help of GAICA, resampled 42 point counts that were surveyed in the 2010's by GAICA in the Eje Cafetero and Piedemonte ecoregions (14 Eje Cafetero, 28 Piedemonte); finally in 2026, UBC resampled the 54 point counts surveyed originally by Universidad de los Llanos, as well as 28 point counts originally sampled by GAICA in the 2010s (22 of which were also resampled in 2024). UBC also surveyed `r Hatico_n` point count locations at El Hatico (Valle del Cauca, Eje Cafetero ecoregion) on `r Hatico_dates`, `r Hatico_forest` in forest and `r Hatico_ssp` in silvopasture, each `r min(Hatico_visits)`–`r max(Hatico_visits)` times; `r Hatico_prev_cipav` of these locations had been surveyed once by CIPAV in 2017.
+    Point count locations were sampled in multiple closed sampling periods by the same data collector using (essentially) the same methodology in several ecoregions. For example, in the Eje Cafetero, GAICA surveyed the same point count locations in June 2013, November 2016, and June 2024 (with guidance from UBC in 2024; @fig-temporal-sampling). No point count locations were sampled in more than four distinct sampling periods. Generally, point count locations were not sampled by multiple institutions, with the exception of UBC's efforts. In 2022, UBC resampled 54 point count locations that were sampled in 2019 by Universidad de los Llanos; in 2024 UBC and GAICA resampled 42 point counts that were surveyed in the 2010's by GAICA in the Eje Cafetero and Piedemonte ecoregions (14 Eje Cafetero, 28 Piedemonte); finally in 2026, UBC resampled the 54 point counts surveyed originally by Universidad de los Llanos, as well as 28 point counts originally sampled by GAICA in the 2010s (22 of which were also resampled in 2024). UBC also surveyed `r Hatico_n` point count locations at El Hatico (Valle del Cauca, Eje Cafetero ecoregion) in December of 2025; `r Hatico_prev_cipav` of these locations had been surveyed once by CIPAV in 2017.
 
     Excluding the point counts conducted by CIPAV, which were surveyed only once, `r Per_three_plus`% of point count locations were sampled at least 3 times within a closed sampling period (i.e., assumption of no births, deaths, immigration, or emigration; @fig-pc-farm-db). This 'robust' sampling design allows for modeling detectability and ultimately more robust estimates of occupancy and abundance [@mackenzieEstimatingSiteOccupancy2003], although only Ubc mbd and Ubc gaica mbd recorded detection covariates (e.g., weather, noise) systematically.
 
@@ -532,17 +530,17 @@ Ecor_pc_no_pdm <- Ecor_pc %>%
 
 a.  Field/laboratory: Description or reference to standard field/laboratory methods\
     \
-    Generally, point counts were conducted for 10 minutes in the morning, between sunrise and 11 AM (`r Per_bfor_11`%), recording all birds seen or heard within a 50-m fixed radius. CIPAV mbd employed a different methodology, using a 25-m radius and surveying for a variable amount of time (see `Pc_duration` in `Event_covs.csv`). GAICA Distancia did not employ a fixed point count radius, but instead estimated the distance to any bird seen or heard, and surveyed both mornings and afternoons (@tbl-datasets). Data sets differ in the intensity with which farms were surveyed – some data sets contain fewer farms that were more heavily sampled (e.g., Unillanos mbd), whereas others surveyed many farms but with less sampling intensity (e.g., Cipav mbd; @fig-pc-farm-db). Within each farm, point counts were generally separated by 100 - 150 meters to ensure independence (but there were exceptions). Note that excluding CIPAV, all data collectors recorded whether observations were flyovers (i.e., they did not use the habitat). Please see the 'Birds_SSP_Colombia_Detailed_methodologies' document for a more detailed accounting of the methods utilized by each data collector. The Piedemonte ecoregion had the most comprehensive sampling, with about half of the total point count locations (n = `r Pc_piedemonte`) sampled there. All other ecoregions were surveyed at `r min(Ecor_pc_no_pdm$n)` – `r max(Ecor_pc_no_pdm$n)` unique locations.\
+    Generally, point counts were conducted for 10 minutes in the morning, between sunrise and 11 AM (`r Per_bfor_11`%), recording all birds seen or heard within a 50-m fixed radius. CIPAV mbd employed a different methodology, using a 25-m radius and surveying for a variable amount of time (see `Pc_duration` in `Event_covs.csv`). GAICA Distancia did not employ a fixed point count radius, but instead estimated the distance to any bird seen or heard, and surveyed both mornings and afternoons (@tbl-datasets). Data sets also differ in the intensity with which farms were surveyed – some data sets contain fewer farms that were more heavily sampled (e.g., Unillanos mbd), whereas others surveyed many farms but with less sampling intensity (e.g., Cipav mbd; @fig-pc-farm-db). Within each farm, point counts were generally separated by 100 - 150 meters to ensure independence (but there were exceptions). Note that excluding CIPAV, all data collectors recorded whether observations were flyovers (i.e., they did not use the habitat). Please see the 'Birds_SSP_Colombia_Detailed_methodologies' document for a more detailed accounting of the methods utilized by each data collector. The Piedemonte ecoregion had the most comprehensive sampling, with about half of the total point count locations (n = `r Pc_piedemonte`) sampled there (@fig-sampling-map). All other ecoregions were surveyed at `r min(Ecor_pc_no_pdm$n)` – `r max(Ecor_pc_no_pdm$n)` unique locations.\
 
-![Each data set has bird information from point counts clustered within farms. Each point represents a farm and the x-axis conveys the number of unique point count locations at each farm. The colors correspond to the number of repeat surveys at each point count, rounded to the nearest whole number. The number of distinct farms within each data set is printed to the right of each boxplot. Note that this text is to the left of the most heavily sampled farm in the 'Unillanos mbd' and 'Ubc mbd' data sets (24 point counts) for display reasons.](../../../Figures/Pc_per_farm_db.png){#fig-pc-farm-db}
+![Each data set has bird information from point counts clustered within farms. Each point represents a farm and the x-axis conveys the number of unique point count locations at each farm. The colors correspond to the average number of repeat surveys at each point count, rounded to the nearest whole number. The number of distinct farms within each data set is printed to the right of each boxplot. Note that this text is to the left of the most heavily sampled farm in the 'Unillanos mbd' and 'Ubc mbd' data sets (24 point counts) for display reasons.](../../../Figures/Pc_per_farm_db.png){#fig-pc-farm-db}
 
 a.  Taxonomy and systematics: References for taxonomic keys, identification, and location of voucher specimens, etc.\
     \
-    We used the taxonomy used in Ayerbe’s 2018 field guide to the birds of Colombia [@ayerbe2018guia], which predominantly uses the American Ornithologists’ Society–South American Classiﬁcation Committee (AOS–SACC) taxonomy [@remsenClassificationBirdSpeciesSouth].\
+    We used the taxonomy in Ayerbe’s 2018 field guide to the birds of Colombia [@ayerbe2018guia], which predominantly uses the American Ornithologists’ Society–South American Classiﬁcation Committee (AOS–SACC) taxonomy [@remsenClassificationBirdSpeciesSouth].\
 
 b.  Permit history: References to pertinent scientific and collecting permits\
     \
-    No permits were required for birds observations.
+    No permits were required for bird observations.
 
 # Class III. Data set status and accessibility
 
@@ -566,7 +564,7 @@ Last updated on `r Sys.Date()`, version submitted
 
 ### Data verification
 
-\[ECOTROPICO\] - In collaboration with the data collectors, AAS, AH, and JH took extensive quality-control checks. Primarily, this consisted of cross-checking data collected in the field against the stated methodologies from each data set (see 'Birds_SSP_Colombia_Detailed_methodologies' file). For example, we confirmed the empirical sampling dates and times against the reported point count schedules. Additional quality assurance procedures included:
+In collaboration with the data collectors, AAS, AH, and JH took extensive quality-control checks. Primarily, this consisted of cross-checking data collected in the field against the stated methodologies from each data set (see 'Birds_SSP_Colombia_Detailed_methodologies' file). For example, we confirmed the empirical sampling dates and times against the reported point count schedules. Additional quality assurance procedures included:
 
 - Taxonomy - Species names were standardized using Ayerbe’s *Guide to the birds of Colombia* [@ayerbe2018guia] (see 'Tax_transcrip_changes.csv').
 
@@ -574,11 +572,7 @@ Last updated on `r Sys.Date()`, version submitted
 
 - Habitat verification - Descriptive habitat types were standardized and cross-referenced with Google Earth imagery to confirm correspondence; discrepancies within \<50 m were considered acceptable given potential GPS error.
 
-- Distributions - Species observations were compared against distributional ranges [@velezDistributionBirdsColombia2021] and elevational ranges [@quinteroGlobalElevationalDiversity2018; @freemanInterspecificCompetitionLimits2022; @hiltyBirdsColombia2021; @ayerbe2018guia].
-
-The location of species observed during point counts were then compared to species distribution shapefiles that contained 1890 species (\~97% of species in Colombia) to identify potential erroneous misidentifications [@velezDistributionBirdsColombia2021; @suarez-castroIntegratingMultipleData2024]. Given the strong influence that topography has on species distributions in Colombia, we also compared species' observed elevations to elevational ranges reported in [@ayerbe2018guia; @quinteroGlobalElevationalDiversity2018; @freemanInterspecificCompetitionLimits2022; @hiltyBirdsColombia2021]. All species observed outside of the species distributional range, or at an elevation \>150 meters above or below the elevational range found in the literature, were sent to the original data collector for review. Data collectors made recommendations for each species in question, falling into three categories: 1) the species identification and spatial information was correct (suggesting a range expansion), 2) the species was misidentified or wrongly transcribed and should be changed to a different species, or 3) if uncertain, the species should be removed from the database (applied by `04b_Range_apply.R`).
-
-CMK - NOTE:: CIPAV never did this exercise.
+- Distributions - Species observations were compared against distributional ranges [@velezDistributionBirdsColombia2021] and elevational ranges [@quinteroGlobalElevationalDiversity2018; @freemanInterspecificCompetitionLimits2022; @hiltyBirdsColombia2021; @ayerbe2018guia]. All species observed outside of the species distributional range, or at an elevation \>150 meters above or below the elevational range found in the literature, were sent to the original data collector for review. Data collectors made recommendations for each species in question, falling into three categories: 1) the species identification and spatial information was correct (suggesting a range expansion), 2) the species was misidentified or wrongly transcribed and should be changed to a different species, or 3) if uncertain, the species should be removed from the database (applied by `04b_Range_apply.R`).
 
 ## B. Accessibility
 
@@ -640,7 +634,7 @@ The R pipeline on [github](https://github.com/LezzGitIt/Ssp-bird-data-wrangling.
 
 Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see 'Data_joining_example.R'). The `Bird_pcs_all` and `Event_covs` data sets have the join keys `Id_survey` and `Id_survey_no_dc`. The `Site_covs` data set has the join key `Id_survey_no_dc`. The `Bird_pcs_all`, `Taxonomy`, and `Functional_traits` data sets all share the join key `Species_ayerbe`.
 
-For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird_pcs_analysis` data set because it is just a subset of `Bird_pcs_all`. Specifically, `Bird_pcs_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see 'Scripts/06_Analysis_wrangling.R'). Similarly, definitions of the join keys (`Field_names`) are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see the 'Column_definitions_final.xlsx', particularly the 'Column_content_definition' column, for additional information about variables. Within the .csv files, missing values are shown as blank cells `" "`.
+For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird_pcs_analysis` data set because it is just a subset of `Bird_pcs_all`. Specifically, `Bird_pcs_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see 'Scripts/06_Analysis_wrangling.R'). Similarly, definitions of the join keys are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see the 'Column_definitions_final.xlsx', particularly the 'Column_content_definition' column, for additional information about variables. Note that blank cells (`" "`) can mean either that the data were not applicable (e.g., when `Habitat` = 'intensive pasture', there was no `Habitat_sub` recorded), recorded only by a subset of data collectors, or are truly missing data. These are defined in the 'Column_content_definition' column.
 
 ```{r}
 #| label: Print-table-fn
@@ -721,7 +715,7 @@ Print_tbl(df = Cols_metadata_l$Bird_pcs_all, join_df = Covs_defs$Bird_pcs_all)
 
 ```{r}
 #| label: tbl-site-covs-meta
-#| tbl-cap: Metadata associated with the 'Site_covs.csv' dataset, i.e. site-specific covariates (e.g., Elevation) that do not change across surveys. The definition for 'Id_survey_no_dc' is not provided. 
+#| tbl-cap: Metadata associated with the 'Site_covs.csv' dataset, i.e. site-specific covariates that do not change across surveys. The definition for 'Id_survey_no_dc' is not provided. 
 
 
 Print_tbl(df = Cols_metadata_l$Site_covs, join_df = Covs_defs$Site_covs, 
@@ -730,7 +724,7 @@ Print_tbl(df = Cols_metadata_l$Site_covs, join_df = Covs_defs$Site_covs,
 
 ```{r}
 #| label: tbl-event-covs-meta
-#| tbl-cap: "Metadata associated with the 'Event_covs.csv' dataset, i.e. covariates related to the timing of the survey (e.g., date) or survey-specific covariates that can change across surveys (e.g., weather). The definitions for 'Id_survey', 'Id_survey_no_dc', 'Date', and 'Pc_start' are not provided."
+#| tbl-cap: "Metadata associated with the 'Event_covs.csv' dataset, i.e. covariates related to the timing of the survey or survey-specific covariates that can change across surveys (e.g., weather). The definitions for 'Id_survey', 'Id_survey_no_dc', 'Date', and 'Pc_start' are not provided."
 
 
 Print_tbl(df = Cols_metadata_l$Event_covs, join_df = Covs_defs$Event_covs,
@@ -747,7 +741,7 @@ Print_tbl(df = Cols_metadata_l$Taxonomy, join_df = Covs_defs$Taxonomy,
 
 ```{r}
 #| label: tbl-functional-traits-meta
-#| tbl-cap: "Metadata associated with the 'Functional_traits.csv' dataset. The 'Source' column gives the origin of each trait: AVONET [@tobiasAVONETMorphologicalEcological2022], BIRDBASE [@sekerciogluBIRDBASEGlobalDataset2025], @birdGenerationLengthsWorlds2020, @ayerbe2018guia, and HBW/BirdLife checklist. See the 'Metadata' tab of the 'AVONET1_BirdLife.xlsx' for detailed definitions of the AVONET fields. The definition for 'Species_ayerbe' is not provided."
+#| tbl-cap: "Metadata associated with the 'Functional_traits.csv' dataset. The 'Source' column provides the origin of each trait: AVONET [@tobiasAVONETMorphologicalEcological2022], BIRDBASE [@sekerciogluBIRDBASEGlobalDataset2025], @birdGenerationLengthsWorlds2020, @ayerbe2018guia, and HBW/BirdLife checklist. See the 'Metadata' tab of the 'AVONET1_BirdLife.xlsx' for detailed definitions of the AVONET fields. The definition for 'Species_ayerbe' is not provided."
 
 Print_tbl(df = Cols_metadata_l$Functional_traits,
           join_df = Covs_defs$Functional_traits,
@@ -757,7 +751,7 @@ Print_tbl(df = Cols_metadata_l$Functional_traits,
 
 ## C. Data anomalies:
 
-Given the diverse set of data collectors and the lack of a standardized methodology, there may be small inconsistencies throughout the dataset. We have taken every step in our power to resolve and document these inconsistencies.
+We have taken every step in our power to resolve and document inconsistencies throughout the dataset; we acknowledge that some may still exist, and ask that you notify the corresponding author if any are found.
 
 # Class V. Supplemental descriptors
 
