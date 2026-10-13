@@ -22,9 +22,9 @@ Bird_pcs_analysis1 <- Bird_pcs_dist %>%
   mutate(Count = ifelse(is.na(Count), 1, Count))
 
 # Remove recordings ---------------------------------------------------------
-# Given the inconsistent effort, remove birds that were only identified in recording
+# Given the inconsistent effort, remove birds identified from the recording (Y), including those also noted in the field, since continuous recording made their identification possible; field detections (In field, Cf) stay
 Bird_pcs_analysis2 <- Bird_pcs_analysis1 %>% 
-  filter(is.na(Recording) | Recording == "Cf")
+  filter(is.na(Recording) | Recording != "Y")
 
 # Remove flyovers ---------------------------------------------------------
 # NOTE: CIPAV did not record information on flyovers (sobrevuelos). Thus we cannot exclude the possibility that a species flew over the observer and was included in the data set, despite NOT using the habitat. 

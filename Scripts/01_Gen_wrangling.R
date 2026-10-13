@@ -405,7 +405,7 @@ Grabaciones_natalia_l <- map2(files, Site_names, \(file_name, sites){
            Recording_nat = Grabacion,   # RHS is the raw header in the Natalia recordings xlsx
            Confiabilidad_nat = Confiabilidad_de_grabacion,
            Nombre_cientifico_final = Nombre_cientifico_final_ayerbe_2018) %>%
-    replace_with_na_at(.vars = "Count", condition = ~.x == "N/A") %>%
+    replace_with_na_at(.vars = "Count_nat", condition = ~.x == "N/A") %>%
     # Format for easy join in next step
     mutate(Date = lubridate::mdy(paste(Mes, Dia, Ano, sep = "/")),
            Date = as.Date(Date),
@@ -414,6 +414,13 @@ Grabaciones_natalia_l <- map2(files, Site_names, \(file_name, sites){
            }),
            Hora = as_hms(Hora),
            Count_nat = as.numeric(Count_nat),
+           # Natalia's sheets drop the collector prefix ("G-MB-Q-PORT_03") or the whole stem ("OQ_01"), so rebuild the field database's Id_survey; without this the join below matches no rows
+           Id_survey = case_when(
+             str_starts(Id_survey, "G-") ~ str_replace(Id_survey, "^G-", "UBCG-"),
+             str_starts(Id_survey, "OQ_") ~ paste0("UBCG-MB-R-", Id_survey),
+             .default = Id_survey
+           ),
+           Recording_nat = str_to_sentence(Recording_nat), # a few entered as lower-case "y"
            Distance_bird_nat = if_else(
              is.na(Distance_bird_nat), "<50", ">50")
     ) %>% 
@@ -426,13 +433,16 @@ Grabaciones_natalia_l2 <- map(Grabaciones_natalia_l, \(df){
   df %>% filter(!Nombre_cientifico_final %in% Rm_non_spp)
 })
 
-# Remove duplicate records in Natalia's Excel that are causing problems in the join below. This is OK because I ensured that all the correct information is already in the Recording column of the primary database.
+# Keep one row per detection so the join below cannot duplicate field rows; where Natalia entered a species twice in one count, keep the row with a count
 Grabaciones_natalia_l3 <- map(Grabaciones_natalia_l2, \(df){
-  rm_to_facilitate_join <- df %>% 
-    count(Date, Id_survey, Nombre_cientifico_final, sort = T) %>% 
-    filter(n > 1)
-  df %>% anti_join(rm_to_facilitate_join)
+  df %>%
+    arrange(is.na(Count_nat)) %>%
+    distinct(Date, Id_survey, Nombre_cientifico_final, .keep_all = TRUE)
 })
+
+# Myiarchus cephalotes at OQ_09 (2024-06-04) is in Natalia's sheet only and is not in the field notes (Word document), so it is not a confirmed detection
+Grabaciones_natalia_l3[[2]] <- Grabaciones_natalia_l3[[2]] %>%
+  filter(!(Id_survey == "UBCG-MB-R-OQ_09" & Nombre_cientifico_final == "Myiarchus cephalotes"))
 
 # Format, join with bird database  
 df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")] <- map2(
@@ -447,14 +457,43 @@ df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")] <- map2(
     birds %>% full_join(rec_join) %>% 
       # Add the new data from Natalia's dataset
       mutate(
-        Distance_bird = coalesce(Distance_bird, Distance_bird_nat),
+        # Natalia's "<50" is inferred (she flagged only birds that sounded >50 m), so it is not applied to flyovers, which have no distance
+        Distance_bird = if_else(is.na(Distance_bird) & !Obs_type %in% "Sobrevuelo", Distance_bird_nat, Distance_bird),
         Recording = coalesce(Recording, Recording_nat),
         Confiabilidad_de_grabacion = coalesce(Confiabilidad_de_grabacion,
                                               Confiabilidad_nat)
       ) %>% 
-      # Remove Natalia's rows 
+      # Remove Natalia's rows
       select(-ends_with("nat"))
   })
+
+# The Myiothlypis coronata at PORT_02 on 2024-05-30 identified only from the recording (no count) is a recorded bird (Y), not a confirmation (Cf) of a field detection; the field detection of the same species in that count keeps its Cf
+df_birds_red$Ubc_gaica_Caf <- df_birds_red$Ubc_gaica_Caf %>%
+  mutate(Recording = if_else(
+    str_ends(Id_survey, "MB-Q-PORT_02") & Date == as.Date("2024-05-30") & Nombre_cientifico_final == "Myiothlypis coronata" & is.na(Count),
+    "Y", Recording
+  ))
+
+# Natalia's recording-only detections with no field row (3 at PORT, confirmed against the field notes) arrive from the full_join with only the join keys and her columns; give them their point count's survey-level fields (protocol, location, farm, observers, start time, ...) from the field rows of the same count, and record them as heard
+Species_level_cols <- c("Orden", "Familia", "Nombre_cientifico_final", "Autoria_nombre_cientifico", "Count", "Obs_type", "Distance_bird", "Recording", "Observacion_de_grabacion", "Confiabilidad_de_grabacion", "Hora")
+df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")] <- map(df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")], \(df){
+  survey_cols <- setdiff(names(df), c(Species_level_cols, "Id_survey", "Date"))
+  df %>%
+    mutate(Recording_only = is.na(Protocolo_muestreo)) %>%
+    group_by(Id_survey, Date) %>%
+    mutate(
+      across(all_of(survey_cols), \(x) if_else(Recording_only, first(x[!Recording_only]), x)),
+      Hora = if_else(Recording_only, min(Hora[!Recording_only]), Hora),
+      Obs_type = if_else(Recording_only, "Auditivo", Obs_type)
+    ) %>%
+    ungroup() %>%
+    select(-Recording_only)
+})
+
+# Recordings were reviewed for every UBC-GAICA Eje cafetero point count, so a detection with neither Cf nor Y was identified in the field only; label it so a blank Recording means the dataset made no recordings
+df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")] <- map(df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")], \(df){
+  df %>% mutate(Recording = coalesce(Recording, "In field"))
+})
 
 ## TESTING - HERE
 # Anti-join to see where the mismatches are 
