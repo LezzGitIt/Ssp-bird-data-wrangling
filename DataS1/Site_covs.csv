@@ -439,14 +439,14 @@ MB-R-OQ_06,,Eje cafetero,Risaralda,-75.5334,4.7008,MB-R-OQ,"Vereda la suiza, cor
 MB-R-OQ_07,,Eje cafetero,Risaralda,-75.5311,4.6999,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2139,14.7,1957,Bosque,Maduro
 MB-R-OQ_08,,Eje cafetero,Risaralda,-75.5287,4.6996,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2148,14.7,1957,Bosque,Maduro
 MB-R-OQ_09,,Eje cafetero,Risaralda,-75.5268,4.699,MB-R-OQ,"Vereda la suiza, corregimiento de la florida",,3,2166,14.7,1957,Bosque,Maduro
-MB-VC-EH_05,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3142,3.6411,MB-VC-EH,El hatico,,4,1009,23.342,1458,Ssp,Arboles dispersos
-MB-VC-EH_06,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3152,3.6428,MB-VC-EH,El hatico,,3,1003,23.333,1406,Ssp,Cerca viva
-MB-VC-EH_07,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3196,3.6431,MB-VC-EH,El hatico,,3,997,23.35,1466,Ssp,Intensivo
-MB-VC-EH_08,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3228,3.6448,MB-VC-EH,El hatico,,3,996,23.35,1466,Ssp,Arboles dispersos
-MB-VC-EH_09,Ref_El hatico,Eje cafetero,Valle del cauca,-76.325,3.6425,MB-VC-EH,El hatico,,3,1011,23.375,1411,Bosque,Maduro
-MB-VC-EH_10,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3251,3.641,MB-VC-EH,El hatico,,3,1001,23.367,1463,Bosque,Secundario
-MB-VC-EH_11,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3262,3.6419,MB-VC-EH,El hatico,,3,1005,23.375,1411,Bosque,Maduro
-MB-VC-EH_12,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3268,3.6436,MB-VC-EH,El hatico,,2,991,23.375,1411,Bosque,Secundario
+MB-VC-EH_05,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3142,3.6411,MB-VC-EH,El hatico,0,4,1009,23.342,1458,Ssp,Arboles dispersos
+MB-VC-EH_06,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3152,3.6428,MB-VC-EH,El hatico,0,3,1003,23.333,1406,Ssp,Cerca viva
+MB-VC-EH_07,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3196,3.6431,MB-VC-EH,El hatico,0,3,997,23.35,1466,Ssp,Intensivo
+MB-VC-EH_08,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3228,3.6448,MB-VC-EH,El hatico,0,3,996,23.35,1466,Ssp,Arboles dispersos
+MB-VC-EH_09,Ref_El hatico,Eje cafetero,Valle del cauca,-76.325,3.6425,MB-VC-EH,El hatico,0,3,1011,23.375,1411,Bosque,Maduro
+MB-VC-EH_10,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3251,3.641,MB-VC-EH,El hatico,0,3,1001,23.367,1463,Bosque,Secundario
+MB-VC-EH_11,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3262,3.6419,MB-VC-EH,El hatico,0,3,1005,23.375,1411,Bosque,Maduro
+MB-VC-EH_12,Ref_El hatico,Eje cafetero,Valle del cauca,-76.3268,3.6436,MB-VC-EH,El hatico,0,2,991,23.375,1411,Bosque,Secundario
 MB-M-A_01,1734,Piedemonte,Meta,-73.8067,3.8105,MB-M-A,Andorra,1133,11,530,24.742,3611,Ssp,Arboles dispersos
 MB-M-A_02,1734,Piedemonte,Meta,-73.8085,3.8096,MB-M-A,Andorra,1282,11,530,24.692,3869,Pastizales,
 MB-M-A_03,1734,Piedemonte,Meta,-73.8104,3.8091,MB-M-A,Andorra,1218,11,534,24.692,3869,Ssp,Cerca viva
