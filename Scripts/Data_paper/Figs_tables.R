@@ -770,58 +770,102 @@ print(Pc_per_farm_db_p)
 # Data sets ---------------------------------------------------------------
 # >Metadata tbls -----------------------------------------------------------
 ### Summarize one column's contents for the metadata tables, as a single string.
-## Numeric / date / time columns give "min – max"; logical columns give both values; a short categorical gives its sorted level list; anything longer (including identifier / name columns, e.g. the Taxonomy crosswalk) gives "<n> distinct" plus a missing count when relevant -- for those the full level list lives in the xlsx 'Column_content_definition'.
-summarize_values <- function(col_data){
+## Numeric / date / time columns give "min – max"; logical columns give both values; a short categorical gives its sorted level list; anything longer (including identifier / name columns, e.g. the Taxonomy crosswalk) gives "<n> distinct" -- for those the full level list lives in the xlsx 'Column_content_definition'.
+## Empty cells are then split three ways, using the row-level rules in Blank_rules below: "NA (n)" when the column does not apply to that row, "not recorded (n)" when a dataset (or dataset-year) systematically did not record the variable, and "missing (n)" when it was generally recorded but is absent for that row. All three are blank in the csv, so the xlsx definitions say which is which.
+summarize_values <- function(col_data, not_applicable = rep(FALSE, length(col_data)), not_recorded = rep(FALSE, length(col_data))){
   non_na <- col_data[!is.na(col_data)]
   if (length(non_na) == 0) return(NA_character_)
-  if (inherits(col_data, "hms")) {
+  blank <- is.na(col_data)
+  n_na <- sum(blank & not_applicable)
+  n_not_rec <- sum(blank & !not_applicable & not_recorded)
+  n_missing <- sum(blank & !not_applicable & !not_recorded)
+  blank_txt <- paste0(
+    if (n_na > 0) paste0(", NA (", n_na, ")") else "",
+    if (n_not_rec > 0) paste0(", not recorded (", n_not_rec, ")") else "",
+    if (n_missing > 0) paste0(", missing (", n_missing, ")") else ""
+  )
+  values <- if (inherits(col_data, "hms")) {
     # range() drops the hms class, so take the numeric span and rebuild the clock string
-    return(paste(as.character(hms::as_hms(range(as.numeric(non_na)))), collapse = " – "))
-  }
-  if (inherits(col_data, "Date") || inherits(col_data, "POSIXct")) {
-    return(paste(as.character(range(non_na)), collapse = " – "))
-  }
-  if (is.numeric(col_data)) {
-    return(paste(round(range(non_na), 2), collapse = " – "))
-  }
-  if (is.logical(col_data)) return("FALSE, TRUE")
-  categories <- sort(unique(as.character(non_na)))
-  n_missing <- sum(is.na(col_data))
-  if (length(categories) <= 8 && sum(nchar(categories)) <= 60) {
-    paste(categories, collapse = ", ")
+    paste(as.character(hms::as_hms(range(as.numeric(non_na)))), collapse = " – ")
+  } else if (inherits(col_data, "Date") || inherits(col_data, "POSIXct")) {
+    paste(as.character(range(non_na)), collapse = " – ")
+  } else if (is.numeric(col_data)) {
+    paste(round(range(non_na), 2), collapse = " – ")
+  } else if (is.logical(col_data)) {
+    "FALSE, TRUE"
   } else {
-    paste0(length(categories), " distinct",
-           if (n_missing > 0) paste0(", ", n_missing, " missing") else "")
+    categories <- sort(unique(as.character(non_na)))
+    if (length(categories) <= 8 && sum(nchar(categories)) <= 60) paste(categories, collapse = ", ") else paste0(length(categories), " distinct")
   }
+  paste0(values, blank_txt)
 }
 
-## Column-by-column metadata for one dataset: field name, data type, and contents.
-extract_metadata <- function(df){
+## Data type as a reader would describe it: read_csv() stores every number as "numeric", so the columns that can only take whole numbers (counts, indices, calendar parts) are named explicitly and reported as "integer"; measurements that happen to be rounded (e.g. Elev, Distance_farm) stay "numeric".
+Integer_cols <- c("Count", "N_visits", "Year", "Month", "Day", "Julian_day", "N_samp_periods", "N_reps", "Rep_year_grp", "Rep_season", "Sampling_day", "Total.individuals", "Diet_breadth", "Habitat_breadth")
+data_type_label <- function(col_data, col_name, integer_cols = Integer_cols){
+  if (is.numeric(col_data) && col_name %in% integer_cols) return("integer")
+  class(col_data)[1]
+}
+
+## Why a cell is empty: per column, an 'na' rule (the column does not apply to that row) and/or a 'not_recorded' rule (the dataset never recorded it), each a function of the (context-joined) table returning TRUE for the rows it covers. Empty cells matching neither rule are missing.
+Recorded_dbs <- c("Ubc mbd", "Ubc gaica mbd") # the only datasets that recorded Noise and Cows_50m
+Blank_rules <- list(
+  Bird_pcs_all = list(
+    Count = list(na = \(d) d$Recording %in% "Y"),  # detected only in the recording, so never counted in the field
+    Distance_bird = list(na = \(d) d$Obs_type %in% "Sobrevuelo"),  # flyovers: no distance estimated (GAICA mbd 2013, UBC-GAICA)
+    Recording = list(not_recorded = \(d) !(d$Uniq_db %in% "Ubc gaica mbd" & d$Ecoregion %in% "Eje cafetero")),  # recordings were made and reviewed only for UBC-GAICA 2024 in the Eje cafetero
+    Obs_type = list(not_recorded = \(d) d$Uniq_db %in% "Cipav mbd")  # CIPAV did not record how birds were detected
+  ),
+  Site_covs = list(
+    Id_scr = list(na = \(d) d$Id_group_no_dc %in% "MB-R-OQ"),  # Otun Quimbaya reserve: not a farm
+    Distance_farm = list(na = \(d) d$Id_group_no_dc %in% "MB-R-OQ"),
+    Habitat_sub = list(na = \(d) d$Habitat %in% c("Cultivos", "Mosaic", "Pastizales"))  # subtypes exist only for forest and silvopasture
+  ),
+  Event_covs = list(
+    Noise = list(not_recorded = \(d) !d$Uniq_db %in% Recorded_dbs),
+    Cows_50m = list(not_recorded = \(d) !d$Uniq_db %in% Recorded_dbs),
+    Weather = list(not_recorded = \(d) d$Uniq_db %in% c("Cipav mbd", "Gaica mbd"))  # the two datasets that never recorded weather
+  ),
+  Taxonomy = list(
+    Species_sacc_18 = list(na = \(d) d$Species_ayerbe %in% "Setophaga pinus"),  # not in the SACC 2018 checklist
+    concept_id_sacc = list(na = \(d) d$Species_ayerbe %in% "Setophaga pinus")
+  )
+)
+
+## Column-by-column metadata for one dataset: field name, data type, and contents. 'context' adds columns that the blank rules need but the dataset lacks (e.g. Uniq_db for bird rows); it must be row-aligned with df.
+extract_metadata <- function(df, blank_rules = list(), context = df){
+  apply_rule <- \(rule) if (is.null(rule)) rep(FALSE, nrow(df)) else rule(context)
   map_dfr(names(df), function(col_name) {
     col_data <- df[[col_name]]
+    rules <- blank_rules[[col_name]]
     tibble(
       Field_name = col_name,
-      Data_type = class(col_data)[1],
-      Values = summarize_values(col_data)
+      Data_type = data_type_label(col_data, col_name),
+      Values = summarize_values(col_data, apply_rule(rules$na), apply_rule(rules$not_recorded))
     )
   })
 }
 
 ### Create metadata tbls
-## Primary point-count file
-Bird_pcs_all_meta <- Bird_pcs_all %>% extract_metadata()
+## Site covariates, the deposit as written (Site_covs above carries display names for the figures)
+Site_covs_raw <- read_csv("DataS1/Site_covs.csv", show_col_types = FALSE)
+Site_covs_meta <- extract_metadata(Site_covs_raw, Blank_rules$Site_covs)
 
-## Site covariates
-Site_covs_meta <- extract_metadata(read_csv("DataS1/Site_covs.csv", show_col_types = FALSE)) # the deposit as written (Site_covs above carries display names for the figures)
+## Primary point-count file; the blank rules need each detection's dataset and ecoregion
+Bird_context <- Bird_pcs_all %>%
+  left_join(distinct(Event_covs, Id_survey, Date, Pc_start, Uniq_db), by = c("Id_survey", "Date", "Pc_start")) %>%
+  left_join(distinct(Site_covs_raw, Id_survey_no_dc, Ecoregion), by = "Id_survey_no_dc")
+stopifnot(nrow(Bird_context) == nrow(Bird_pcs_all))
+Bird_pcs_all_meta <- extract_metadata(Bird_pcs_all, Blank_rules$Bird_pcs_all, Bird_context)
 
 ## Taxonomy file
-Taxonomy_meta <- extract_metadata(Taxonomy)
+Taxonomy_meta <- extract_metadata(Taxonomy, Blank_rules$Taxonomy)
 
 ## Functional traits
 Fn_traits_meta <- Fn_traits %>% extract_metadata() 
 
 ## Event covariates 
-Event_covs_meta <- Event_covs %>% extract_metadata() 
+Event_covs_meta <- extract_metadata(Event_covs, Blank_rules$Event_covs)
 
 ## Create column metadata list
 Cols_metadata_l <- list(Bird_pcs_all = Bird_pcs_all_meta, Site_covs = Site_covs_meta, Event_covs = Event_covs_meta, Taxonomy = Taxonomy_meta, Functional_traits = Fn_traits_meta)
