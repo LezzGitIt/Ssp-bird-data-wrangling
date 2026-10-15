@@ -576,7 +576,7 @@ Questionable identifications are noted in `Spp_remove_change.csv`, and the comme
 
 Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see 'Data_joining_example.R'). The `Bird_pcs_all` and `Event_covs` data sets have the join keys `Id_survey` and `Id_survey_no_dc`. The `Site_covs` data set has the join key `Id_survey_no_dc`. The `Bird_pcs_all`, `Taxonomy`, and `Functional_traits` data sets all share the join key `Species_ayerbe`.
 
-For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird_pcs_analysis` data set because it shares the columns of `Bird_pcs_all`. Specifically, `Bird_pcs_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see 'Scripts/06_Analysis_wrangling.R'), with the range decisions in `Spp_remove_change` applied (see Quality assurance/quality control procedures). Similarly, definitions of the join keys are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see the 'Column_definitions_final.xlsx', particularly the 'Column_content_definition' column, for additional information about variables. Note that blank cells (`" "`) can mean either that the data were not applicable (e.g., when `Habitat` = 'intensive pasture', there was no `Habitat_sub` recorded), recorded only by a subset of data collectors, or are truly missing data. These are defined in the 'Column_content_definition' column.
+For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird_pcs_analysis` data set because it shares the columns of `Bird_pcs_all`. Specifically, `Bird_pcs_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see 'Scripts/06_Analysis_wrangling.R'), with the range decisions in `Spp_remove_change` applied (see Quality assurance/quality control procedures). Similarly, definitions of the join keys are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see 'Column_definitions.csv', particularly the 'Column_content_definition' column, for additional information about variables. Note that blank cells (`" "`) can mean either that the data were not applicable (e.g., when `Habitat` = 'intensive pasture', there was no `Habitat_sub` recorded), recorded only by a subset of data collectors, or are truly missing data. These are defined in the 'Column_content_definition' column.
 
 ```{r}
 #| label: Print-table-fn
@@ -637,12 +637,11 @@ Print_tbl <- function(df, join_df = NULL, remove_field = NULL, drop_datatype = F
 ```{r}
 #| label: Load-defs
 
-path <- "DataS1/Column_definitions_final.xlsx"
-Sheet_names <- excel_sheets(path)
-Covs_defs <- map(excel_sheets(path), \(sheet){
-  read_excel(path = path, sheet = sheet) %>% select(-Column_content_definition)
-})
-names(Covs_defs) <- Sheet_names
+# One data frame of definitions per table; Source is filled only for Functional_traits, so all-empty columns are dropped
+Covs_defs <- read_csv("DataS1/Column_definitions.csv", col_types = cols(.default = col_character())) %>%
+  select(-Column_content_definition) %>%
+  split(~Table) %>%
+  map(\(df) df %>% select(-Table) %>% select(where(\(x) !all(is.na(x)))))
 
 # Bring in metadata list
 Cols_metadata_l <- readRDS("Rdata/Cols_metadata_l.rds")

@@ -17,7 +17,7 @@ The project uses data from 500+ unique point count locations surveyed 2013–202
 | `Taxonomy.csv` | SACC ↔ BirdLife ↔ eBird ↔ BirdTree crosswalk (Colombia) | `Species_ayerbe` |
 | `Functional_traits.csv` | per-species trait table | `Species_ayerbe` |
 | `Spp_remove_change.csv` | curated range-review decisions: species removed or reassigned, optionally by department / elevation (applied to `Bird_pcs_analysis.csv` only; `Bird_pcs_all.csv` keeps the original identifications) | `Species_ayerbe` |
-| `Column_definitions_final.xlsx` | column definitions for each table (one sheet per table) |  |
+| `Column_definitions.csv` | column definitions for every table (one row per column; `Table` names the file) |  |
 | `EXPORT_manifest.txt` | when the deposit was exported, from which pipeline commit, and the row count of each file |  |
 
 `Scripts/Data_paper/Data_joining_example.R` shows how the `DataS1/` tables join — a starting point, to be adapted to your own analysis. `Scripts/06_Analysis_wrangling.R` documents how `Bird_pcs_analysis.csv` was derived from the full observation set.

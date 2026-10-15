@@ -6,7 +6,7 @@
 ## The pipeline writes English headers, so this step is mostly a freeze-into-place. It also validates every header against Suppfiles/column_names.csv (run Translate_column_names.R to refresh that). A Spanish-headed deposit is deferred; Translate_column_names.R still carries the machinery.
 
 ## Run this AFTER a full pipeline run (Scripts/01_ .. 06_). Column selection / ordering happen in each script's export section.
-## Column_definitions_final.xlsx is hand-maintained and is NOT overwritten here.
+## Column_definitions.csv is hand-maintained and is NOT overwritten here.
 
 # Setup -----------------------------------------------------------------------
 library(readr)
