@@ -1,6 +1,6 @@
 DataS1 export manifest
-exported_at: 2026-10-13T10:18:05-0700
-pipeline_commit: 54c5e52
+exported_at: 2026-10-15T11:13:23-0700
+pipeline_commit: f3d9a0e
 headers: English
 
 file,source,rows
@@ -10,3 +10,4 @@ Event_covs.csv,Derived/Excels/Event_covs.csv,2999
 Functional_traits.csv,Derived/Excels/Traits/Functional_traits.csv,587
 Site_covs.csv,Derived/Excels/Site_covs.csv,504
 Taxonomy.csv,Derived/Excels/Taxonomy/Taxonomy.csv,591
+Spp_remove_change.csv,Derived/Excels/Spp_remove_change.csv,33

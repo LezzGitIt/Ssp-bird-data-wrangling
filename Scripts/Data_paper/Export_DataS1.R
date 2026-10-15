@@ -1,7 +1,7 @@
 ## PhD birds in silvopastoral landscapes ##
-## Build the DataS1 deposit -- copy the six curated pipeline outputs from Derived/Excels/ into the tracked DataS1/ folder, plus a provenance manifest.
+## Build the DataS1 deposit -- copy the six curated pipeline outputs and the curated range-decision list from Derived/Excels/ into the tracked DataS1/ folder, plus a provenance manifest.
 
-## DataS1/ holds only the final deposit tables; mid-pipeline artifacts that a reader can reproduce from the pipeline (e.g. Bird_pcs_dist.csv, the range-screening step) are deliberately excluded.
+## DataS1/ holds only the final deposit tables; mid-pipeline artifacts that a reader can reproduce from the pipeline (e.g. Bird_pcs_dist.csv, the 04a range-screening outputs) are deliberately excluded. The hand-curated range decisions (Spp_remove_change.csv) are included because they cannot be regenerated: Bird_pcs_all.csv keeps the original identifications, and flag_range_decisions() (Scripts/Pipeline_fns.R) applies the list to reproduce Bird_pcs_analysis.csv.
 
 ## The pipeline writes English headers, so this step is mostly a freeze-into-place. It also validates every header against Suppfiles/column_names.csv (run Translate_column_names.R to refresh that). A Spanish-headed deposit is deferred; Translate_column_names.R still carries the machinery.
 
@@ -20,7 +20,8 @@ source_paths <- c(
   Event_covs        = "Derived/Excels/Event_covs.csv",                  # 05_wvsc
   Functional_traits = "Derived/Excels/Traits/Functional_traits.csv",    # 03
   Site_covs         = "Derived/Excels/Site_covs.csv",                   # 01
-  Taxonomy          = "Derived/Excels/Taxonomy/Taxonomy.csv"            # 02
+  Taxonomy          = "Derived/Excels/Taxonomy/Taxonomy.csv",           # 02
+  Spp_remove_change = "Derived/Excels/Spp_remove_change.csv"            # hand-curated from the 04a review; applied by 04b
 )
 crosswalk_path <- "Suppfiles/column_names.csv"
 

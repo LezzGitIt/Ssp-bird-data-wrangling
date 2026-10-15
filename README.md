@@ -11,11 +11,12 @@ The project uses data from 500+ unique point count locations surveyed 2013–202
 | File | Contents | Join keys |
 |----|----|----|
 | `Bird_pcs_all.csv` | every point-count observation | `Id_survey`, `Id_survey_no_dc`, `Species_ayerbe` |
-| `Bird_pcs_analysis.csv` | analysis-ready subset (50 m radius, used the habitat) | same |
+| `Bird_pcs_analysis.csv` | analysis-ready subset (50 m radius, used the habitat, range decisions applied) | same |
 | `Event_covs.csv` | per-survey covariates (e.g., date, time, observer) | `Id_survey`, `Id_survey_no_dc` |
 | `Site_covs.csv` | per-location covariates (elevation, climate, etc.) | `Id_survey_no_dc` |
 | `Taxonomy.csv` | SACC ↔ BirdLife ↔ eBird ↔ BirdTree crosswalk (Colombia) | `Species_ayerbe` |
 | `Functional_traits.csv` | per-species trait table | `Species_ayerbe` |
+| `Spp_remove_change.csv` | curated range-review decisions: species removed or reassigned, optionally by department / elevation (applied to `Bird_pcs_analysis.csv` only; `Bird_pcs_all.csv` keeps the original identifications) | `Species_ayerbe` |
 | `Column_definitions_final.xlsx` | column definitions for each table (one sheet per table) |  |
 | `EXPORT_manifest.txt` | when the deposit was exported, from which pipeline commit, and the row count of each file |  |
 
@@ -33,11 +34,11 @@ On publication, the versioned deposit of record (with a DOI) will be archived on
 | `02_Taxonomy.R` | `Taxonomy.csv`, taxonomy-standardized observations |
 | `03_FT_elev.R` | `Functional_traits.csv`, elevational ranges |
 | `04a_Range_screening.R` | elevational + distributional range screening → review Excels + PDF maps (heavy geospatial; run only to refresh the review) |
-| `04b_Range_apply.R` | applies the curated remove/change list → `Bird_pcs_dist.csv` (intermediate) |
+| `04b_Range_apply.R` | applies the curated remove/change list (`Spp_remove_change.csv`) → `Bird_pcs_dist.csv` (intermediate) |
 | `05_wvsc.R` | woody-vegetation canopy cover + height, added to `Event_covs.csv` |
 | `06_Analysis_wrangling.R` | `Bird_pcs_analysis.csv` |
 
-`Scripts/Data_paper/Phylogeny_fig.R` prunes the BirdTree phylogeny and builds the phylogeny figure + `Tax_summary.csv`. `Scripts/Data_paper/Data_paper_fns.R` holds helpers shared by `Figs_tables.R` and the manuscript (e.g. the ecoregion display names: the data store `Eje cafetero`, the paper shows *Eje Cafetero*).
+`Scripts/Pipeline_fns.R` holds `flag_range_decisions()`, which applies `Spp_remove_change.csv` to the observations, so readers can reproduce the range corrections from `DataS1/` alone. `Scripts/Data_paper/Phylogeny_fig.R` prunes the BirdTree phylogeny and builds the phylogeny figure + `Tax_summary.csv`. `Scripts/Data_paper/Data_paper_fns.R` holds helpers shared by `Figs_tables.R` and the manuscript (e.g. the ecoregion display names: the data store `Eje cafetero`, the paper shows *Eje Cafetero*).
 
 ## Reproducing the manuscript
 

@@ -7,7 +7,7 @@ Date,Date,Fecha,Bird_pcs_all; Bird_pcs_analysis; Event_covs
 Id_survey,Id_survey,Id_muestreo,Bird_pcs_all; Bird_pcs_analysis; Event_covs
 Pc_start,Pc_start,,Bird_pcs_all; Bird_pcs_analysis; Event_covs
 Id_survey_no_dc,Id_survey_no_dc,,Bird_pcs_all; Bird_pcs_analysis; Event_covs; Site_covs
-Species_ayerbe,Species_ayerbe,,Bird_pcs_all; Bird_pcs_analysis; Functional_traits; Taxonomy
+Species_ayerbe,Species_ayerbe,,Bird_pcs_all; Bird_pcs_analysis; Functional_traits; Spp_remove_change; Taxonomy
 Canopy_cover,Canopy_cover,,Event_covs
 Canopy_height_m,Canopy_height_m,,Event_covs
 Cows_50m,Cows_50m,,Event_covs
@@ -79,6 +79,12 @@ Lat,Lat,,Site_covs
 Long,Long,,Site_covs
 N_visits,N_visits,,Site_covs
 Tot_prec,Tot_prec,,Site_covs
+Decision,Decision,,Spp_remove_change
+Departments_affected,Departments_affected,,Spp_remove_change
+Elev_max,Elev_max,,Spp_remove_change
+Notes,Notes,,Spp_remove_change
+Reviewer,Reviewer,,Spp_remove_change
+Species_changed,Species_changed,,Spp_remove_change
 Family,Family,,Taxonomy
 Order,Order,,Taxonomy
 Species_avilist_25,Species_avilist_25,,Taxonomy

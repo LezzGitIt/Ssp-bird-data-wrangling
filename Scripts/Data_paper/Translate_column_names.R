@@ -25,7 +25,8 @@ deposit_source <- c(
   Event_covs        = "Derived/Excels/Event_covs.csv",
   Site_covs         = "Derived/Excels/Site_covs.csv",
   Taxonomy          = "Derived/Excels/Taxonomy/Taxonomy.csv",
-  Functional_traits = "Derived/Excels/Traits/Functional_traits.csv"
+  Functional_traits = "Derived/Excels/Traits/Functional_traits.csv",
+  Spp_remove_change = "Derived/Excels/Spp_remove_change.csv"
 )
 
 # Current headers of every deposit table -----------------------------------
