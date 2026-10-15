@@ -66,7 +66,7 @@ Data <- map(File_names, \(sheet){
 names(Data) <- str_remove(File_names, ".csv")
 
 # Load functions
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
+source("Scripts/Pipeline_fns.R") # Cap_snake(); flag_range_decisions() for the QA/QC counts
 source("Scripts/Data_paper/Data_paper_fns.R") # ecoregion_label(): data values -> display names
 
 # Emit a table for whichever format is rendering. `latex_fn` receives the data frame and

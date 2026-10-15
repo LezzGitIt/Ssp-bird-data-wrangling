@@ -52,7 +52,7 @@ conflicts_prefer(hms::hms)
 
 # Load Rdata & useful themes / functions script
 # load("Rdata/the_basics_02.27.25.Rdata")
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
+source("Scripts/Pipeline_fns.R") # shared helpers (Cap_snake, standardize_column_contents, Na_rows_cols, ...)
 
 # Load bird obs & meta data ---------------------------------------------------
 files <- list.files(path = "Data/Aves", pattern = "^A.*xlsx$") # Add |D after A if you want Monroy/Skinner data too

@@ -39,7 +39,7 @@ Site_covs <- read_csv(file = "DataS1/Site_covs.csv")
 Event_covs <- read_csv(file = "DataS1/Event_covs.csv")
 Prec_df <- read_csv(file = "Derived/Excels/Prec_df.csv")
 
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
+source("Scripts/Pipeline_fns.R") # mround(), theme_min()
 source("Scripts/Data_paper/Data_paper_fns.R")
 
 # Every figure shows the ecoregions by their display names (Eje Cafetero, Río Cesar, ...), so convert them once here; code below filters on display names
@@ -898,7 +898,7 @@ Pc_locs_sf %>%
   geom_text(aes(x = Cubarral_coords[1], y = Cubarral_coords[2]), 
             label = "Cubarral", nudge_x = 0.016, nudge_y = -0.004, 
             size = 4, fontface = "bold") +  # Add label near Cubarral
-  theme_min #+
+  theme_min() #+
 #guides(color = "none")
 
 #In new iteration Pc_locs_sf is just from point counts, so would have to change this out to a different data frame

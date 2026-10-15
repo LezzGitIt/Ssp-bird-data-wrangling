@@ -38,7 +38,7 @@ On publication, the versioned deposit of record (with a DOI) will be archived on
 | `05_wvsc.R` | woody-vegetation canopy cover + height, added to `Event_covs.csv` |
 | `06_Analysis_wrangling.R` | `Bird_pcs_analysis.csv` |
 
-`Scripts/Pipeline_fns.R` holds `flag_range_decisions()`, which applies `Spp_remove_change.csv` to the observations, so readers can reproduce the range corrections from `DataS1/` alone. `Scripts/Data_paper/Phylogeny_fig.R` prunes the BirdTree phylogeny and builds the phylogeny figure + `Tax_summary.csv`. `Scripts/Data_paper/Data_paper_fns.R` holds helpers shared by `Figs_tables.R` and the manuscript (e.g. the ecoregion display names: the data store `Eje cafetero`, the paper shows *Eje Cafetero*).
+`Scripts/Pipeline_fns.R` holds helpers shared by the pipeline, the figure scripts and the manuscript (column-name and value standardization, a missing-value check, `mround()`, `theme_min()`) — and `flag_range_decisions()`, which applies `Spp_remove_change.csv` to the observations, so readers can reproduce the range corrections from `DataS1/` alone. `Scripts/Data_paper/Phylogeny_fig.R` prunes the BirdTree phylogeny and builds the phylogeny figure + `Tax_summary.csv`. `Scripts/Data_paper/Data_paper_fns.R` holds helpers shared by `Figs_tables.R` and the manuscript (e.g. the ecoregion display names: the data store `Eje cafetero`, the paper shows *Eje Cafetero*).
 
 ## Reproducing the manuscript
 

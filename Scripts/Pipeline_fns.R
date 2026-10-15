@@ -1,5 +1,56 @@
 ## Shared helpers for the pipeline scripts (Scripts/01_ .. 06_), the data-paper figure scripts and the manuscript qmd
 ## Package-qualified throughout so a script can source this file without attaching anything
+## The formatting, quality-check and plotting helpers were moved here from Rcookbook/Themes_funs.R (2026-10-15) so the repo runs without that external file
+
+# Formatting ---------------------------------------------------------------
+
+## Standardize the values of a character column: underscores to spaces, sentence case, squished whitespace. Transforms each unique value once, so it is fast on long columns.
+standardize_column_contents <- function(col) {
+  unique_vals <- unique(col)
+  transformed <- unique_vals |>
+    stringr::str_replace_all("_", " ") |>
+    stringr::str_to_sentence() |>
+    stringr::str_squish()
+  transformed_vals <- stats::setNames(transformed, unique_vals)
+  transformed_vals[col]
+}
+
+## Standardize column names: snake_case, then capitalize the first letter (e.g. "ID_punto_muestreo_FINAL" -> "Id_punto_muestreo_final")
+Cap_snake <- function(df) {
+  df <- janitor::clean_names(df, case = "snake")
+  names(df) <- stringr::str_to_sentence(names(df))
+  df
+}
+
+# Quality checks -----------------------------------------------------------
+## Return the rows and columns of `df` that contain missing values (restricted to cols_inc), plus id_cols to identify the rows; distinct = TRUE drops duplicate rows
+Na_rows_cols <- function(df, cols_inc = dplyr::everything(), id_cols = NULL, distinct = TRUE) {
+  df2 <- dplyr::select(df, {{ cols_inc }})
+  row_col_locs <- naniar::where_na(df2)   # matrix of (row, col) positions of the NAs
+  result <- df2 |>
+    dplyr::slice(row_col_locs[, 1]) |>
+    dplyr::select({{ id_cols }}, unique(row_col_locs[, 2]))
+  if (distinct) result <- dplyr::distinct(result)
+  result
+}
+
+# Plotting -----------------------------------------------------------------
+## Round each value of x to the nearest multiple of base (e.g. mround(4.37, 0.25) = 4.25)
+mround <- function(x, base) {
+  base * round(x / base)
+}
+
+## Like ggplot2::theme_void() but keeps the axis lines: drops axis titles, text and ticks. A function (add as `+ theme_min()`) so sourcing this file does not load ggplot2.
+theme_min <- function() {
+  ggplot2::theme(
+    axis.title.x = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_blank(),
+    axis.ticks.x = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank()
+  )
+}
 
 # Range decisions ----------------------------------------------------------
 ## Flag the observations that the curated remove/change list (Spp_remove_change.csv, deposited in DataS1/) applies to, and apply its species reassignments.

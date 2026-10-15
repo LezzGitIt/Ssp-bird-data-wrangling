@@ -38,7 +38,7 @@ library(cowplot)
 ggplot2::theme_set(theme_cowplot())
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
+source("Scripts/Pipeline_fns.R") # shared helpers (Cap_snake, standardize_column_contents, Na_rows_cols, ...)
 
 ## Load data
 Event_covs_pcs <- read_csv("Derived/Excels/Event_covs_pcs.csv")

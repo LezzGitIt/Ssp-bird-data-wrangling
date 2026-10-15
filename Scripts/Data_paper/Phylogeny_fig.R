@@ -15,6 +15,7 @@
 
 # Libraries ---------------------------------------------------------------
 ## Load libraries
+library(tidyverse)
 library(xlsx)
 library(phytools)
 library(ggtree)
@@ -26,7 +27,6 @@ conflicts_prefer(purrr::map)
 conflicts_prefer(dplyr::filter)
 
 # Load data ---------------------------------------------------------------
-source("/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/Rcookbook/Themes_funs.R")
 
 Taxonomy <- read_csv("Derived/Excels/Taxonomy/Taxonomy.csv")
 Bird_pcs_all <- read_csv("Derived/Excels/Bird_pcs/Bird_pcs_all.csv")
