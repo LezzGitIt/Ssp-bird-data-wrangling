@@ -23,6 +23,13 @@ affiliations:
     city: Villavicencio
     region: Meta
     country: Colombia
+
+  - id: ecotonos
+    name: Universidad de los Llanos
+    department: Grupo de Investigación ECOTONOS
+    city: Villavicencio
+    region: Meta
+    country: Colombia
     
   - id: gaica
     name: Asociación GAICA
@@ -44,6 +51,7 @@ affiliations:
     
   - id: tnc us
     name: The Nature Conservancy
+    department: Protect Oceans, Lands, and Waters Program
     city: Fort Collins
     region: Colorado
     country: United States of America
@@ -93,11 +101,11 @@ author:
       
   - name: Andrea Morales-Rozo
     affiliations:
-      - ref: unillanos
+      - ref: ecotonos
 
   - name: Evelyn Alvarez-Daza
     affiliations:
-      - ref: unillanos
+      - ref: ecotonos
       
   #- name: Sergio Montoya-Arango
    # affiliations:
@@ -134,10 +142,6 @@ author:
   - name: Juliana Delgado
     affiliations:
       - ref: tnc col
-      
-  - name: Claire Kremen
-    affiliations:
-      - ref: ubc
       
   - name: Christina M. Kennedy
     affiliations:

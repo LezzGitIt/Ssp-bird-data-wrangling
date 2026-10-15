@@ -590,11 +590,11 @@ At present data are stored on TNC Box [here](https://tnc.box.com/s/f9b6y85ewb7a5
 
 Name, address, email
 
-Tomas Walschburger - ADD ADDRESS
+Tomás Walschburger, The Nature Conservancy, twalschburger\@tnc.org
 
-Christina Kennedy - ADD ADDRESS
+Christina M. Kennedy, The Nature Conservancy, ckennedy\@tnc.org
 
-Aaron Skinner, 6201 Cecil Green Park Rd, Vancouver, BC, Canada V6T1Z1, skinnerayayron93\@gmail.com
+Aaron Skinner, University of British Columbia, skinnerayayron93\@gmail.com
 
 ### Copyright restrictions
 
