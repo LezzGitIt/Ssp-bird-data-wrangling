@@ -389,26 +389,22 @@ df_birds_red$Ubc_meta26 <- df_birds_red$Ubc_meta26 %>%
   filter(!Date %in% as.Date(c("2026-01-05")))
 
 ## Natalia put in lots of work to check and improve upon GAICA's recordings database, particularly she added all of the 'Cf' (confirmed) species
-path <- "/Users/aaronskinner/Library/CloudStorage/OneDrive-UBC/Academia/PhD/Mentorship/Natalia"
-files <- list.files(path, pattern = ".xlsx")
-Site_names <- c("Valle_de_cocora", "Otun_quimbaya")
-Grabaciones_natalia_l <- map2(files, Site_names, \(file_name, sites){
-  read_xlsx(paste0(path, "/", file_name), sheet = "Grabaciones") %>% 
+# Her two review workbooks (sheet "Grabaciones") were exported to one CSV with a Site column (Valle_cocora = the Eje cafetero survey, Otun_quimbaya); it is the only source of the 2024 recording data -- the partially filled recording sheet and columns (Grabacion, Observacion_de_grabacion, Confiabilidad_de_grabacion) were removed from the UBC-GAICA field workbooks (2026-10-15; originals in Data/Aves/Old/)
+Grabaciones_natalia <- read_csv("Data/Aves/UBC_GAICA_2024_recordings_review.csv", col_types = cols(.default = col_character()))
+Grabaciones_natalia_l <- split(Grabaciones_natalia, Grabaciones_natalia$Site)[c("Valle_cocora", "Otun_quimbaya")] %>%
+  set_names(c("Ubc_gaica_Caf", "Ubc_gaica_OQ")) %>%
+  map(\(df){
+  df %>%
     Cap_snake() %>%
-    mutate(Site = sites) %>% 
     rename(Count_nat = Numero_individuos, 
            Distance_bird_nat = Observacion_de_grabacion,
            Id_survey = Id_punto_muestreo_final,
-           Recording_nat = Grabacion,   # RHS is the raw header in the Natalia recordings xlsx
-           Confiabilidad_nat = Confiabilidad_de_grabacion,
+           Recording_nat = Grabacion,   # RHS is the raw header in the recordings CSV
            Nombre_cientifico_final = Nombre_cientifico_final_ayerbe_2018) %>%
     replace_with_na_at(.vars = "Count_nat", condition = ~.x == "N/A") %>%
     # Format for easy join in next step
     mutate(Date = lubridate::mdy(paste(Mes, Dia, Ano, sep = "/")),
            Date = as.Date(Date),
-           Hora = sapply(str_split(Hora, " "), function(x) {
-             x[2]
-           }),
            Hora = as_hms(Hora),
            Count_nat = as.numeric(Count_nat),
            # Natalia's sheets drop the collector prefix ("G-MB-Q-PORT_03") or the whole stem ("OQ_01"), so rebuild the field database's Id_survey; without this the join below matches no rows
@@ -438,7 +434,7 @@ Grabaciones_natalia_l3 <- map(Grabaciones_natalia_l2, \(df){
 })
 
 # Myiarchus cephalotes at OQ_09 (2024-06-04) is in Natalia's sheet only and is not in the field notes (Word document), so it is not a confirmed detection
-Grabaciones_natalia_l3[[2]] <- Grabaciones_natalia_l3[[2]] %>%
+Grabaciones_natalia_l3$Ubc_gaica_OQ <- Grabaciones_natalia_l3$Ubc_gaica_OQ %>%
   filter(!(Id_survey == "UBCG-MB-R-OQ_09" & Nombre_cientifico_final == "Myiarchus cephalotes"))
 
 # Format, join with bird database  
@@ -446,7 +442,7 @@ df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")] <- map2(
   df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")], Grabaciones_natalia_l3, 
   \(birds, recordings){
     rec_join <- recordings %>% 
-      select(Date, Id_survey, Nombre_cientifico_final, Recording_nat, Count_nat, Distance_bird_nat, Confiabilidad_nat) %>%
+      select(Date, Id_survey, Nombre_cientifico_final, Recording_nat, Count_nat, Distance_bird_nat) %>%
       mutate(across(
         .cols = -Id_survey & where(is.character), 
         .fns = ~ standardize_column_contents(.))
@@ -456,9 +452,8 @@ df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")] <- map2(
       mutate(
         # Natalia's "<50" is inferred (she flagged only birds that sounded >50 m), so it is not applied to flyovers, which have no distance
         Distance_bird = if_else(is.na(Distance_bird) & !Obs_type %in% "Sobrevuelo", Distance_bird_nat, Distance_bird),
-        Recording = coalesce(Recording, Recording_nat),
-        Confiabilidad_de_grabacion = coalesce(Confiabilidad_de_grabacion,
-                                              Confiabilidad_nat)
+        # The field workbooks no longer carry recording columns, so Recording comes only from the review
+        Recording = Recording_nat
       ) %>% 
       # Remove Natalia's rows
       select(-ends_with("nat"))
@@ -472,7 +467,7 @@ df_birds_red$Ubc_gaica_Caf <- df_birds_red$Ubc_gaica_Caf %>%
   ))
 
 # Natalia's recording-only detections with no field row (3 at PORT, confirmed against the field notes) arrive from the full_join with only the join keys and her columns; give them their point count's survey-level fields (protocol, location, farm, observers, start time, ...) from the field rows of the same count, and record them as heard
-Species_level_cols <- c("Orden", "Familia", "Nombre_cientifico_final", "Autoria_nombre_cientifico", "Count", "Obs_type", "Distance_bird", "Recording", "Observacion_de_grabacion", "Confiabilidad_de_grabacion", "Hora")
+Species_level_cols <- c("Orden", "Familia", "Nombre_cientifico_final", "Autoria_nombre_cientifico", "Count", "Obs_type", "Distance_bird", "Recording", "Hora")
 df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")] <- map(df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")], \(df){
   survey_cols <- setdiff(names(df), c(Species_level_cols, "Id_survey", "Date"))
   df %>%
@@ -568,10 +563,10 @@ Birds_comb2 <- Birds_comb %>%
          Longitud = Longitud_decimal) %>%
   mutate(
     across(
-      c(Farm_name, Species_ayerbe, Habitat_og, Observacion_de_grabacion, Recording), ~ str_to_sentence(., locale = "en")
+      c(Farm_name, Species_ayerbe, Habitat_og, Recording), ~ str_to_sentence(., locale = "en")
     ),
     across(
-      c(Farm_name, Species_ayerbe, Habitat_og, Observacion_de_grabacion, Recording), ~ str_squish(.)
+      c(Farm_name, Species_ayerbe, Habitat_og, Recording), ~ str_squish(.)
     ),
     across(
       c(Hora, Pc_start, Pc_obs_span),
