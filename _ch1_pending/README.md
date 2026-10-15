@@ -26,10 +26,9 @@ likewise run from the repo root against the populated `Derived/` and
 
 ## Derivations still in `Scripts/03_FT_elev.R`, Ch1-bound
 
-The eye-size, nest-trait, and BirdLife-clutch sections of `03` build `Eye_resid` /
-`Source_eye`, `Nest_ground_bush` / `N_nest_locs` / `Nest_exposure`, and `Clutch` —
-all dropped from the deposit (`03`'s export `select(-...)`s them). Pull those sections
-into Ch1 when it resumes; the rest of `03` stays (it builds the deposited traits).
+The eye-size, nest-trait, and BirdLife-clutch traits (`Eye_resid` / `Source_eye`, the nest traits, `Clutch_bl`)
+are no longer built in `03`: they moved to `Fd-pd/_pending/Nest_eye_clutch_traits.R` (2026-10-14), which reads
+the deposited `Taxonomy.csv` and `Functional_traits.csv`. `03` now builds only the deposited traits.
 
 Also bound for Ch1 but **not** here: `DAGs.R` — already `git rm`'d from the working
 tree; extract it from this repo's history with `git filter-repo --path

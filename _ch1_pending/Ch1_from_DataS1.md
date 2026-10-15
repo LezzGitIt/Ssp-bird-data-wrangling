@@ -46,34 +46,26 @@ writes Spanish-headed copies to `Derived/DataS1_es/`.
 
 ## 2. Functional traits the deposit drops
 
-`DataS1/Functional_traits.csv` has 38 columns: AVONET morphology, BIRDBASE
+`DataS1/Functional_traits.csv` has 37 columns: AVONET morphology, BIRDBASE
 diet / clutch / migration / specialization, BirdLife generation length + IUCN
-status, and a single-source Ayerbe-Quiñones (2018) `Elev_range`. `Scripts/03_FT_elev.R`
-builds an object `Ft_final` that also carries the traits below; the deposit
-`select()` at the end of `03` is the only thing that trims them out.
+status, and a single-source Ayerbe-Quiñones (2018) `Elev_range`.
 
-| Ch1 trait column(s) | `03` section (`# … ----`) | external data it needs |
+**Done (2026-10-14): the Ch1-only traits moved to the Fd-pd repository.** The eye-size,
+BirdLife-clutch, and nest-trait sections were removed from `Scripts/03_FT_elev.R`
+and now live in `Fd-pd/_pending/Nest_eye_clutch_traits.R` ("Option B" below): it reads
+`DataS1/Taxonomy.csv` and `DataS1/Functional_traits.csv` and `left_join`s the extras by
+`Species_ayerbe`. Its nest output is identical to the version that was built in `03`;
+`Eye_resid` differs very slightly because four duplicated species in
+`Final_Book_Join.xlsx` are now counted once.
+
+| Ch1 trait column(s) | built in | external data it needs |
 |---|---|---|
-| `Eye_resid`, `Source_eye` | `# Eye_size` (~L703) — combined eye size, allometric residual on `Mass` | `Datasets_external/Eye Size Files/Final_Book_Join.xlsx` (Ausprey 2021/2024, Jones 2023) |
-| `Clutch` (BirdLife) | `# >Clutch size` (~L505), via `Life_history` from `bird20t` | `bird20t` — already loaded in `03` for generation length; no extra file |
-| `Nest_ground_bush`, `N_nest_locs`, `Nest_exposure` (also `Nest_structure`, `Nest_location`) | `# Nesting` (L504–699) | `Datasets_external/Sheard_et_al_geb_Nesting_traits_2023/Dataset-S{1,2}.csv`; `Derived/Excels/Traits/Nest_exposure.csv` (hand-classified nest exposure) |
-| `Source_elev` + the multi-source `Elev_range` | `# >Differences sources` / `# >Elev ranges` (L286–357) | none extra — `Derived/Excels/Elev_ranges_all_sources.csv` already holds every source (Ayerbe, Hilty 2021, Quintero & Jetz 2018, eBird/Freeman 2022) + the `Source_elev` label |
+| `Eye_resid`, `Source_eye` | `Fd-pd/_pending/Nest_eye_clutch_traits.R`, `# Eye size` | `Datasets_external/Eye Size Files/Final_Book_Join.xlsx` (Ausprey 2021/2024, Jones 2023) |
+| `Clutch_bl` (BirdLife) | same script, `# BirdLife clutch size` | Bird et al. (2020) table S3 |
+| `N_nest_locs_sheard` / `N_nest_locs_bb`, `Nest_ground_bush`, `Nest_exposure`, `Nest_source_sheard_first` / `Nest_source_bb_first`, `Nest_height_min` / `_max`, `Breeds_colombia` | same script, `# Nest traits` (methods draft: `Fd-pd/Nest_traits_methods.md`) | BIRDBASE; `Datasets_external/Sheard_et_al_geb_Nesting_traits_2023/Dataset-S{1,2}.csv`; `Datasets_external/Avendanoetal2017Checklist.pdf` (parsed with `pdftools`); hand overrides in `Fd-pd/_pending/Breeds_in_Colombia.csv` |
+| `Source_elev` + the multi-source `Elev_range` | `03`, `# >Differences sources` / `# >Elev ranges` | none extra — `Derived/Excels/Elev_ranges_all_sources.csv` already holds every source (Ayerbe, Hilty 2021, Quintero & Jetz 2018, eBird/Freeman 2022) + the `Source_elev` label |
 
 The join key for every trait is `Species_ayerbe`.
-
-### How to rebuild them
-
-**Option A (preferred) — carry a full `03` into Ch1.** Copy `Scripts/03_FT_elev.R`
-into Ch1. It already produces `Ft_final` with every trait. Either take `Ft_final`
-directly (before the deposit `select()`), or extend that `select()` with the Ch1
-columns. Inputs: `DataS1/Taxonomy.csv` (as `Tax_df`), `DataS1/Bird_pcs_all.csv`,
-the AVONET / BIRDBASE / eye-size / Sheard files under `Datasets_external/`.
-
-**Option B — slim add-on.** Read `DataS1/Functional_traits.csv`, run only the
-Eye_size + Nesting + BirdLife-clutch blocks of `03`, and `left_join` the extras by
-`Species_ayerbe`. Less code, but those blocks still need `Tax_df`
-(= `DataS1/Taxonomy.csv`) and `Ft_df[, c("Species_ayerbe", "Mass")]` from the
-deposit table for the eye-size allometry.
 
 ### Elevational range — note the change
 
