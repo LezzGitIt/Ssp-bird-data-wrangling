@@ -3,6 +3,7 @@ title: Bird diversity in cattle ranching landscapes of Colombia
 subtitle: Data paper
 date: last-modified
 bibliography: ../../../Suppfiles/PhD.bib
+csl: ../../../Suppfiles/ecology.csl
 # If you do not want code to show... echo: false
 execute: 
  echo: false
@@ -14,6 +15,9 @@ metadata-files:
   - ../../../Suppfiles/abstract_keywords.yml
 format: 
   elsevier-pdf:
+    # Citations through citeproc + ecology.csl, so the PDF and Word versions share Ecology's style (the elsevier template otherwise uses natbib + elsarticle-harv.bst); nonatbib stops elsarticle loading natbib, which rejects a citeproc bibliography
+    cite-method: citeproc
+    classoption: [nonatbib]
     include-in-header:
       text: |
        \usepackage{makecell}
