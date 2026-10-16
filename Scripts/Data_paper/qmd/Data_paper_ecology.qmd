@@ -143,7 +143,7 @@ dual_table(
 
 # Limitations and Challenges
 
-[Placeholder for Aaron: topics to cover include mixed protocols, radii, and distance classes; the single CIPAV visit and its variable duration; recording-only detections (UBC-GAICA 2024); the meaning of blank cells; GAICA distancia distances heaping at round numbers; BirdTree–Ayerbe name mismatches; and mist-net and *ad hoc* records not included.]
+[Placeholder for Aaron: topics to cover include mixed protocols, radii, and distance classes; the single CIPAV visit and its variable duration; recording-only detections (UBC-GAICA 2024); what NA means in each column; GAICA distancia distances heaping at round numbers; BirdTree–Ayerbe name mismatches; and mist-net and *ad hoc* records not included.]
 
 Species observations were compared against distributional ranges [@velezDistributionBirdsColombia2021] and elevational ranges [@quinteroGlobalElevationalDiversity2018; @freemanInterspecificCompetitionLimits2022; @hilty2021birds; @ayerbe2018guia]. All species observed outside of the species distributional range, or at an elevation \>150 meters above or below the elevational range found in the literature, were sent to the original data collector for review. Data collectors made recommendations for each species in question, falling into three categories: 1) the species identification and spatial information was correct (suggesting a range expansion), 2) the species was misidentified or wrongly transcribed and should be changed to a different species, or 3) if uncertain, the species should be removed from the database (applied by `04b_Range_apply.R`).
 

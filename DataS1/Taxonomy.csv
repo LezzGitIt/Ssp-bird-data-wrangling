@@ -518,75 +518,75 @@ Passeriformes,Parulidae,Basileuterus rufifrons,Basileuterus rufifrons,Basileuter
 Passeriformes,Icteridae,Molothrus aeneus,Molothrus aeneus,Molothrus armenti,Molothrus aeneus,Molothrus aeneus,Molothrus aeneus,D8310D39D9FEB2F4,C21B323AD430E945,Bronzed Cowbird,Bronze-brown Cowbird
 Passeriformes,Tyrannidae,Contopus cinereus,Contopus cinereus,Contopus bogotensis,Contopus bogotensis,Contopus bogotensis,Contopus cinereus,ED18DC0CF222ED9B,784D06ACC99AFCDD,Tropical pewee,Northern Tropical Pewee
 Passeriformes,Thamnophilidae,Formicivora grisea,Formicivora grisea,Formicivora intermedia,Formicivora intermedia,Formicivora grisea,Formicivora intermedia,AC7F0A897CCA84DE,E62C56950E52E045,White-fringed Antwren,Northern White-fringed Antwren
-Charadriiformes,Scolopacidae,Tringa solitaria,Tringa solitaria,Tringa solitaria,Tringa solitaria,,Tringa solitaria,D4A73324DB24F142,D4A73324DB24F142,Solitary Sandpiper,Solitary Sandpiper
-Passeriformes,Icteridae,Icterus galbula,Icterus galbula,Icterus galbula,Icterus galbula,,Icterus galbula,5110842FA06DD11C,5110842FA06DD11C,Baltimore Oriole,Baltimore Oriole
-Passeriformes,Parulidae,Setophaga fusca,Setophaga fusca,Setophaga fusca,Setophaga fusca,,Dendroica fusca,4168AF09C7BCB40B,4168AF09C7BCB40B,Blackburnian Warbler,Blackburnian Warbler
-Passeriformes,Parulidae,Setophaga ruticilla,Setophaga ruticilla,Setophaga ruticilla,Setophaga ruticilla,,Setophaga ruticilla,BED38F505F0B8509,BED38F505F0B8509,American Redstart,American Redstart
-Passeriformes,Tyrannidae,Tyrannus dominicensis,Tyrannus dominicensis,Tyrannus dominicensis,Tyrannus dominicensis,,Tyrannus dominicensis,F5388B5EF2C0D783,F5388B5EF2C0D783,Gray Kingbird,Grey Kingbird
-Passeriformes,Tyrannidae,Myiarchus crinitus,Myiarchus crinitus,Myiarchus crinitus,Myiarchus crinitus,,Myiarchus crinitus,8D6D5F2BEA07A0CF,8D6D5F2BEA07A0CF,Great Crested Flycatcher,Great Crested Flycatcher
-Passeriformes,Parulidae,Leiothlypis peregrina,Leiothlypis peregrina,Leiothlypis peregrina,Leiothlypis peregrina,,Vermivora peregrina,D204A9309E8CCC3A,D204A9309E8CCC3A,Tennessee Warbler,Tennessee Warbler
-Passeriformes,Tyrannidae,Tyrannus tyrannus,Tyrannus tyrannus,Tyrannus tyrannus,Tyrannus tyrannus,,Tyrannus tyrannus,082D833CF61D6360,082D833CF61D6360,Eastern Kingbird,Eastern Kingbird
-Passeriformes,Cardinalidae,Piranga rubra,Piranga rubra,Piranga rubra,Piranga rubra,,Piranga rubra,891798D9EFFE1F8D,891798D9EFFE1F8D,Summer Tanager,Summer Tanager
-Cuculiformes,Cuculidae,Coccyzus americanus,Coccyzus americanus,Coccyzus americanus,Coccyzus americanus,,Coccyzus americanus,0CF12F8155708DC8,0CF12F8155708DC8,Yellow-billed Cuckoo,Yellow-billed Cuckoo
-Passeriformes,Turdidae,Catharus ustulatus,Catharus ustulatus,Catharus ustulatus,Catharus ustulatus,,Catharus ustulatus,E53FC25C090A6AD8,E53FC25C090A6AD8,Swainson's Thrush,Swainson's Thrush
-Passeriformes,Parulidae,Setophaga striata,Setophaga striata,Setophaga striata,Setophaga striata,,Dendroica striata,544A5E6BC69CEAAC,544A5E6BC69CEAAC,Blackpoll Warbler,Blackpoll Warbler
-Passeriformes,Cardinalidae,Piranga olivacea,Piranga olivacea,Piranga olivacea,Piranga olivacea,,Piranga olivacea,4210163221C2E458,4210163221C2E458,Scarlet Tanager,Scarlet Tanager
-Passeriformes,Icteridae,Sturnella militaris,Sturnella militaris,Leistes militaris,Leistes militaris,,Sturnella militaris,5E08EF7369DCED33,5E08EF7369DCED33,Red-breasted Meadowlark,Red-breasted Meadowlark
-Passeriformes,Parulidae,Mniotilta varia,Mniotilta varia,Mniotilta varia,Mniotilta varia,,Mniotilta varia,4D207AF69A79DDCF,4D207AF69A79DDCF,Black-and-white Warbler,Black-and-white Warbler
-Passeriformes,Thraupidae,Tiaris obscurus,Tiaris obscurus,Asemospiza obscura,Asemospiza obscura,,Tiaris obscurus,E83C7E460B250287,E83C7E460B250287,Dull-colored Grassquit,Dull-colored Grassquit
-Passeriformes,Hirundinidae,Hirundo rustica,Hirundo rustica,Hirundo rustica,Hirundo rustica,,Hirundo rustica,58C502EA7AF3E023,58C502EA7AF3E023,Barn Swallow,Barn Swallow
-Passeriformes,Tyrannidae,Empidonax virescens,Empidonax virescens,Empidonax virescens,Empidonax virescens,,Empidonax virescens,2778A3F42BBFEBD5,2778A3F42BBFEBD5,Acadian Flycatcher,Acadian Flycatcher
-Passeriformes,Vireonidae,Vireo flavifrons,Vireo flavifrons,Vireo flavifrons,Vireo flavifrons,,Vireo flavifrons,F8DDF6A6429E64D0,F8DDF6A6429E64D0,Yellow-throated Vireo,Yellow-throated Vireo
-Accipitriformes,Pandionidae,Pandion haliaetus,Pandion haliaetus,Pandion haliaetus,Pandion haliaetus,,Pandion haliaetus,1327AC55AA9D579B,1327AC55AA9D579B,Osprey,Osprey
-Passeriformes,Parulidae,Cardellina canadensis,Cardellina canadensis,Cardellina canadensis,Cardellina canadensis,,Wilsonia canadensis,F2D675AFB11EEEFF,F2D675AFB11EEEFF,Canada Warbler,Canada Warbler
-Passeriformes,Tyrannidae,Contopus virens,Contopus virens,Contopus virens,Contopus virens,,Contopus virens,9891BF73279CAB69,9891BF73279CAB69,Eastern Wood-Pewee,Eastern Wood Pewee
-Passeriformes,Tyrannidae,Empidonomus varius,Empidonomus varius,Empidonomus varius,Empidonomus varius,,Empidonomus varius,BD902263BE371758,BD902263BE371758,Variegated Flycatcher,Variegated Flycatcher
-Passeriformes,Tyrannidae,Myiarchus swainsoni,Myiarchus swainsoni,Myiarchus swainsoni,Myiarchus swainsoni,,Myiarchus swainsoni,EF21F7B5356EB94A,EF21F7B5356EB94A,Swainson's Flycatcher,Swainson's Flycatcher
-Piciformes,Picidae,Veniliornis passerinus,Veniliornis passerinus,Veniliornis passerinus,Veniliornis passerinus,,Veniliornis passerinus,898101E601D55C5D,898101E601D55C5D,Little Woodpecker,Little Woodpecker
-Charadriiformes,Scolopacidae,Actitis macularius,Actitis macularius,Actitis macularius,Actitis macularius,,Actitis macularius,0D88C072E71FE4B8,0D88C072E71FE4B8,Spotted Sandpiper,Spotted Sandpiper
-Passeriformes,Parulidae,Setophaga caerulescens,Setophaga caerulescens,Setophaga caerulescens,Setophaga caerulescens,,Dendroica caerulescens,67B455A71B1C2506,67B455A71B1C2506,Black-throated Blue Warbler,Black-throated Blue Warbler
-Passeriformes,Vireonidae,Vireo flavoviridis,Vireo flavoviridis,Vireo flavoviridis,Vireo flavoviridis,,Vireo flavoviridis,6A7F76A728D8690F,6A7F76A728D8690F,Yellow-green Vireo,Yellow-green Vireo
-Passeriformes,Parulidae,Protonotaria citrea,Protonotaria citrea,Protonotaria citrea,Protonotaria citrea,,Protonotaria citrea,4D08EE7E80D2E275,4D08EE7E80D2E275,Prothonotary Warbler,Prothonotary Warbler
-Piciformes,Picidae,Veniliornis kirkii,Veniliornis kirkii,Veniliornis kirkii,Veniliornis kirkii,,Veniliornis kirkii,CB586CF63D62C020,CB586CF63D62C020,Red-rumped Woodpecker,Red-rumped Woodpecker
-Accipitriformes,Accipitridae,Buteo platypterus,Buteo platypterus,Buteo platypterus,Buteo platypterus,,Buteo platypterus,79F3C681417F2056,79F3C681417F2056,Broad-winged Hawk,Broad-winged Hawk
-Passeriformes,Thraupidae,Thraupis cyanocephala,Thraupis cyanocephala,Sporathraupis cyanocephala,Sporathraupis cyanocephala,,Thraupis cyanocephala,E97657AA2E338CC0,E97657AA2E338CC0,Blue-capped Tanager,Blue-capped Tanager
-Passeriformes,Parulidae,Geothlypis philadelphia,Geothlypis philadelphia,Geothlypis philadelphia,Geothlypis philadelphia,,Oporornis philadelphia,1A0096F2F929CEA2,1A0096F2F929CEA2,Mourning Warbler,Mourning Warbler
-Passeriformes,Parulidae,Parkesia noveboracensis,Parkesia noveboracensis,Parkesia noveboracensis,Parkesia noveboracensis,,Seiurus noveboracensis,709AF716468341F7,709AF716468341F7,Northern Waterthrush,Northern Waterthrush
-Passeriformes,Cardinalidae,Spiza americana,Spiza americana,Spiza americana,Spiza americana,,Spiza americana,592E58CE67D092DA,592E58CE67D092DA,Dickcissel,Dickcissel
-Passeriformes,Parulidae,Setophaga cerulea,Setophaga cerulea,Setophaga cerulea,Setophaga cerulea,,Dendroica cerulea,D00EC2C974F1B880,D00EC2C974F1B880,Cerulean Warbler,Cerulean Warbler
-Passeriformes,Tyrannidae,Empidonax traillii,Empidonax traillii,Empidonax traillii,Empidonax traillii,,Empidonax traillii,5BC4E0EFAB129B9D,5BC4E0EFAB129B9D,Willow Flycatcher,Willow Flycatcher
-Passeriformes,Parulidae,Oporornis agilis,Oporornis agilis,Oporornis agilis,Oporornis agilis,,Oporornis agilis,0B23929DF27B0963,0B23929DF27B0963,Connecticut Warbler,Connecticut Warbler
-Accipitriformes,Accipitridae,Geranoaetus polyosoma,Geranoaetus polyosoma,Geranoaetus polyosoma,Geranoaetus polyosoma,,Buteo polyosoma,2AAA7F7696B93BD3,2AAA7F7696B93BD3,Variable Hawk,Variable Hawk
-Passeriformes,Turdidae,Catharus minimus,Catharus minimus,Catharus minimus,Catharus minimus,,Catharus minimus,B904BB227C07317E,B904BB227C07317E,Gray-cheeked Thrush,Grey-cheeked Thrush
-Passeriformes,Parulidae,Setophaga castanea,Setophaga castanea,Setophaga castanea,Setophaga castanea,,Dendroica castanea,10C601D3BCC5A85C,10C601D3BCC5A85C,Bay-breasted Warbler,Bay-breasted Warbler
-Passeriformes,Cardinalidae,Pheucticus ludovicianus,Pheucticus ludovicianus,Pheucticus ludovicianus,Pheucticus ludovicianus,,Pheucticus ludovicianus,7C2FCB13BAA660EE,7C2FCB13BAA660EE,Rose-breasted Grosbeak,Rose-breasted Grosbeak
-Piciformes,Picidae,Picoides fumigatus,Picoides fumigatus,Leuconotopicus fumigatus,Leuconotopicus fumigatus,,Picoides fumigatus,5481FBB203FDFD78,5481FBB203FDFD78,Smoky-brown Woodpecker,Smoky-brown Woodpecker
-Falconiformes,Falconidae,Falco peregrinus,Falco peregrinus,Falco peregrinus,Falco peregrinus,,Falco peregrinus,5A9A42C1DF7154B8,47E5840880DC9FA8,Peregrine Falcon,Peregrine Falcon
-Psittaciformes,Psittacidae,Forpus xanthopterygius,Forpus xanthopterygius,Forpus xanthopterygius,Forpus xanthopterygius,,Forpus xanthopterygius,4FC2DF643DCD4AC1,B07EFFE6CCF3C8A3,Blue-winged Parrotlet,Cobalt-rumped Parrotlet
-Passeriformes,Vireonidae,Vireo olivaceus,Vireo olivaceus,Vireo olivaceus,Vireo olivaceus,,Vireo olivaceus,7254F08DB80D349C,847717E2FC283AD8,Red-eyed Vireo,Red-eyed Vireo
-Passeriformes,Hirundinidae,Riparia riparia,Riparia riparia,Riparia riparia,Riparia riparia,,Riparia riparia,755E2AD4ECF114FB,94A1C447583CB6D2,Bank Swallow,Sand Martin
-Passeriformes,Estrildidae,Lonchura malacca,Lonchura malacca,Lonchura malacca,Lonchura malacca,,Lonchura malacca,9831DB02E7C7481B,937B5409A423667F,Tricolored Munia,Tricolored Munia
-Passeriformes,Parulidae,Setophaga petechia,Setophaga petechia,Setophaga petechia,Setophaga petechia,,Dendroica aestiva,A6C0C4A9DCB84453,6C439FF4CDC95AA8,Yellow Warbler,Mangrove Warbler
-Passeriformes,Parulidae,Setophaga petechia,Setophaga petechia,Setophaga petechia,Setophaga petechia,,Dendroica petechia,A6C0C4A9DCB84453,6C439FF4CDC95AA8,Yellow Warbler,Mangrove Warbler
-Falconiformes,Falconidae,Caracara cheriway,Caracara cheriway,Caracara plancus,Caracara plancus,,Caracara plancus,ABF6C3C492AE0D2B,CFED276FD6D14015,Crested Caracara,Crested Caracara
-Strigiformes,Strigidae,Megascops colombianus,Megascops colombianus,Megascops ingens,Megascops ingens,,Megascops ingens,7235DAD7CB2F5EC6,CA408A36EDA2AA56,Colombian Screech Owl,Rufescent Screech Owl
-Passeriformes,Parulidae,,Setophaga pinus,Setophaga pinus,Setophaga pinus,,Dendroica pinus,,6283E61EEF174882,Pine Warbler,Pine Warbler
-Piciformes,Ramphastidae,Aulacorhynchus prasinus,Aulacorhynchus prasinus,Aulacorhynchus albivitta,Aulacorhynchus albivitta,,Aulacorhynchus prasinus,BD14A324338310D9,8E12984DF5D16ABA,Emerald Toucanet,Southern Emerald Toucanet
-Apodiformes,Trochilidae,Lepidopyga coeruleogularis,Lepidopyga coeruleogularis,Chrysuronia coeruleogularis,Amazilia coeruleogularis,,Lepidopyga coeruleogularis,D3D0C21B714A76C3,D3D0C21B714A76C3,Sapphire-throated Hummingbird,Sapphire-throated Hummingbird
-Apodiformes,Trochilidae,Lepidopyga goudoti,Lepidopyga goudoti,Chrysuronia goudoti,Amazilia goudoti,,Lepidopyga goudoti,2BE9465CF19C93A3,2BE9465CF19C93A3,Shining-green Hummingbird,Shining-green Hummingbird
-Apodiformes,Trochilidae,Amazilia fimbriata,Amazilia fimbriata,Chionomesa fimbriata,Amazilia fimbriata,,Amazilia fimbriata,91AD1DE4F0918A55,91AD1DE4F0918A55,Glittering-throated Emerald,Glittering-throated Emerald
-Passeriformes,Thraupidae,Tangara cayana,Tangara cayana,Stilpnia cayana,Tangara cayana,,Tangara cayana,D9A843C8A421D467,D9A843C8A421D467,Burnished-buff Tanager,Burnished-buff Tanager
-Passeriformes,Fringillidae,Euphonia cyanocephala,Euphonia cyanocephala,Chlorophonia cyanocephala,Euphonia cyanocephala,,Euphonia cyanocephala,852ECDA200E6FEEC,852ECDA200E6FEEC,Golden-rumped Euphonia,Golden-rumped Euphonia
-Passeriformes,Thraupidae,Tangara heinei,Tangara heinei,Stilpnia heinei,Tangara heinei,,Tangara heinei,41A0DB768C440C9F,41A0DB768C440C9F,Black-capped Tanager,Black-capped Tanager
-Passeriformes,Thraupidae,Tangara cyanicollis,Tangara cyanicollis,Stilpnia cyanicollis,Tangara cyanicollis,,Tangara cyanicollis,98A1673541105E41,98A1673541105E41,Blue-necked Tanager,Blue-necked Tanager
-Passeriformes,Thraupidae,Tangara vitriolina,Tangara vitriolina,Stilpnia vitriolina,Tangara vitriolina,,Tangara vitriolina,A7B6279C1D95DE49,A7B6279C1D95DE49,Scrub Tanager,Scrub Tanager
-Apodiformes,Trochilidae,Hylocharis cyanus,Hylocharis cyanus,Chlorestes cyanus,Amazilia cyanus,,Hylocharis cyanus,8564ACE3CD9B4360,8564ACE3CD9B4360,White-chinned Sapphire,White-chinned Sapphire
-Apodiformes,Trochilidae,Amazilia versicolor,Amazilia versicolor,Chrysuronia versicolor,Amazilia versicolor,,Amazilia versicolor,9CAB5D95838D108D,9CAB5D95838D108D,Versicolored Emerald,Versicolored Emerald
-Pelecaniformes,Ardeidae,Butorides virescens,Butorides virescens,Butorides virescens,Butorides striata,,Butorides virescens,86D45B8F04F61F0E,86D45B8F04F61F0E,Green Heron,Green Heron
-Passeriformes,Thraupidae,Tachyphonus luctuosus,Tachyphonus luctuosus,Loriotus luctuosus,Islerothraupis luctuosa,,Tachyphonus luctuosus,47CB5669EB406A38,47CB5669EB406A38,White-shouldered Tanager,White-shouldered Tanager
-Passeriformes,Thraupidae,Tangara nigrocincta,Tangara nigrocincta,Stilpnia nigrocincta,Tangara nigrocincta,,Tangara nigrocincta,76F91EB1E704CDEF,76F91EB1E704CDEF,Masked Tanager,Masked Tanager
-Apodiformes,Trochilidae,Amazilia franciae,Amazilia franciae,Uranomitra franciae,Amazilia franciae,,Amazilia franciae,3FFAFC07CF7C8A21,3FFAFC07CF7C8A21,Andean Emerald,Andean Emerald
-Passeriformes,Thraupidae,Tangara ruficervix,Tangara ruficervix,Chalcothraupis ruficervix,Tangara ruficervix,,Tangara ruficervix,4B490812CC621063,4B490812CC621063,Golden-naped Tanager,Golden-naped Tanager
-Apodiformes,Trochilidae,Colibri thalassinus,Colibri thalassinus,Colibri cyanotus,Colibri thalassinus,,Colibri thalassinus,526931C99923A2A0,94CB63F7A26DE616,Green Violetear,Lesser Violetear
-Apodiformes,Trochilidae,Amazilia saucerottei,Amazilia saucerottei,Saucerottia saucerottei,Amazilia saucerottei,,Amazilia saucerrottei,3A309CC78B65004C,D51213D32F2B6AD6,Steely-vented Hummingbird,Steely-vented Hummingbird
-Passeriformes,Thraupidae,Tangara cyanoptera,Tangara cyanoptera,Stilpnia cyanoptera,Tangara cyanoptera,,Thraupis cyanoptera,2823F536B1EE999B,F9C4B0455951C3BE,Black-headed Tanager,Black-headed Tanager
+Charadriiformes,Scolopacidae,Tringa solitaria,Tringa solitaria,Tringa solitaria,Tringa solitaria,NA,Tringa solitaria,D4A73324DB24F142,D4A73324DB24F142,Solitary Sandpiper,Solitary Sandpiper
+Passeriformes,Icteridae,Icterus galbula,Icterus galbula,Icterus galbula,Icterus galbula,NA,Icterus galbula,5110842FA06DD11C,5110842FA06DD11C,Baltimore Oriole,Baltimore Oriole
+Passeriformes,Parulidae,Setophaga fusca,Setophaga fusca,Setophaga fusca,Setophaga fusca,NA,Dendroica fusca,4168AF09C7BCB40B,4168AF09C7BCB40B,Blackburnian Warbler,Blackburnian Warbler
+Passeriformes,Parulidae,Setophaga ruticilla,Setophaga ruticilla,Setophaga ruticilla,Setophaga ruticilla,NA,Setophaga ruticilla,BED38F505F0B8509,BED38F505F0B8509,American Redstart,American Redstart
+Passeriformes,Tyrannidae,Tyrannus dominicensis,Tyrannus dominicensis,Tyrannus dominicensis,Tyrannus dominicensis,NA,Tyrannus dominicensis,F5388B5EF2C0D783,F5388B5EF2C0D783,Gray Kingbird,Grey Kingbird
+Passeriformes,Tyrannidae,Myiarchus crinitus,Myiarchus crinitus,Myiarchus crinitus,Myiarchus crinitus,NA,Myiarchus crinitus,8D6D5F2BEA07A0CF,8D6D5F2BEA07A0CF,Great Crested Flycatcher,Great Crested Flycatcher
+Passeriformes,Parulidae,Leiothlypis peregrina,Leiothlypis peregrina,Leiothlypis peregrina,Leiothlypis peregrina,NA,Vermivora peregrina,D204A9309E8CCC3A,D204A9309E8CCC3A,Tennessee Warbler,Tennessee Warbler
+Passeriformes,Tyrannidae,Tyrannus tyrannus,Tyrannus tyrannus,Tyrannus tyrannus,Tyrannus tyrannus,NA,Tyrannus tyrannus,082D833CF61D6360,082D833CF61D6360,Eastern Kingbird,Eastern Kingbird
+Passeriformes,Cardinalidae,Piranga rubra,Piranga rubra,Piranga rubra,Piranga rubra,NA,Piranga rubra,891798D9EFFE1F8D,891798D9EFFE1F8D,Summer Tanager,Summer Tanager
+Cuculiformes,Cuculidae,Coccyzus americanus,Coccyzus americanus,Coccyzus americanus,Coccyzus americanus,NA,Coccyzus americanus,0CF12F8155708DC8,0CF12F8155708DC8,Yellow-billed Cuckoo,Yellow-billed Cuckoo
+Passeriformes,Turdidae,Catharus ustulatus,Catharus ustulatus,Catharus ustulatus,Catharus ustulatus,NA,Catharus ustulatus,E53FC25C090A6AD8,E53FC25C090A6AD8,Swainson's Thrush,Swainson's Thrush
+Passeriformes,Parulidae,Setophaga striata,Setophaga striata,Setophaga striata,Setophaga striata,NA,Dendroica striata,544A5E6BC69CEAAC,544A5E6BC69CEAAC,Blackpoll Warbler,Blackpoll Warbler
+Passeriformes,Cardinalidae,Piranga olivacea,Piranga olivacea,Piranga olivacea,Piranga olivacea,NA,Piranga olivacea,4210163221C2E458,4210163221C2E458,Scarlet Tanager,Scarlet Tanager
+Passeriformes,Icteridae,Sturnella militaris,Sturnella militaris,Leistes militaris,Leistes militaris,NA,Sturnella militaris,5E08EF7369DCED33,5E08EF7369DCED33,Red-breasted Meadowlark,Red-breasted Meadowlark
+Passeriformes,Parulidae,Mniotilta varia,Mniotilta varia,Mniotilta varia,Mniotilta varia,NA,Mniotilta varia,4D207AF69A79DDCF,4D207AF69A79DDCF,Black-and-white Warbler,Black-and-white Warbler
+Passeriformes,Thraupidae,Tiaris obscurus,Tiaris obscurus,Asemospiza obscura,Asemospiza obscura,NA,Tiaris obscurus,E83C7E460B250287,E83C7E460B250287,Dull-colored Grassquit,Dull-colored Grassquit
+Passeriformes,Hirundinidae,Hirundo rustica,Hirundo rustica,Hirundo rustica,Hirundo rustica,NA,Hirundo rustica,58C502EA7AF3E023,58C502EA7AF3E023,Barn Swallow,Barn Swallow
+Passeriformes,Tyrannidae,Empidonax virescens,Empidonax virescens,Empidonax virescens,Empidonax virescens,NA,Empidonax virescens,2778A3F42BBFEBD5,2778A3F42BBFEBD5,Acadian Flycatcher,Acadian Flycatcher
+Passeriformes,Vireonidae,Vireo flavifrons,Vireo flavifrons,Vireo flavifrons,Vireo flavifrons,NA,Vireo flavifrons,F8DDF6A6429E64D0,F8DDF6A6429E64D0,Yellow-throated Vireo,Yellow-throated Vireo
+Accipitriformes,Pandionidae,Pandion haliaetus,Pandion haliaetus,Pandion haliaetus,Pandion haliaetus,NA,Pandion haliaetus,1327AC55AA9D579B,1327AC55AA9D579B,Osprey,Osprey
+Passeriformes,Parulidae,Cardellina canadensis,Cardellina canadensis,Cardellina canadensis,Cardellina canadensis,NA,Wilsonia canadensis,F2D675AFB11EEEFF,F2D675AFB11EEEFF,Canada Warbler,Canada Warbler
+Passeriformes,Tyrannidae,Contopus virens,Contopus virens,Contopus virens,Contopus virens,NA,Contopus virens,9891BF73279CAB69,9891BF73279CAB69,Eastern Wood-Pewee,Eastern Wood Pewee
+Passeriformes,Tyrannidae,Empidonomus varius,Empidonomus varius,Empidonomus varius,Empidonomus varius,NA,Empidonomus varius,BD902263BE371758,BD902263BE371758,Variegated Flycatcher,Variegated Flycatcher
+Passeriformes,Tyrannidae,Myiarchus swainsoni,Myiarchus swainsoni,Myiarchus swainsoni,Myiarchus swainsoni,NA,Myiarchus swainsoni,EF21F7B5356EB94A,EF21F7B5356EB94A,Swainson's Flycatcher,Swainson's Flycatcher
+Piciformes,Picidae,Veniliornis passerinus,Veniliornis passerinus,Veniliornis passerinus,Veniliornis passerinus,NA,Veniliornis passerinus,898101E601D55C5D,898101E601D55C5D,Little Woodpecker,Little Woodpecker
+Charadriiformes,Scolopacidae,Actitis macularius,Actitis macularius,Actitis macularius,Actitis macularius,NA,Actitis macularius,0D88C072E71FE4B8,0D88C072E71FE4B8,Spotted Sandpiper,Spotted Sandpiper
+Passeriformes,Parulidae,Setophaga caerulescens,Setophaga caerulescens,Setophaga caerulescens,Setophaga caerulescens,NA,Dendroica caerulescens,67B455A71B1C2506,67B455A71B1C2506,Black-throated Blue Warbler,Black-throated Blue Warbler
+Passeriformes,Vireonidae,Vireo flavoviridis,Vireo flavoviridis,Vireo flavoviridis,Vireo flavoviridis,NA,Vireo flavoviridis,6A7F76A728D8690F,6A7F76A728D8690F,Yellow-green Vireo,Yellow-green Vireo
+Passeriformes,Parulidae,Protonotaria citrea,Protonotaria citrea,Protonotaria citrea,Protonotaria citrea,NA,Protonotaria citrea,4D08EE7E80D2E275,4D08EE7E80D2E275,Prothonotary Warbler,Prothonotary Warbler
+Piciformes,Picidae,Veniliornis kirkii,Veniliornis kirkii,Veniliornis kirkii,Veniliornis kirkii,NA,Veniliornis kirkii,CB586CF63D62C020,CB586CF63D62C020,Red-rumped Woodpecker,Red-rumped Woodpecker
+Accipitriformes,Accipitridae,Buteo platypterus,Buteo platypterus,Buteo platypterus,Buteo platypterus,NA,Buteo platypterus,79F3C681417F2056,79F3C681417F2056,Broad-winged Hawk,Broad-winged Hawk
+Passeriformes,Thraupidae,Thraupis cyanocephala,Thraupis cyanocephala,Sporathraupis cyanocephala,Sporathraupis cyanocephala,NA,Thraupis cyanocephala,E97657AA2E338CC0,E97657AA2E338CC0,Blue-capped Tanager,Blue-capped Tanager
+Passeriformes,Parulidae,Geothlypis philadelphia,Geothlypis philadelphia,Geothlypis philadelphia,Geothlypis philadelphia,NA,Oporornis philadelphia,1A0096F2F929CEA2,1A0096F2F929CEA2,Mourning Warbler,Mourning Warbler
+Passeriformes,Parulidae,Parkesia noveboracensis,Parkesia noveboracensis,Parkesia noveboracensis,Parkesia noveboracensis,NA,Seiurus noveboracensis,709AF716468341F7,709AF716468341F7,Northern Waterthrush,Northern Waterthrush
+Passeriformes,Cardinalidae,Spiza americana,Spiza americana,Spiza americana,Spiza americana,NA,Spiza americana,592E58CE67D092DA,592E58CE67D092DA,Dickcissel,Dickcissel
+Passeriformes,Parulidae,Setophaga cerulea,Setophaga cerulea,Setophaga cerulea,Setophaga cerulea,NA,Dendroica cerulea,D00EC2C974F1B880,D00EC2C974F1B880,Cerulean Warbler,Cerulean Warbler
+Passeriformes,Tyrannidae,Empidonax traillii,Empidonax traillii,Empidonax traillii,Empidonax traillii,NA,Empidonax traillii,5BC4E0EFAB129B9D,5BC4E0EFAB129B9D,Willow Flycatcher,Willow Flycatcher
+Passeriformes,Parulidae,Oporornis agilis,Oporornis agilis,Oporornis agilis,Oporornis agilis,NA,Oporornis agilis,0B23929DF27B0963,0B23929DF27B0963,Connecticut Warbler,Connecticut Warbler
+Accipitriformes,Accipitridae,Geranoaetus polyosoma,Geranoaetus polyosoma,Geranoaetus polyosoma,Geranoaetus polyosoma,NA,Buteo polyosoma,2AAA7F7696B93BD3,2AAA7F7696B93BD3,Variable Hawk,Variable Hawk
+Passeriformes,Turdidae,Catharus minimus,Catharus minimus,Catharus minimus,Catharus minimus,NA,Catharus minimus,B904BB227C07317E,B904BB227C07317E,Gray-cheeked Thrush,Grey-cheeked Thrush
+Passeriformes,Parulidae,Setophaga castanea,Setophaga castanea,Setophaga castanea,Setophaga castanea,NA,Dendroica castanea,10C601D3BCC5A85C,10C601D3BCC5A85C,Bay-breasted Warbler,Bay-breasted Warbler
+Passeriformes,Cardinalidae,Pheucticus ludovicianus,Pheucticus ludovicianus,Pheucticus ludovicianus,Pheucticus ludovicianus,NA,Pheucticus ludovicianus,7C2FCB13BAA660EE,7C2FCB13BAA660EE,Rose-breasted Grosbeak,Rose-breasted Grosbeak
+Piciformes,Picidae,Picoides fumigatus,Picoides fumigatus,Leuconotopicus fumigatus,Leuconotopicus fumigatus,NA,Picoides fumigatus,5481FBB203FDFD78,5481FBB203FDFD78,Smoky-brown Woodpecker,Smoky-brown Woodpecker
+Falconiformes,Falconidae,Falco peregrinus,Falco peregrinus,Falco peregrinus,Falco peregrinus,NA,Falco peregrinus,5A9A42C1DF7154B8,47E5840880DC9FA8,Peregrine Falcon,Peregrine Falcon
+Psittaciformes,Psittacidae,Forpus xanthopterygius,Forpus xanthopterygius,Forpus xanthopterygius,Forpus xanthopterygius,NA,Forpus xanthopterygius,4FC2DF643DCD4AC1,B07EFFE6CCF3C8A3,Blue-winged Parrotlet,Cobalt-rumped Parrotlet
+Passeriformes,Vireonidae,Vireo olivaceus,Vireo olivaceus,Vireo olivaceus,Vireo olivaceus,NA,Vireo olivaceus,7254F08DB80D349C,847717E2FC283AD8,Red-eyed Vireo,Red-eyed Vireo
+Passeriformes,Hirundinidae,Riparia riparia,Riparia riparia,Riparia riparia,Riparia riparia,NA,Riparia riparia,755E2AD4ECF114FB,94A1C447583CB6D2,Bank Swallow,Sand Martin
+Passeriformes,Estrildidae,Lonchura malacca,Lonchura malacca,Lonchura malacca,Lonchura malacca,NA,Lonchura malacca,9831DB02E7C7481B,937B5409A423667F,Tricolored Munia,Tricolored Munia
+Passeriformes,Parulidae,Setophaga petechia,Setophaga petechia,Setophaga petechia,Setophaga petechia,NA,Dendroica aestiva,A6C0C4A9DCB84453,6C439FF4CDC95AA8,Yellow Warbler,Mangrove Warbler
+Passeriformes,Parulidae,Setophaga petechia,Setophaga petechia,Setophaga petechia,Setophaga petechia,NA,Dendroica petechia,A6C0C4A9DCB84453,6C439FF4CDC95AA8,Yellow Warbler,Mangrove Warbler
+Falconiformes,Falconidae,Caracara cheriway,Caracara cheriway,Caracara plancus,Caracara plancus,NA,Caracara plancus,ABF6C3C492AE0D2B,CFED276FD6D14015,Crested Caracara,Crested Caracara
+Strigiformes,Strigidae,Megascops colombianus,Megascops colombianus,Megascops ingens,Megascops ingens,NA,Megascops ingens,7235DAD7CB2F5EC6,CA408A36EDA2AA56,Colombian Screech Owl,Rufescent Screech Owl
+Passeriformes,Parulidae,NA,Setophaga pinus,Setophaga pinus,Setophaga pinus,NA,Dendroica pinus,NA,6283E61EEF174882,Pine Warbler,Pine Warbler
+Piciformes,Ramphastidae,Aulacorhynchus prasinus,Aulacorhynchus prasinus,Aulacorhynchus albivitta,Aulacorhynchus albivitta,NA,Aulacorhynchus prasinus,BD14A324338310D9,8E12984DF5D16ABA,Emerald Toucanet,Southern Emerald Toucanet
+Apodiformes,Trochilidae,Lepidopyga coeruleogularis,Lepidopyga coeruleogularis,Chrysuronia coeruleogularis,Amazilia coeruleogularis,NA,Lepidopyga coeruleogularis,D3D0C21B714A76C3,D3D0C21B714A76C3,Sapphire-throated Hummingbird,Sapphire-throated Hummingbird
+Apodiformes,Trochilidae,Lepidopyga goudoti,Lepidopyga goudoti,Chrysuronia goudoti,Amazilia goudoti,NA,Lepidopyga goudoti,2BE9465CF19C93A3,2BE9465CF19C93A3,Shining-green Hummingbird,Shining-green Hummingbird
+Apodiformes,Trochilidae,Amazilia fimbriata,Amazilia fimbriata,Chionomesa fimbriata,Amazilia fimbriata,NA,Amazilia fimbriata,91AD1DE4F0918A55,91AD1DE4F0918A55,Glittering-throated Emerald,Glittering-throated Emerald
+Passeriformes,Thraupidae,Tangara cayana,Tangara cayana,Stilpnia cayana,Tangara cayana,NA,Tangara cayana,D9A843C8A421D467,D9A843C8A421D467,Burnished-buff Tanager,Burnished-buff Tanager
+Passeriformes,Fringillidae,Euphonia cyanocephala,Euphonia cyanocephala,Chlorophonia cyanocephala,Euphonia cyanocephala,NA,Euphonia cyanocephala,852ECDA200E6FEEC,852ECDA200E6FEEC,Golden-rumped Euphonia,Golden-rumped Euphonia
+Passeriformes,Thraupidae,Tangara heinei,Tangara heinei,Stilpnia heinei,Tangara heinei,NA,Tangara heinei,41A0DB768C440C9F,41A0DB768C440C9F,Black-capped Tanager,Black-capped Tanager
+Passeriformes,Thraupidae,Tangara cyanicollis,Tangara cyanicollis,Stilpnia cyanicollis,Tangara cyanicollis,NA,Tangara cyanicollis,98A1673541105E41,98A1673541105E41,Blue-necked Tanager,Blue-necked Tanager
+Passeriformes,Thraupidae,Tangara vitriolina,Tangara vitriolina,Stilpnia vitriolina,Tangara vitriolina,NA,Tangara vitriolina,A7B6279C1D95DE49,A7B6279C1D95DE49,Scrub Tanager,Scrub Tanager
+Apodiformes,Trochilidae,Hylocharis cyanus,Hylocharis cyanus,Chlorestes cyanus,Amazilia cyanus,NA,Hylocharis cyanus,8564ACE3CD9B4360,8564ACE3CD9B4360,White-chinned Sapphire,White-chinned Sapphire
+Apodiformes,Trochilidae,Amazilia versicolor,Amazilia versicolor,Chrysuronia versicolor,Amazilia versicolor,NA,Amazilia versicolor,9CAB5D95838D108D,9CAB5D95838D108D,Versicolored Emerald,Versicolored Emerald
+Pelecaniformes,Ardeidae,Butorides virescens,Butorides virescens,Butorides virescens,Butorides striata,NA,Butorides virescens,86D45B8F04F61F0E,86D45B8F04F61F0E,Green Heron,Green Heron
+Passeriformes,Thraupidae,Tachyphonus luctuosus,Tachyphonus luctuosus,Loriotus luctuosus,Islerothraupis luctuosa,NA,Tachyphonus luctuosus,47CB5669EB406A38,47CB5669EB406A38,White-shouldered Tanager,White-shouldered Tanager
+Passeriformes,Thraupidae,Tangara nigrocincta,Tangara nigrocincta,Stilpnia nigrocincta,Tangara nigrocincta,NA,Tangara nigrocincta,76F91EB1E704CDEF,76F91EB1E704CDEF,Masked Tanager,Masked Tanager
+Apodiformes,Trochilidae,Amazilia franciae,Amazilia franciae,Uranomitra franciae,Amazilia franciae,NA,Amazilia franciae,3FFAFC07CF7C8A21,3FFAFC07CF7C8A21,Andean Emerald,Andean Emerald
+Passeriformes,Thraupidae,Tangara ruficervix,Tangara ruficervix,Chalcothraupis ruficervix,Tangara ruficervix,NA,Tangara ruficervix,4B490812CC621063,4B490812CC621063,Golden-naped Tanager,Golden-naped Tanager
+Apodiformes,Trochilidae,Colibri thalassinus,Colibri thalassinus,Colibri cyanotus,Colibri thalassinus,NA,Colibri thalassinus,526931C99923A2A0,94CB63F7A26DE616,Green Violetear,Lesser Violetear
+Apodiformes,Trochilidae,Amazilia saucerottei,Amazilia saucerottei,Saucerottia saucerottei,Amazilia saucerottei,NA,Amazilia saucerrottei,3A309CC78B65004C,D51213D32F2B6AD6,Steely-vented Hummingbird,Steely-vented Hummingbird
+Passeriformes,Thraupidae,Tangara cyanoptera,Tangara cyanoptera,Stilpnia cyanoptera,Tangara cyanoptera,NA,Thraupis cyanoptera,2823F536B1EE999B,F9C4B0455951C3BE,Black-headed Tanager,Black-headed Tanager

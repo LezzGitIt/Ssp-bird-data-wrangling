@@ -1,34 +1,34 @@
 Species_ayerbe,Species_changed,Decision,Departments_affected,Elev_max,Reviewer,Notes
-Pyrrhura melanura,,Remove,,,Nick,Considered Pyrrhura picta but could also be non-Pyrrhura species (e.g. Eupsitulla pertinax); CIPAV didn't report visual / auditory
-Psittacara leucophthalmus,,Remove,,,Nick,Considered Brown-throated parakeet (Eupsitulla) or scarlet fronted parakeet
-Eubucco richardsoni,,Remove,,,Nick,"Considered Eubucco bourcierri which is similar looking, but generally higher elevation (>900m)"
-Myiarchus apicalis,,Remove,Guajira,,Aaron,"In Guajira there are 3 options, Brown-crested, panama, & venezuelan flycatcher"
-Myiarchus apicalis,Myiarchus ferox,Change,Meta,,"Gaica, Nick","Considered dusky-capped flycatcher (tuberculifer) too, but ferox is much more common"
-Setophaga caerulescens,,Remove,,,Nick,
-Cercomacroides parkeri,Cercomacroides tyrannina,Change,,,"Gaica, Nick",
-Tangara cayana,Tangara vitriolina,Change,Risaralda,,Nick,
-Heliodoxa schreibersii,,Remove,,,"Gaica, Nick","Violet fronted brilliant, green-crowned brilliant"
-Amazilia fimbriata,,Remove,Valle del cauca,,Nick,
-Ramphocelus carbo,Ramphocelus dimidiatus,Change,"Tolima, Valle del cauca",,Nick,
-Sporophila castaneiventris,Sporophila minuta,Change,,,Aaron,
-Patagioenas plumbea,Patagioenas cayennensis,Change,"Cesar, Guajira",,Nick,Most likely Patagioenas cayennensis as Patagioenas plumbea is tied to moist forest
-Icterus cayanensis,,Remove,,,Aaron,Considered Cacicus cela
-Zimmerius gracilipes,,Remove,,,Aaron,
-Sporophila schistacea,Sporophila intermedia,Change,Cesar,,Nick,
-Sporophila angolensis,,Remove,"Caldas, Valle del cauca",,Aaron,
-Pachysylvia decurtata,Pachysylvia aurantiifrons,Change,,,Aaron,
-Setophaga pinus,Setophaga fusca,Change,,,Gaica,
-Ara militaris,,Remove,Atlantico,,Nick,Meta might be OK (50% confident)
-Henicorhina leucophrys,,Remove,"Atlantico, Guajira",600,Nick,Anything <600m is remove; other individual is probably OK
-Hylocharis cyanus,,Remove,,,Nick,20% chance that it might be correct
-Doryfera johannae,,Remove,Tolima,,Aaron,
-Forpus xanthopterygius,,Remove,,,Aaron,
-Anabacerthia variegaticeps,Anabacerthia striaticollis,Change,,,Aaron,
-Myiozetetes similis,Myiozetetes cayanensis,Change,Boyaca,,Nick,
-Crotophaga major,Crotophaga ani,Change,Santander,,Nick,
-Amazilia franciae,,Remove,Meta,,Aaron,
-Mecocerculus minor,,Remove,,,Gaica,
-Elaenia frantzii,Elaenia chiriquensis,Change,Meta,,Gaica,
-Sirystes albocinereus,,Remove,,,Aaron,Considered Tyrannus dominicensis as observations were made in mid-October
-Ortalis columbiana,Ortalis guttata,Change,Meta,,Aaron,
-Myiopagis viridicata,,Remove,Meta,,Aaron,
+Pyrrhura melanura,NA,Remove,NA,NA,Nick,Considered Pyrrhura picta but could also be non-Pyrrhura species (e.g. Eupsitulla pertinax); CIPAV didn't report visual / auditory
+Psittacara leucophthalmus,NA,Remove,NA,NA,Nick,Considered Brown-throated parakeet (Eupsitulla) or scarlet fronted parakeet
+Eubucco richardsoni,NA,Remove,NA,NA,Nick,"Considered Eubucco bourcierri which is similar looking, but generally higher elevation (>900m)"
+Myiarchus apicalis,NA,Remove,Guajira,NA,Aaron,"In Guajira there are 3 options, Brown-crested, panama, & venezuelan flycatcher"
+Myiarchus apicalis,Myiarchus ferox,Change,Meta,NA,"Gaica, Nick","Considered dusky-capped flycatcher (tuberculifer) too, but ferox is much more common"
+Setophaga caerulescens,NA,Remove,NA,NA,Nick,NA
+Cercomacroides parkeri,Cercomacroides tyrannina,Change,NA,NA,"Gaica, Nick",NA
+Tangara cayana,Tangara vitriolina,Change,Risaralda,NA,Nick,NA
+Heliodoxa schreibersii,NA,Remove,NA,NA,"Gaica, Nick","Violet fronted brilliant, green-crowned brilliant"
+Amazilia fimbriata,NA,Remove,Valle del cauca,NA,Nick,NA
+Ramphocelus carbo,Ramphocelus dimidiatus,Change,"Tolima, Valle del cauca",NA,Nick,NA
+Sporophila castaneiventris,Sporophila minuta,Change,NA,NA,Aaron,NA
+Patagioenas plumbea,Patagioenas cayennensis,Change,"Cesar, Guajira",NA,Nick,Most likely Patagioenas cayennensis as Patagioenas plumbea is tied to moist forest
+Icterus cayanensis,NA,Remove,NA,NA,Aaron,Considered Cacicus cela
+Zimmerius gracilipes,NA,Remove,NA,NA,Aaron,NA
+Sporophila schistacea,Sporophila intermedia,Change,Cesar,NA,Nick,NA
+Sporophila angolensis,NA,Remove,"Caldas, Valle del cauca",NA,Aaron,NA
+Pachysylvia decurtata,Pachysylvia aurantiifrons,Change,NA,NA,Aaron,NA
+Setophaga pinus,Setophaga fusca,Change,NA,NA,Gaica,NA
+Ara militaris,NA,Remove,Atlantico,NA,Nick,Meta might be OK (50% confident)
+Henicorhina leucophrys,NA,Remove,"Atlantico, Guajira",600,Nick,Anything <600m is remove; other individual is probably OK
+Hylocharis cyanus,NA,Remove,NA,NA,Nick,20% chance that it might be correct
+Doryfera johannae,NA,Remove,Tolima,NA,Aaron,NA
+Forpus xanthopterygius,NA,Remove,NA,NA,Aaron,NA
+Anabacerthia variegaticeps,Anabacerthia striaticollis,Change,NA,NA,Aaron,NA
+Myiozetetes similis,Myiozetetes cayanensis,Change,Boyaca,NA,Nick,NA
+Crotophaga major,Crotophaga ani,Change,Santander,NA,Nick,NA
+Amazilia franciae,NA,Remove,Meta,NA,Aaron,NA
+Mecocerculus minor,NA,Remove,NA,NA,Gaica,NA
+Elaenia frantzii,Elaenia chiriquensis,Change,Meta,NA,Gaica,NA
+Sirystes albocinereus,NA,Remove,NA,NA,Aaron,Considered Tyrannus dominicensis as observations were made in mid-October
+Ortalis columbiana,Ortalis guttata,Change,Meta,NA,Aaron,NA
+Myiopagis viridicata,NA,Remove,Meta,NA,Aaron,NA

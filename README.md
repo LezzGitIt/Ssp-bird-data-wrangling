@@ -6,7 +6,7 @@ The project uses data from 500+ unique point count locations surveyed 2013–202
 
 ## The dataset (`DataS1/`)
 
-`DataS1/` is the curated deposit that accompanies the data paper. File names follow Ecology's convention (hyphens between words, underscores for groupings). Tables are joined with 'join keys':
+`DataS1/` is the curated deposit that accompanies the data paper. File names follow Ecology's convention (hyphens between words, underscores for groupings), and every empty cell is written as `NA` (`Column-definitions.csv` says what `NA` means in each column). Tables are joined with 'join keys':
 
 | File | Contents | Join keys |
 |----|----|----|

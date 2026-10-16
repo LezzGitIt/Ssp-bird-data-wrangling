@@ -4,20 +4,19 @@ Bird-point-counts_all,Id_survey_no_dc,Point count ID irrespective of the data co
 Bird-point-counts_all,Date,Date,,
 Bird-point-counts_all,Pc_start,Start time of point count,,
 Bird-point-counts_all,Species_ayerbe,Species Latin name according to Ayerbe's 2018 field guide,,
-Bird-point-counts_all,Count,Number of individuals observed at point count,,"blank: NA for detections identified only from the recording (no field count), otherwise missing."
-Bird-point-counts_all,Distance_bird,The distance from the observer to the bird,,"A continuous distance (m) or a distance class (<25, <50, >50; 0-15, 15-30, 30-50). Flyovers have an estimated distance or class in most datasets, but are blank for GAICA mbd 2013 and UBC-GAICA. 
-NA: flyover (no distance estimated)
-blank: missing"
+Bird-point-counts_all,Count,Number of individuals observed at point count,,NA: not applicable for detections identified only from the recording (no field count); otherwise missing.
+Bird-point-counts_all,Distance_bird,The distance from the observer to the bird,,"A continuous distance (m) or a distance class (<25, <50, >50; 0-15, 15-30, 30-50). Flyovers have an estimated distance or class in most datasets, but are NA for GAICA mbd 2013 and UBC-GAICA. 
+NA: flyover (no distance estimated), otherwise missing"
 Bird-point-counts_all,Obs_type,How bird was identified,,"Auditivo: By ear
 Sobrevuelo: Bird flew over and did not use the habitat
 Tamborileo: Drumming
 Visual: By sight
 Visual/auditivo: By sight and by ear
-blank: CIPAV did not record, otherwise missing"
+NA: CIPAV did not record, otherwise missing"
 Bird-point-counts_all,Recording,Whether species was identified in a recording,,"Cf: A bird that was identified in the field and was confirmed in the recording 
 Y: A bird that was only identified in the recording
 In field: Identified in the field only
-blank: Not recorded - recordings were made only by UBC-GAICA in the Eje cafetero, 2024."
+NA: Not recorded - recordings were made only by UBC-GAICA in the Eje cafetero, 2024."
 Survey-covariates,Id_survey,Unique ID of each point count,,"Using the first initials of each word and separating with hyphens, the format is: Data collector --  Research question -- Department -- Farm _ Point count number"
 Survey-covariates,Id_survey_no_dc,Point count ID irrespective of the data collector,,
 Survey-covariates,Institution_name,Name of the data collector,,"Cipav: Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria
@@ -36,7 +35,7 @@ Survey-covariates,Month,Month,,
 Survey-covariates,Day,Day,,
 Survey-covariates,Julian_day,Julian date,,
 Survey-covariates,Pc_start,Start time of point count,,
-Survey-covariates,Pc_duration,Length of point count,,blank: one CIPAV point with a single observation
+Survey-covariates,Pc_duration,Length of point count,,NA: one CIPAV point with a single observation
 Survey-covariates,N_samp_periods,Number of distinct 'Year_grp's sampled,,
 Survey-covariates,N_reps,Total number of times the point count was surveyed,,
 Survey-covariates,Rep_year_grp,Point count repetition number within Year_grp,,
@@ -46,15 +45,15 @@ Survey-covariates,Rep_season,Point count repetition number within a season,,
 Survey-covariates,Spp_obs,Whether any species were observed at the point count,,"No = No species observed during point count
 Yes = Species were observed during point count
 NOTE: Based on the Bird-point-counts_all file, not the Bird-point-counts_analysis file"
-Survey-covariates,Noise,Subjective rating of the noise level during the point count,,"blank: generally not recorded, otherwise missing if associated with UBC"
+Survey-covariates,Noise,Subjective rating of the noise level during the point count,,"NA: generally not recorded, otherwise missing if associated with UBC"
 Survey-covariates,Weather,Weather categories,,"Despejado: Clear
 Nublado: Cloudy
 Brisa: Breeze
 Lluvia: Rain
 Llovizna: Drizzling
-blank: not recorded by CIPAV or GAICA mbd; otherwise missing."
-Survey-covariates,Cows_50m,Whether cows were present within the 50m point count radius,,"blank: generally not recorded, otherwise missing if associated with UBC"
-Survey-covariates,Registered_by,Name(s) of the field observer(s) who conducted the point count,,blank: missing
+NA: not recorded by CIPAV or GAICA mbd; otherwise missing."
+Survey-covariates,Cows_50m,Whether cows were present within the 50m point count radius,,"NA: generally not recorded, otherwise missing if associated with UBC"
+Survey-covariates,Registered_by,Name(s) of the field observer(s) who conducted the point count,,NA: missing
 Survey-covariates,Sampling_day,"Day number within a closed sampling period, per institution and Year_grp",,Day 1 = first survey date
 Survey-covariates,Canopy_cover,"Percent canopy cover within a 1 km buffer, see Potapov et al. (2026)",,0-100%
 Survey-covariates,Canopy_height_m,"Max canopy height (in meters) within the point count buffer, see Potapov et al. (2026)",,Meters
@@ -129,7 +128,7 @@ Taxonomy,Species_bl,Species according to BirdLife,,
 Taxonomy,Species_bt,Species according to BirdTree,,
 Taxonomy,Species_sacc_18,Species according to the SACC (South American Classification Committee) 2018 checklist,,NA: not in SACC 2018
 Taxonomy,Species_avilist_25,Species according to the AviList 2025 checklist,,
-Taxonomy,Species_eB,Species according to eBird/Clements taxonomy,,blank: missing
+Taxonomy,Species_eB,Species according to eBird/Clements taxonomy,,NA: missing
 Taxonomy,concept_id_sacc,"Unique taxonomic concept identifier, SACC checklist",,NA: not in SACC 2018
 Taxonomy,concept_id_avilist,"Unique taxonomic concept identifier, AviList checklist",,
 Taxonomy,common_name_sacc,"English common name, SACC checklist",,
@@ -137,7 +136,7 @@ Taxonomy,common_name_avilist,"English common name, AviList checklist",,
 Range-review-decisions,Species_ayerbe,Species as reported in 'Bird-point-counts_all' (Ayerbe-Quiñones 2018) to which the decision applies,,
 Range-review-decisions,Species_changed,Species the observations are reassigned to,,Filled only when Decision = 'Change'
 Range-review-decisions,Decision,Range-review decision applied to the observations of this species when building 'Bird-point-counts_analysis',,Remove = observations excluded from 'Bird-point-counts_analysis'; Change = observations reassigned to 'Species_changed'
-Range-review-decisions,Departments_affected,Department(s) where the decision applies,,Comma-separated; blank = the decision applies in all departments
-Range-review-decisions,Elev_max,Maximum elevation (m) at which the decision applies,,The decision applies to point counts at or below this elevation; blank = all elevations
+Range-review-decisions,Departments_affected,Department(s) where the decision applies,,Comma-separated; NA = the decision applies in all departments
+Range-review-decisions,Elev_max,Maximum elevation (m) at which the decision applies,,The decision applies to point counts at or below this elevation; NA = all elevations
 Range-review-decisions,Reviewer,Who made the decision,,Nick = Nick Bayly; Aaron = Aaron Skinner; Gaica = Asociación GAICA
 Range-review-decisions,Notes,Rationale for the decision,,

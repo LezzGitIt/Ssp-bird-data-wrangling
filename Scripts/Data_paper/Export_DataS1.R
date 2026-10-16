@@ -5,7 +5,7 @@
 
 ## The pipeline writes English headers, so this step is mostly a freeze-into-place. It also validates every header against Suppfiles/column_names.csv (run Translate_column_names.R to refresh that). A Spanish-headed deposit is deferred; Translate_column_names.R still carries the machinery.
 
-## The raw point-count records are not re-written here: they keep the providers' original headers (not in the crosswalk) and their blank vs NA distinction (blank = empty cell, NA = no such column), which re-writing with na = "" would erase.
+## The raw point-count records are not re-written here: they keep the providers' original headers (not in the crosswalk) and their own blank vs NA distinction (blank = the provider left the cell empty, NA = the provider's workbook has no such column), which 01 needs to rebuild each provider's table.
 ## Run this AFTER a full pipeline run (Scripts/00_ .. 06_). Column selection / ordering happen in each script's export section.
 ## Column-definitions.csv is hand-maintained and is NOT overwritten here.
 ## The deposit's Metadata.md and README.md are rendered from Scripts/Data_paper/qmd/Metadata.qmd and Deposit_README.qmd (render both first); this script copies them, and the figures the Metadata shows, into DataS1/.
@@ -55,7 +55,7 @@ exported <- imap(source_paths, function(src, name) {
   }
   names(df) <- unname(to_en[names(df)])   # identity for already-English headers; a safety net for drift
   dest <- file.path("DataS1", paste0(name, ".csv"))
-  write_csv(df, dest, na = "")   # missing values as blank cells (matches the manuscript)
+  write_csv(df, dest, na = "NA")   # every empty cell is written as NA (Ecology reviewers check that missing values use a code); Column-definitions.csv says what NA means in each column
   tibble(file = paste0(name, ".csv"), source = src, rows = nrow(df))
 }) %>% list_rbind()
 
