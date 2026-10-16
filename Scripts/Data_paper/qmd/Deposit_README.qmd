@@ -20,7 +20,7 @@ format:
 
 ## Data Files
 
-**naming scheme:** One file per table, named for its content (e.g., `Site_covs.csv`); the raw records are in the `Raw/` folder. See the Metadata for the columns of each file.
+**naming scheme:** One file per table, named for its content (e.g., `Site-covariates.csv`); the raw records are in the `Raw/` folder. See the Metadata for the columns of each file.
 
 **file size(s):** see the table below.
 

@@ -1,10 +1,10 @@
 ## PhD birds in silvopastoral landscapes ##
 ## Data wrangling 00 -- Gather the raw point-count records from the data providers' workbooks (not part of the archived pipeline)
 
-## Reads each provider workbook (Data/Aves), keeps only the point-count records and the columns 01 uses, and stacks them into two CSVs in the deposit (DataS1/Raw/), which 01_Gen_wrangling.R starts from: the bird records (Raw_pc_birds.csv) and the point-count metadata (Raw_pc_metadata.csv; one row per point count, including counts with no birds).
+## Reads each provider workbook (Data/Aves), keeps only the point-count records and the columns 01 uses, and stacks them into two CSVs in the deposit (DataS1/Raw/), which 01_Gen_wrangling.R starts from: the bird records (Raw_bird-records.csv) and the point-count metadata (Raw_point-count-metadata.csv; one row per point count, including counts with no birds).
 ## Minimal formatting: raw (Spanish) headers and values are kept, plus a Dataset column naming the source workbook, so 01 can split the rows back into one table per provider and its dataset-specific code runs unchanged.
 ## Cells: blank = the provider has this column but left the cell empty; NA = the provider's workbook has no such column.
-## Deposited only so the archived pipeline can be rerun; Bird_pcs_all.csv is the bird data for most purposes.
+## Deposited only so the archived pipeline can be rerun; Bird-point-counts_all.csv is the bird data for most purposes.
 ## Run once whenever a provider workbook changes.
 
 ## Rows removed:
@@ -84,5 +84,5 @@ stack_providers <- function(df_list){
 }
 
 dir.create("DataS1/Raw", showWarnings = FALSE)
-stack_providers(df_birds) %>% write_csv("DataS1/Raw/Raw_pc_birds.csv", na = "NA")
-stack_providers(df_metadata) %>% write_csv("DataS1/Raw/Raw_pc_metadata.csv", na = "NA")
+stack_providers(df_birds) %>% write_csv("DataS1/Raw/Raw_bird-records.csv", na = "NA")
+stack_providers(df_metadata) %>% write_csv("DataS1/Raw/Raw_point-count-metadata.csv", na = "NA")

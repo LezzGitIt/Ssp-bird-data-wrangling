@@ -66,8 +66,8 @@ read_providers <- function(path){
     })
 }
 
-df_birds <- read_providers("DataS1/Raw/Raw_pc_birds.csv")
-df_metadata <- read_providers("DataS1/Raw/Raw_pc_metadata.csv")
+df_birds <- read_providers("DataS1/Raw/Raw_bird-records.csv")
+df_metadata <- read_providers("DataS1/Raw/Raw_point-count-metadata.csv")
 names(df_birds)
 
 # Format bird observation data -------------------------------------------
@@ -1173,7 +1173,7 @@ Event_covs_pcs <- Event_covs_all %>%
     first(na.omit(Registered_by)), Registered_by
   )) %>%
   ungroup() %>%
-  # Column order matches the Event_covs rows of DataS1/Column_definitions.csv (Pc_obs_span is the exception -- QA-only, kept in Event_covs_pcs.csv, dropped by 05_wvsc.R; 05 appends the canopy columns)
+  # Column order matches the Event_covs rows of DataS1/Column-definitions.csv (Pc_obs_span is the exception -- QA-only, kept in Event_covs_pcs.csv, dropped by 05_wvsc.R; 05 appends the canopy columns)
   select(Id_survey, Id_survey_no_dc, Institution_name, Uniq_db, Id_group, Date, Year_grp, Year, Month, Day, Julian_day, Pc_start, Pc_duration, Pc_obs_span, N_samp_periods, N_reps, Rep_year_grp, Season, Rep_season, Spp_obs, Noise, Weather, Cows_50m, Registered_by, Sampling_day)
 
 # Environmental data ---------------------------------------------------
@@ -1252,7 +1252,7 @@ Site_covs <- Bird_pcs_all %>%
   left_join(Envi_df2) %>%
   left_join(Distance_farm_site) %>%
   left_join(Visits_site) %>%
-  # Column order matches the Site_covs rows of DataS1/Column_definitions.csv
+  # Column order matches the Site_covs rows of DataS1/Column-definitions.csv
   select(Id_survey_no_dc, Id_scr, Ecoregion, Department, Long, Lat, Id_group_no_dc, Farm_name, Distance_farm, N_visits, Elev, Avg_temp, Tot_prec, Habitat, Habitat_sub)
 
 # >Precipitation ----------------------------------------------------------

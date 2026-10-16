@@ -1,82 +1,82 @@
 Table,Field_name,Definition,Source,Column_content_definition
-Bird_pcs_all,Id_survey,Unique point count ID,,"Using the first initials of each word and separating with hyphens, the format is: Data collector --  Research question -- Department -- Farm _ Point count number"
-Bird_pcs_all,Id_survey_no_dc,Point count ID irrespective of the data collector,,
-Bird_pcs_all,Date,Date,,
-Bird_pcs_all,Pc_start,Start time of point count,,
-Bird_pcs_all,Species_ayerbe,Species Latin name according to Ayerbe's 2018 field guide,,
-Bird_pcs_all,Count,Number of individuals observed at point count,,"blank: NA for detections identified only from the recording (no field count), otherwise missing."
-Bird_pcs_all,Distance_bird,The distance from the observer to the bird,,"A continuous distance (m) or a distance class (<25, <50, >50; 0-15, 15-30, 30-50). Flyovers have an estimated distance or class in most datasets, but are blank for GAICA mbd 2013 and UBC-GAICA. 
+Bird-point-counts_all,Id_survey,Unique point count ID,,"Using the first initials of each word and separating with hyphens, the format is: Data collector --  Research question -- Department -- Farm _ Point count number"
+Bird-point-counts_all,Id_survey_no_dc,Point count ID irrespective of the data collector,,
+Bird-point-counts_all,Date,Date,,
+Bird-point-counts_all,Pc_start,Start time of point count,,
+Bird-point-counts_all,Species_ayerbe,Species Latin name according to Ayerbe's 2018 field guide,,
+Bird-point-counts_all,Count,Number of individuals observed at point count,,"blank: NA for detections identified only from the recording (no field count), otherwise missing."
+Bird-point-counts_all,Distance_bird,The distance from the observer to the bird,,"A continuous distance (m) or a distance class (<25, <50, >50; 0-15, 15-30, 30-50). Flyovers have an estimated distance or class in most datasets, but are blank for GAICA mbd 2013 and UBC-GAICA. 
 NA: flyover (no distance estimated)
 blank: missing"
-Bird_pcs_all,Obs_type,How bird was identified,,"Auditivo: By ear
+Bird-point-counts_all,Obs_type,How bird was identified,,"Auditivo: By ear
 Sobrevuelo: Bird flew over and did not use the habitat
 Tamborileo: Drumming
 Visual: By sight
 Visual/auditivo: By sight and by ear
 blank: CIPAV did not record, otherwise missing"
-Bird_pcs_all,Recording,Whether species was identified in a recording,,"Cf: A bird that was identified in the field and was confirmed in the recording 
+Bird-point-counts_all,Recording,Whether species was identified in a recording,,"Cf: A bird that was identified in the field and was confirmed in the recording 
 Y: A bird that was only identified in the recording
 In field: Identified in the field only
 blank: Not recorded - recordings were made only by UBC-GAICA in the Eje cafetero, 2024."
-Event_covs,Id_survey,Unique ID of each point count,,"Using the first initials of each word and separating with hyphens, the format is: Data collector --  Research question -- Department -- Farm _ Point count number"
-Event_covs,Id_survey_no_dc,Point count ID irrespective of the data collector,,
-Event_covs,Institution_name,Name of the data collector,,"Cipav: Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria
+Survey-covariates,Id_survey,Unique ID of each point count,,"Using the first initials of each word and separating with hyphens, the format is: Data collector --  Research question -- Department -- Farm _ Point count number"
+Survey-covariates,Id_survey_no_dc,Point count ID irrespective of the data collector,,
+Survey-covariates,Institution_name,Name of the data collector,,"Cipav: Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria
 Gaica: Asociación GAICA 
 Ubc gaica: The University of British Columbia and Asociación GAICA
 Unillanos: Universidad de los Llanos
 Ubc: The University of British Columbia"
-Event_covs,Uniq_db,Unique database: The combination of the data collector and research question,,"Research questions are defined as: 
+Survey-covariates,Uniq_db,Unique database: The combination of the data collector and research question,,"Research questions are defined as: 
 mbd: Monitoreo de biodiversidad
 distancia: Research question focused on the distance of the observer to silvopastoral systems and forest"
-Event_covs,Id_group,A cluster of point counts on a single farm and sampled by a single data collector,,
-Event_covs,Date,Date,,
-Event_covs,Year_grp,Years grouped together by major sampling effort,,"Six major periods of bird data collection (2013-2014, 2016-2017, 2019, 2022, 2024, 2025-2026)"
-Event_covs,Year,Year,,
-Event_covs,Month,Month,,
-Event_covs,Day,Day,,
-Event_covs,Julian_day,Julian date,,
-Event_covs,Pc_start,Start time of point count,,
-Event_covs,Pc_duration,Length of point count,,blank: one CIPAV point with a single observation
-Event_covs,N_samp_periods,Number of distinct 'Year_grp's sampled,,
-Event_covs,N_reps,Total number of times the point count was surveyed,,
-Event_covs,Rep_year_grp,Point count repetition number within Year_grp,,
-Event_covs,Season,Whether the survey fell within an 80-day sampling window relative to the first survey of that Year_grp,,"Early = within 80 days of the first survey in that Year_grp
+Survey-covariates,Id_group,A cluster of point counts on a single farm and sampled by a single data collector,,
+Survey-covariates,Date,Date,,
+Survey-covariates,Year_grp,Years grouped together by major sampling effort,,"Six major periods of bird data collection (2013-2014, 2016-2017, 2019, 2022, 2024, 2025-2026)"
+Survey-covariates,Year,Year,,
+Survey-covariates,Month,Month,,
+Survey-covariates,Day,Day,,
+Survey-covariates,Julian_day,Julian date,,
+Survey-covariates,Pc_start,Start time of point count,,
+Survey-covariates,Pc_duration,Length of point count,,blank: one CIPAV point with a single observation
+Survey-covariates,N_samp_periods,Number of distinct 'Year_grp's sampled,,
+Survey-covariates,N_reps,Total number of times the point count was surveyed,,
+Survey-covariates,Rep_year_grp,Point count repetition number within Year_grp,,
+Survey-covariates,Season,Whether the survey fell within an 80-day sampling window relative to the first survey of that Year_grp,,"Early = within 80 days of the first survey in that Year_grp
 Late = 80+ days after"
-Event_covs,Rep_season,Point count repetition number within a season,,
-Event_covs,Spp_obs,Whether any species were observed at the point count,,"No = No species observed during point count
+Survey-covariates,Rep_season,Point count repetition number within a season,,
+Survey-covariates,Spp_obs,Whether any species were observed at the point count,,"No = No species observed during point count
 Yes = Species were observed during point count
-NOTE: Based on the Bird_pcs_all file, not the Bird_pcs_analysis file"
-Event_covs,Noise,Subjective rating of the noise level during the point count,,"blank: generally not recorded, otherwise missing if associated with UBC"
-Event_covs,Weather,Weather categories,,"Despejado: Clear
+NOTE: Based on the Bird-point-counts_all file, not the Bird-point-counts_analysis file"
+Survey-covariates,Noise,Subjective rating of the noise level during the point count,,"blank: generally not recorded, otherwise missing if associated with UBC"
+Survey-covariates,Weather,Weather categories,,"Despejado: Clear
 Nublado: Cloudy
 Brisa: Breeze
 Lluvia: Rain
 Llovizna: Drizzling
 blank: not recorded by CIPAV or GAICA mbd; otherwise missing."
-Event_covs,Cows_50m,Whether cows were present within the 50m point count radius,,"blank: generally not recorded, otherwise missing if associated with UBC"
-Event_covs,Registered_by,Name(s) of the field observer(s) who conducted the point count,,blank: missing
-Event_covs,Sampling_day,"Day number within a closed sampling period, per institution and Year_grp",,Day 1 = first survey date
-Event_covs,Canopy_cover,"Percent canopy cover within a 1 km buffer, see Potapov et al. (2026)",,0-100%
-Event_covs,Canopy_height_m,"Max canopy height (in meters) within the point count buffer, see Potapov et al. (2026)",,Meters
-Site_covs,Id_survey_no_dc,Point count ID irrespective of the data collector,,
-Site_covs,Id_scr,Identification number of the farm according to the Sustainable Cattle Ranching project,,NA = no farm ID (Otún Quimbaya reserve)
-Site_covs,Ecoregion,Ecoregion where the survey was conducted,,See Table 3 in the main text
-Site_covs,Department,Department where the survey was conducted,,
-Site_covs,Long,Longitude in decimal degrees,,
-Site_covs,Lat,Latitude in decimal degrees,,
-Site_covs,Id_group_no_dc,"A cluster of point counts on a single farm, irrespective of the data collector",,
-Site_covs,Farm_name,Name of the farm where the point count was located,,
-Site_covs,Distance_farm,Distance (m) from the point count to the nearest farm boundary,,NA = no associated farm (Otún Quimbaya reserve)
-Site_covs,N_visits,Total number of surveys at a point count location,,
-Site_covs,Elev,Elevation in meters (90 meter resolution),,
-Site_covs,Avg_temp,Average temperature in °C,,
-Site_covs,Tot_prec,Annual precipitation (millimeters),,
-Site_covs,Habitat,Predominant habitat within the 50 meter point count radius,,"Bosque = Forest
+Survey-covariates,Cows_50m,Whether cows were present within the 50m point count radius,,"blank: generally not recorded, otherwise missing if associated with UBC"
+Survey-covariates,Registered_by,Name(s) of the field observer(s) who conducted the point count,,blank: missing
+Survey-covariates,Sampling_day,"Day number within a closed sampling period, per institution and Year_grp",,Day 1 = first survey date
+Survey-covariates,Canopy_cover,"Percent canopy cover within a 1 km buffer, see Potapov et al. (2026)",,0-100%
+Survey-covariates,Canopy_height_m,"Max canopy height (in meters) within the point count buffer, see Potapov et al. (2026)",,Meters
+Site-covariates,Id_survey_no_dc,Point count ID irrespective of the data collector,,
+Site-covariates,Id_scr,Identification number of the farm according to the Sustainable Cattle Ranching project,,NA = no farm ID (Otún Quimbaya reserve)
+Site-covariates,Ecoregion,Ecoregion where the survey was conducted,,See Table 3 in the main text
+Site-covariates,Department,Department where the survey was conducted,,
+Site-covariates,Long,Longitude in decimal degrees,,
+Site-covariates,Lat,Latitude in decimal degrees,,
+Site-covariates,Id_group_no_dc,"A cluster of point counts on a single farm, irrespective of the data collector",,
+Site-covariates,Farm_name,Name of the farm where the point count was located,,
+Site-covariates,Distance_farm,Distance (m) from the point count to the nearest farm boundary,,NA = no associated farm (Otún Quimbaya reserve)
+Site-covariates,N_visits,Total number of surveys at a point count location,,
+Site-covariates,Elev,Elevation in meters (90 meter resolution),,
+Site-covariates,Avg_temp,Average temperature in °C,,
+Site-covariates,Tot_prec,Annual precipitation (millimeters),,
+Site-covariates,Habitat,Predominant habitat within the 50 meter point count radius,,"Bosque = Forest
 Cultivos = Crops
 Pastizales = Pasture
 Ssp = Silvopastoral systems
 Mosaic = A mixture of habitats"
-Site_covs,Habitat_sub,Habitat subtype,,"Maduro = Mature forest
+Site-covariates,Habitat_sub,Habitat subtype,,"Maduro = Mature forest
 Ripario = Riparian forest
 Secundario = Secondary forest
 Arboles dispersos = Dispersed trees
@@ -85,43 +85,43 @@ Banco de forraje = Forage bank
 Setos = Shrub live fence (i.e., hedgerow)
 Intensivo = Intensive silvopastoral system
 NA = not applicable (crops, mosaic, intensive pasture)"
-Functional_traits,Species_ayerbe,Species according to Ayerbe-Quiñones (2018),Ayerbe-Quiñones (2018),
-Functional_traits,Species_bl,Species name according to BirdLife International,AVONET,"From HBW-BirdLife checklist v5, Dec 2020"
-Functional_traits,Total.individuals,Number of individuals measured for the species,AVONET,
-Functional_traits,Beak.Length_Culmen,Length from base of the skull to tip of beak (mm),AVONET,
-Functional_traits,Beak.Length_Nares,Length from the anterior edge of the nostrils to the tip of beak (mm),AVONET,
-Functional_traits,Beak.Width,Width at the anterior edge of the nostrils (mm),AVONET,
-Functional_traits,Beak.Depth,Depth at the anterior edge of the nostrils (mm),AVONET,
-Functional_traits,Tarsus.Length,Tarsus length (mm),AVONET,
-Functional_traits,Wing.Length,Unflattened wing length (mm),AVONET,
-Functional_traits,Kipps.Distance,Distance from secondary1 to the longest primary (mm),AVONET,
-Functional_traits,Secondary,Length from carpal joint to tip of secondary1 (mm),AVONET,
-Functional_traits,Hand-Wing.Index,100 x Kipp's distance / wing length,AVONET,
-Functional_traits,Tail.Length,Tail length (mm),AVONET,
-Functional_traits,Mass,Species mean mass (g) across sexes,AVONET,
-Functional_traits,Habitat,Predominant habitat type occupied,AVONET,Desert; Rock; Grassland; Shrubland; Woodland; Forest; Human Modified; Wetland; Riverine; Coastal; Marine
-Functional_traits,Habitat.Density,Openness of predominant habitat,AVONET,"Dense (forest interior, thickets); Semi_open (open shrubland, parkland, thorn forest); Open (desert, grassland, open water, rocky habitat, cities, forest canopy)"
-Functional_traits,Trophic.Level,Broad trophic category,AVONET,Herbivore; Carnivore; Scavenger; Omnivore
-Functional_traits,Trophic.Niche,Predominant resource used,AVONET,Frugivore; Granivore; Nectarivore; Herbivore; Herbivore aquatic; Invertivore; Vertivore; Aquatic predator; Scavenger; Omnivore
-Functional_traits,Primary.Lifestyle,Predominant locomotion / foraging substrate,AVONET,Aerial (mostly in flight); Terrestrial (on the ground); Insessorial (perching above ground); Aquatic (on water); Generalist
-Functional_traits,Min.Latitude,Minimum latitude of breeding and resident range (decimal degrees),AVONET,
-Functional_traits,Max.Latitude,Maximum latitude of breeding and resident range (decimal degrees),AVONET,
-Functional_traits,Centroid.Latitude,Latitude of centroid of breeding and resident range (decimal degrees),AVONET,
-Functional_traits,Centroid.Longitude,Longitude of centroid of breeding and resident range (decimal degrees),AVONET,
-Functional_traits,Range.Size,Area of breeding and resident range (km^2),AVONET,
-Functional_traits,Forest_bin,"Whether AVONET's Habitat field is ""Forest"", ""Woodland"", or ""Riverine""",AVONET,
-Functional_traits,Migration_avo,Migratory status AVONET,AVONET,"Sedentary, Partial, Long_distance"
-Functional_traits,Migration_bb,Migratory status BIRDBASE,BIRDBASE,"Migratory, Altitudinal, Irregular, Sedentary (species with no BIRDBASE record are assumed Sedentary)"
-Functional_traits,Primary_diet,Primary diet category,BIRDBASE,
-Functional_traits,Diet_breadth,Number of major food groups used,BIRDBASE,
-Functional_traits,Habitat_breadth,Number of major habitat types used,BIRDBASE,
-Functional_traits,Ecological_specialization,Ecological specialization index,BIRDBASE,Higher = more specialized; max of 2 for a species using only one food group and one habitat type
-Functional_traits,Clutch_min,Minimum clutch size,BIRDBASE,missing: not available in bird base
-Functional_traits,Clutch_max,Maximum clutch size,BIRDBASE,missing: not available in bird base
-Functional_traits,Clutch_mean,Mean of clutch_min and clutch_max,BIRDBASE,missing: not available in bird base
-Functional_traits,Gen_length,Generation length (Years),Bird et al. 2020,
-Functional_traits,Elev_range,Elevational range width (meters),Ayerbe-Quiñones (2018),"missing: Pheucticus ludovicianus, no elevational range in any source"
-Functional_traits,Iucn_red_list,IUCN Red List category,HBW/BirdLife checklist,
+Functional-traits,Species_ayerbe,Species according to Ayerbe-Quiñones (2018),Ayerbe-Quiñones (2018),
+Functional-traits,Species_bl,Species name according to BirdLife International,AVONET,"From HBW-BirdLife checklist v5, Dec 2020"
+Functional-traits,Total.individuals,Number of individuals measured for the species,AVONET,
+Functional-traits,Beak.Length_Culmen,Length from base of the skull to tip of beak (mm),AVONET,
+Functional-traits,Beak.Length_Nares,Length from the anterior edge of the nostrils to the tip of beak (mm),AVONET,
+Functional-traits,Beak.Width,Width at the anterior edge of the nostrils (mm),AVONET,
+Functional-traits,Beak.Depth,Depth at the anterior edge of the nostrils (mm),AVONET,
+Functional-traits,Tarsus.Length,Tarsus length (mm),AVONET,
+Functional-traits,Wing.Length,Unflattened wing length (mm),AVONET,
+Functional-traits,Kipps.Distance,Distance from secondary1 to the longest primary (mm),AVONET,
+Functional-traits,Secondary,Length from carpal joint to tip of secondary1 (mm),AVONET,
+Functional-traits,Hand-Wing.Index,100 x Kipp's distance / wing length,AVONET,
+Functional-traits,Tail.Length,Tail length (mm),AVONET,
+Functional-traits,Mass,Species mean mass (g) across sexes,AVONET,
+Functional-traits,Habitat,Predominant habitat type occupied,AVONET,Desert; Rock; Grassland; Shrubland; Woodland; Forest; Human Modified; Wetland; Riverine; Coastal; Marine
+Functional-traits,Habitat.Density,Openness of predominant habitat,AVONET,"Dense (forest interior, thickets); Semi_open (open shrubland, parkland, thorn forest); Open (desert, grassland, open water, rocky habitat, cities, forest canopy)"
+Functional-traits,Trophic.Level,Broad trophic category,AVONET,Herbivore; Carnivore; Scavenger; Omnivore
+Functional-traits,Trophic.Niche,Predominant resource used,AVONET,Frugivore; Granivore; Nectarivore; Herbivore; Herbivore aquatic; Invertivore; Vertivore; Aquatic predator; Scavenger; Omnivore
+Functional-traits,Primary.Lifestyle,Predominant locomotion / foraging substrate,AVONET,Aerial (mostly in flight); Terrestrial (on the ground); Insessorial (perching above ground); Aquatic (on water); Generalist
+Functional-traits,Min.Latitude,Minimum latitude of breeding and resident range (decimal degrees),AVONET,
+Functional-traits,Max.Latitude,Maximum latitude of breeding and resident range (decimal degrees),AVONET,
+Functional-traits,Centroid.Latitude,Latitude of centroid of breeding and resident range (decimal degrees),AVONET,
+Functional-traits,Centroid.Longitude,Longitude of centroid of breeding and resident range (decimal degrees),AVONET,
+Functional-traits,Range.Size,Area of breeding and resident range (km^2),AVONET,
+Functional-traits,Forest_bin,"Whether AVONET's Habitat field is ""Forest"", ""Woodland"", or ""Riverine""",AVONET,
+Functional-traits,Migration_avo,Migratory status AVONET,AVONET,"Sedentary, Partial, Long_distance"
+Functional-traits,Migration_bb,Migratory status BIRDBASE,BIRDBASE,"Migratory, Altitudinal, Irregular, Sedentary (species with no BIRDBASE record are assumed Sedentary)"
+Functional-traits,Primary_diet,Primary diet category,BIRDBASE,
+Functional-traits,Diet_breadth,Number of major food groups used,BIRDBASE,
+Functional-traits,Habitat_breadth,Number of major habitat types used,BIRDBASE,
+Functional-traits,Ecological_specialization,Ecological specialization index,BIRDBASE,Higher = more specialized; max of 2 for a species using only one food group and one habitat type
+Functional-traits,Clutch_min,Minimum clutch size,BIRDBASE,missing: not available in bird base
+Functional-traits,Clutch_max,Maximum clutch size,BIRDBASE,missing: not available in bird base
+Functional-traits,Clutch_mean,Mean of clutch_min and clutch_max,BIRDBASE,missing: not available in bird base
+Functional-traits,Gen_length,Generation length (Years),Bird et al. 2020,
+Functional-traits,Elev_range,Elevational range width (meters),Ayerbe-Quiñones (2018),"missing: Pheucticus ludovicianus, no elevational range in any source"
+Functional-traits,Iucn_red_list,IUCN Red List category,HBW/BirdLife checklist,
 Taxonomy,Order,Taxonomic order,,
 Taxonomy,Family,Taxonomic family,,
 Taxonomy,Species_ayerbe,Species according to Ayerbe-Quinones (2018),,
@@ -134,10 +134,10 @@ Taxonomy,concept_id_sacc,"Unique taxonomic concept identifier, SACC checklist",,
 Taxonomy,concept_id_avilist,"Unique taxonomic concept identifier, AviList checklist",,
 Taxonomy,common_name_sacc,"English common name, SACC checklist",,
 Taxonomy,common_name_avilist,"English common name, AviList checklist",,
-Spp_remove_change,Species_ayerbe,Species as reported in 'Bird_pcs_all' (Ayerbe-Quiñones 2018) to which the decision applies,,
-Spp_remove_change,Species_changed,Species the observations are reassigned to,,Filled only when Decision = 'Change'
-Spp_remove_change,Decision,Range-review decision applied to the observations of this species when building 'Bird_pcs_analysis',,Remove = observations excluded from 'Bird_pcs_analysis'; Change = observations reassigned to 'Species_changed'
-Spp_remove_change,Departments_affected,Department(s) where the decision applies,,Comma-separated; blank = the decision applies in all departments
-Spp_remove_change,Elev_max,Maximum elevation (m) at which the decision applies,,The decision applies to point counts at or below this elevation; blank = all elevations
-Spp_remove_change,Reviewer,Who made the decision,,Nick = Nick Bayly; Aaron = Aaron Skinner; Gaica = Asociación GAICA
-Spp_remove_change,Notes,Rationale for the decision,,
+Range-review-decisions,Species_ayerbe,Species as reported in 'Bird-point-counts_all' (Ayerbe-Quiñones 2018) to which the decision applies,,
+Range-review-decisions,Species_changed,Species the observations are reassigned to,,Filled only when Decision = 'Change'
+Range-review-decisions,Decision,Range-review decision applied to the observations of this species when building 'Bird-point-counts_analysis',,Remove = observations excluded from 'Bird-point-counts_analysis'; Change = observations reassigned to 'Species_changed'
+Range-review-decisions,Departments_affected,Department(s) where the decision applies,,Comma-separated; blank = the decision applies in all departments
+Range-review-decisions,Elev_max,Maximum elevation (m) at which the decision applies,,The decision applies to point counts at or below this elevation; blank = all elevations
+Range-review-decisions,Reviewer,Who made the decision,,Nick = Nick Bayly; Aaron = Aaron Skinner; Gaica = Asociación GAICA
+Range-review-decisions,Notes,Rationale for the decision,,

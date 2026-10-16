@@ -20,13 +20,14 @@ library(kableExtra)
 # Load in data 
 Pc_locs_sf <- st_read("Derived/Geospatial/shp/Pc_locs.gpkg", quiet = TRUE)
 
-path <- "DataS1"
-File_names <- list.files(path, pattern = "\\.csv$")   # the deposit tables (not the Raw/ folder or the manifest)
-
-Data <- map(File_names, \(sheet){
-  read_csv(file = paste0(path, "/", sheet))
-})
-names(Data) <- str_remove(File_names, ".csv")
+# The deposit tables: R object name (used throughout the code) -> file name in DataS1/
+Deposit_tables <- c(
+  Bird_pcs_all = "Bird-point-counts_all.csv", Bird_pcs_analysis = "Bird-point-counts_analysis.csv",
+  Event_covs = "Survey-covariates.csv", Site_covs = "Site-covariates.csv", Taxonomy = "Taxonomy.csv",
+  Functional_traits = "Functional-traits.csv", Spp_remove_change = "Range-review-decisions.csv",
+  Column_definitions = "Column-definitions.csv"
+)
+Data <- map(Deposit_tables, \(file) read_csv(file.path("DataS1", file)))
 
 # Load functions
 source("Scripts/Pipeline_fns.R") # Cap_snake(); flag_range_decisions() for the QA/QC counts
@@ -76,7 +77,7 @@ Crop_locs <- Data$Site_covs %>%
   count(Uniq_db)
 Crop_locs_txt <- str_c(Crop_locs$n, " ", Crop_locs$Uniq_db, collapse = ", ")
 # Caption of the dataset overview table (built here because it reports the computed crop counts)
-Tbl_datasets_cap <- paste0('Overview of the datasets, ordered by first survey year. Each dataset is one data collector\'s survey campaign, named as in the `Uniq_db` column of `Event_covs.csv`. CIPAV = Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria; GAICA = Asociación GAICA; Unillanos = Universidad de los Llanos; UBC = University of British Columbia. Locations are unique point count locations and surveys are point counts (a location surveyed on several visits counts once per visit). Habitats are the dominant land cover within the point count radius. CIPAV\'s duration is the span between the first and last bird recorded, since they extended counts when few birds were detected; every other dataset used a fixed 10-minute count. GAICA distancia used no fixed radius; observers estimated the distance to each bird. Crops are omitted from Habitats: only ', sum(Crop_locs$n), ' locations were in crops (', Crop_locs_txt, ').')
+Tbl_datasets_cap <- paste0('Overview of the datasets, ordered by first survey year. Each dataset is one data collector\'s survey campaign, named as in the `Uniq_db` column of `Survey-covariates.csv`. CIPAV = Centro para la Investigación en Sistemas Sostenibles de Producción Agropecuaria; GAICA = Asociación GAICA; Unillanos = Universidad de los Llanos; UBC = University of British Columbia. Locations are unique point count locations and surveys are point counts (a location surveyed on several visits counts once per visit). Habitats are the dominant land cover within the point count radius. CIPAV\'s duration is the span between the first and last bird recorded, since they extended counts when few birds were detected; every other dataset used a fixed 10-minute count. GAICA distancia used no fixed radius; observers estimated the distance to each bird. Crops are omitted from Habitats: only ', sum(Crop_locs$n), ' locations were in crops (', Crop_locs_txt, ').')
 
 # Visits per physical location, pooled across data collectors -- the Event_covs 'N_reps' column counts repeats per Id_survey (one collector's point count) and so tops out lower than this
 Visits_per_loc <- Data$Event_covs %>% count(Id_survey_no_dc, name = "n_visits")
@@ -219,16 +220,16 @@ N_changed_spp <- n_distinct(Range_flags$Species_reported[Range_flags$Range_decis
 
 # Every data file in the deposit (DataS1/, including Raw/), with rows, size, and a short description, for the README and the Metadata
 Deposit_descriptions <- c(
-  "Bird_pcs_all.csv" = "Every point-count detection: one row per species, survey, distance, and detection type",
-  "Bird_pcs_analysis.csv" = "Subset of Bird_pcs_all.csv within the fixed point count radius and using the habitat, with the range decisions applied (see Scripts/06_Analysis_wrangling.R)",
-  "Event_covs.csv" = "Information about each survey, including date, start time, and detection covariates",
-  "Functional_traits.csv" = "Functional traits of all species observed in the project",
-  "Site_covs.csv" = "Unchanging covariates of each point count location",
+  "Bird-point-counts_all.csv" = "Every point-count detection: one row per species, survey, distance, and detection type",
+  "Bird-point-counts_analysis.csv" = "Subset of Bird-point-counts_all.csv within the fixed point count radius and using the habitat, with the range decisions applied (see Scripts/06_Analysis_wrangling.R)",
+  "Survey-covariates.csv" = "Information about each survey, including date, start time, and detection covariates",
+  "Functional-traits.csv" = "Functional traits of all species observed in the project",
+  "Site-covariates.csv" = "Unchanging covariates of each point count location",
   "Taxonomy.csv" = "Taxonomic equivalents including BirdLife, BirdTree, and eBird/Clements",
-  "Spp_remove_change.csv" = "Range-review decisions: species removed or reassigned, optionally by department and elevation; applied only to Bird_pcs_analysis.csv",
-  "Column_definitions.csv" = "Definitions of every column of the tables above (one row per column; 'Table' names the file)",
-  "Raw/Raw_pc_birds.csv" = "The data collectors' raw point-count bird records, with their original (Spanish) column names, from which Scripts/01_Gen_wrangling.R builds the tables above",
-  "Raw/Raw_pc_metadata.csv" = "The data collectors' raw point-count metadata: one row per point count, including counts with no birds"
+  "Range-review-decisions.csv" = "Range-review decisions: species removed or reassigned, optionally by department and elevation; applied only to Bird-point-counts_analysis.csv",
+  "Column-definitions.csv" = "Definitions of every column of the tables above (one row per column; 'Table' names the file)",
+  "Raw/Raw_bird-records.csv" = "The data collectors' raw point-count bird records, with their original (Spanish) column names, from which Scripts/01_Gen_wrangling.R builds the tables above",
+  "Raw/Raw_point-count-metadata.csv" = "The data collectors' raw point-count metadata: one row per point count, including counts with no birds"
 )
 Deposit_files <- tibble(File = names(Deposit_descriptions), Description = unname(Deposit_descriptions)) %>%
   mutate(

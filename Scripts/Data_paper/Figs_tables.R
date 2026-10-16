@@ -31,12 +31,12 @@ Pc_locs_sf <- st_read("Derived/Geospatial/shp/Pc_locs.gpkg")
 Pc_locs_dc_sf <- st_read("Derived/Geospatial/shp/Pc_locs_dc.gpkg")
 
 # Load in raw abundance data
-Bird_pcs_all <- read_csv("DataS1/Bird_pcs_all.csv")
-Bird_pcs_analysis <- read_csv("DataS1/Bird_pcs_analysis.csv")
+Bird_pcs_all <- read_csv("DataS1/Bird-point-counts_all.csv")
+Bird_pcs_analysis <- read_csv("DataS1/Bird-point-counts_analysis.csv")
 Taxonomy <- read_csv(file = "DataS1/Taxonomy.csv")
-Fn_traits <- read_csv(file = "DataS1/Functional_traits.csv")
-Site_covs <- read_csv(file = "DataS1/Site_covs.csv")
-Event_covs <- read_csv(file = "DataS1/Event_covs.csv")
+Fn_traits <- read_csv(file = "DataS1/Functional-traits.csv")
+Site_covs <- read_csv(file = "DataS1/Site-covariates.csv")
+Event_covs <- read_csv(file = "DataS1/Survey-covariates.csv")
 Prec_df <- read_csv(file = "Derived/Excels/Prec_df.csv")
 
 source("Scripts/Pipeline_fns.R") # mround(), theme_min()
@@ -848,7 +848,7 @@ extract_metadata <- function(df, blank_rules = list(), context = df){
 
 ### Create metadata tbls
 ## Site covariates, the deposit as written (Site_covs above carries display names for the figures)
-Site_covs_raw <- read_csv("DataS1/Site_covs.csv", show_col_types = FALSE)
+Site_covs_raw <- read_csv("DataS1/Site-covariates.csv", show_col_types = FALSE)
 Site_covs_meta <- extract_metadata(Site_covs_raw, Blank_rules$Site_covs)
 
 ## Primary point-count file; the blank rules need each detection's dataset and ecoregion

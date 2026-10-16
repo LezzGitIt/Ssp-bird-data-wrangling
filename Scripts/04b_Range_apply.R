@@ -2,7 +2,7 @@
 ## Data wrangling 04b -- Apply the curated out-of-range decisions to the observations
 
 ## Reads the manually reviewed remove/change list (Spp_remove_change.csv, built from the maps and Excels that 04a_Range_screening.R generates) and applies it to Bird_pcs_all.csv, writing Bird_pcs_dist.csv for 05/06.
-## The list is deposited as DataS1/Spp_remove_change.csv and the logic lives in flag_range_decisions() (Scripts/Pipeline_fns.R), so readers can apply the same decisions to DataS1/Bird_pcs_all.csv, which keeps the original identifications.
+## The list is deposited as DataS1/Range-review-decisions.csv and the logic lives in flag_range_decisions() (Scripts/Pipeline_fns.R), so readers can apply the same decisions to DataS1/Bird-point-counts_all.csv, which keeps the original identifications.
 ## Deterministic and light (tidyverse only) -- run it every pipeline pass; 04a is the heavy geospatial review step and is run only when the range screening needs refreshing.
 
 # Load libraries & data ---------------------------------------------------

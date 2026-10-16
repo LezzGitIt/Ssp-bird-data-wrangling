@@ -1,16 +1,16 @@
 DataS1 export manifest
-exported_at: 2026-10-15T21:03:10-0700
-pipeline_commit: fe61f79
-headers: English (Raw_pc_*: the providers' original Spanish headers)
+exported_at: 2026-10-15T21:27:48-0700
+pipeline_commit: 59eb6d8
+headers: English (Raw/: the providers' original Spanish headers)
 documents: Metadata.md, README.md, Figures/ (rendered from Scripts/Data_paper/qmd/)
 
 file,source,rows
-Bird_pcs_all.csv,Derived/Excels/Bird_pcs/Bird_pcs_all.csv,20985
-Bird_pcs_analysis.csv,Derived/Excels/Bird_pcs/Bird_pcs_analysis.csv,17133
-Event_covs.csv,Derived/Excels/Event_covs.csv,2997
-Functional_traits.csv,Derived/Excels/Traits/Functional_traits.csv,587
-Site_covs.csv,Derived/Excels/Site_covs.csv,504
+Bird-point-counts_all.csv,Derived/Excels/Bird_pcs/Bird_pcs_all.csv,20985
+Bird-point-counts_analysis.csv,Derived/Excels/Bird_pcs/Bird_pcs_analysis.csv,17133
+Survey-covariates.csv,Derived/Excels/Event_covs.csv,2997
+Functional-traits.csv,Derived/Excels/Traits/Functional_traits.csv,587
+Site-covariates.csv,Derived/Excels/Site_covs.csv,504
 Taxonomy.csv,Derived/Excels/Taxonomy/Taxonomy.csv,591
-Spp_remove_change.csv,Derived/Excels/Spp_remove_change.csv,33
-Raw/Raw_pc_birds.csv,DataS1/Raw/Raw_pc_birds.csv,25281
-Raw/Raw_pc_metadata.csv,DataS1/Raw/Raw_pc_metadata.csv,3617
+Range-review-decisions.csv,Derived/Excels/Spp_remove_change.csv,33
+Raw/Raw_bird-records.csv,DataS1/Raw/Raw_bird-records.csv,25281
+Raw/Raw_point-count-metadata.csv,DataS1/Raw/Raw_point-count-metadata.csv,3617

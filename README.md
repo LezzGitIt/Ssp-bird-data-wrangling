@@ -6,19 +6,19 @@ The project uses data from 500+ unique point count locations surveyed 2013–202
 
 ## The dataset (`DataS1/`)
 
-`DataS1/` is the curated deposit that accompanies the data paper. Tables are joined with 'join keys':
+`DataS1/` is the curated deposit that accompanies the data paper. File names follow Ecology's convention (hyphens between words, underscores for groupings). Tables are joined with 'join keys':
 
 | File | Contents | Join keys |
 |----|----|----|
-| `Bird_pcs_all.csv` | every point-count observation | `Id_survey`, `Id_survey_no_dc`, `Species_ayerbe` |
-| `Bird_pcs_analysis.csv` | analysis-ready subset (50 m radius, used the habitat, range decisions applied) | same |
-| `Event_covs.csv` | per-survey covariates (e.g., date, time, observer) | `Id_survey`, `Id_survey_no_dc` |
-| `Site_covs.csv` | per-location covariates (elevation, climate, etc.) | `Id_survey_no_dc` |
+| `Bird-point-counts_all.csv` | every point-count observation | `Id_survey`, `Id_survey_no_dc`, `Species_ayerbe` |
+| `Bird-point-counts_analysis.csv` | analysis-ready subset (50 m radius, used the habitat, range decisions applied) | same |
+| `Survey-covariates.csv` | per-survey covariates (e.g., date, time, observer) | `Id_survey`, `Id_survey_no_dc` |
+| `Site-covariates.csv` | per-location covariates (elevation, climate, etc.) | `Id_survey_no_dc` |
 | `Taxonomy.csv` | SACC ↔ BirdLife ↔ eBird ↔ BirdTree crosswalk (Colombia) | `Species_ayerbe` |
-| `Functional_traits.csv` | per-species trait table | `Species_ayerbe` |
-| `Spp_remove_change.csv` | curated range-review decisions: species removed or reassigned, optionally by department / elevation (applied to `Bird_pcs_analysis.csv` only; `Bird_pcs_all.csv` keeps the original identifications) | `Species_ayerbe` |
-| `Raw/` | the data collectors' raw point-count records (`Raw_pc_birds.csv`, `Raw_pc_metadata.csv`; original Spanish headers + `Dataset`, practice days included) — only so the pipeline can be rerun from `01`; use `Bird_pcs_all.csv` as the bird data |  |
-| `Column_definitions.csv` | column definitions for every table (one row per column; `Table` names the file) |  |
+| `Functional-traits.csv` | per-species trait table | `Species_ayerbe` |
+| `Range-review-decisions.csv` | curated range-review decisions: species removed or reassigned, optionally by department / elevation (applied to `Bird-point-counts_analysis.csv` only; `Bird-point-counts_all.csv` keeps the original identifications) | `Species_ayerbe` |
+| `Raw/` | the data collectors' raw point-count records (`Raw_bird-records.csv`, `Raw_point-count-metadata.csv`; original Spanish headers + `Dataset`, practice days included) — only so the pipeline can be rerun from `01`; use `Bird-point-counts_all.csv` as the bird data |  |
+| `Column-definitions.csv` | column definitions for every table (one row per column; `Table` names the file) |  |
 | `Metadata.md` | the Ecology Data Paper 2.0 metadata (study design, sites, methods, data files, column definitions), rendered from `Scripts/Data_paper/qmd/Metadata.qmd`; its figures are in `Figures/` |  |
 | `README.md` | the deposit README (Ecology Data Paper 2.0 template), rendered from `Scripts/Data_paper/qmd/Deposit_README.qmd` |  |
 | `EXPORT_manifest.txt` | when the deposit was exported, from which pipeline commit, and the row count of each file |  |
@@ -33,7 +33,7 @@ On publication, the versioned deposit of record (with a DOI) will be archived on
 
 | Script | Builds |
 |----|----|
-| `00_Merge_raw.R` | stacks the providers' raw point-count records (point counts only, unused columns dropped, raw headers + a `Dataset` column) → `DataS1/Raw/Raw_pc_birds.csv` + `Raw_pc_metadata.csv`; run only when a provider workbook changes |
+| `00_Merge_raw.R` | stacks the providers' raw point-count records (point counts only, unused columns dropped, raw headers + a `Dataset` column) → `DataS1/Raw/Raw_bird-records.csv` + `Raw_point-count-metadata.csv`; run only when a provider workbook changes |
 | `01_Gen_wrangling.R` | base point-count df, site/event covariates, point locations, climate |
 | `02_Taxonomy.R` | `Taxonomy.csv`, taxonomy-standardized observations |
 | `03_FT_elev.R` | `Functional_traits.csv`, elevational ranges |

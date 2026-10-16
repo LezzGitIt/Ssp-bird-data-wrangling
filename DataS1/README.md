@@ -106,32 +106,32 @@ By 2050, global demands for livestock products (milk and meat) are estimated to 
 
 ## Data Files
 
-**naming scheme:** One file per table, named for its content (e.g., `Site_covs.csv`); the raw records are in the `Raw/` folder. See the Metadata for the columns of each file.
+**naming scheme:** One file per table, named for its content (e.g., `Site-covariates.csv`); the raw records are in the `Raw/` folder. See the Metadata for the columns of each file.
 
 **file size(s):** see the table below.
 
-| File                    | Rows   | Size (MB) |
-|:------------------------|:-------|----------:|
-| Bird_pcs_all.csv        | 20,985 |      1.70 |
-| Bird_pcs_analysis.csv   | 17,133 |      1.17 |
-| Event_covs.csv          | 2,997  |      0.57 |
-| Functional_traits.csv   | 587    |      0.16 |
-| Site_covs.csv           | 504    |      0.06 |
-| Taxonomy.csv            | 591    |      0.13 |
-| Spp_remove_change.csv   | 33     |      0.00 |
-| Column_definitions.csv  | 106    |      0.01 |
-| Raw/Raw_pc_birds.csv    | 25,281 |     10.29 |
-| Raw/Raw_pc_metadata.csv | 3,617  |      0.82 |
+| File                             | Rows   | Size (MB) |
+|:---------------------------------|:-------|----------:|
+| Bird-point-counts_all.csv        | 20,985 |      1.75 |
+| Bird-point-counts_analysis.csv   | 17,133 |      1.17 |
+| Survey-covariates.csv            | 2,997  |      0.58 |
+| Functional-traits.csv            | 587    |      0.16 |
+| Site-covariates.csv              | 504    |      0.06 |
+| Taxonomy.csv                     | 591    |      0.13 |
+| Range-review-decisions.csv       | 33     |      0.00 |
+| Column-definitions.csv           | 106    |      0.01 |
+| Raw/Raw_bird-records.csv         | 25,281 |     10.29 |
+| Raw/Raw_point-count-metadata.csv | 3,617  |      0.82 |
 
 **file contents:**
 
-- `Bird_pcs_all.csv`: Every point-count detection: one row per species, survey, distance, and detection type
-- `Bird_pcs_analysis.csv`: Subset of Bird_pcs_all.csv within the fixed point count radius and using the habitat, with the range decisions applied (see Scripts/06_Analysis_wrangling.R)
-- `Event_covs.csv`: Information about each survey, including date, start time, and detection covariates
-- `Functional_traits.csv`: Functional traits of all species observed in the project
-- `Site_covs.csv`: Unchanging covariates of each point count location
+- `Bird-point-counts_all.csv`: Every point-count detection: one row per species, survey, distance, and detection type
+- `Bird-point-counts_analysis.csv`: Subset of Bird-point-counts_all.csv within the fixed point count radius and using the habitat, with the range decisions applied (see Scripts/06_Analysis_wrangling.R)
+- `Survey-covariates.csv`: Information about each survey, including date, start time, and detection covariates
+- `Functional-traits.csv`: Functional traits of all species observed in the project
+- `Site-covariates.csv`: Unchanging covariates of each point count location
 - `Taxonomy.csv`: Taxonomic equivalents including BirdLife, BirdTree, and eBird/Clements
-- `Spp_remove_change.csv`: Range-review decisions: species removed or reassigned, optionally by department and elevation; applied only to Bird_pcs_analysis.csv
-- `Column_definitions.csv`: Definitions of every column of the tables above (one row per column; ‘Table’ names the file)
-- `Raw/Raw_pc_birds.csv`: The data collectors’ raw point-count bird records, with their original (Spanish) column names, from which Scripts/01_Gen_wrangling.R builds the tables above
-- `Raw/Raw_pc_metadata.csv`: The data collectors’ raw point-count metadata: one row per point count, including counts with no birds
+- `Range-review-decisions.csv`: Range-review decisions: species removed or reassigned, optionally by department and elevation; applied only to Bird-point-counts_analysis.csv
+- `Column-definitions.csv`: Definitions of every column of the tables above (one row per column; ‘Table’ names the file)
+- `Raw/Raw_bird-records.csv`: The data collectors’ raw point-count bird records, with their original (Spanish) column names, from which Scripts/01_Gen_wrangling.R builds the tables above
+- `Raw/Raw_point-count-metadata.csv`: The data collectors’ raw point-count metadata: one row per point count, including counts with no birds

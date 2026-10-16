@@ -213,11 +213,11 @@ Locations were surveyed 1–19 times in total, and 75% of all locations were sam
 
 **spatial grain/resolution:** A point count location: a fixed 50-m radius for most datasets, 25 m for CIPAV mbd, and no fixed radius for GAICA distancia (distances to each bird were estimated).
 
-**temporal grain/resolution:** A single survey (point count): 10 minutes for most datasets; variable for CIPAV mbd (see `Pc_duration` in `Event_covs.csv`). Locations were revisited within closed sampling periods and across years.
+**temporal grain/resolution:** A single survey (point count): 10 minutes for most datasets; variable for CIPAV mbd (see `Pc_duration` in `Survey-covariates.csv`). Locations were revisited within closed sampling periods and across years.
 
 ### Research Methods
 
-**data collection protocol:** Generally, point counts were conducted for 10 minutes in the morning, between sunrise and 11 AM (89%), recording all birds seen or heard within a 50-m fixed radius. CIPAV mbd employed a different methodology, using a 25-m radius and surveying for a variable amount of time (see `Pc_duration` in `Event_covs.csv`). GAICA Distancia did not employ a fixed point count radius, but instead estimated the distance to any bird seen or heard, and surveyed both mornings and afternoons (Table 1 in the data paper). Data sets also differ in the intensity with which farms were surveyed – some data sets contain fewer farms that were more heavily sampled (e.g., Unillanos mbd), whereas others cover many farms surveyed less intensively (e.g., Cipav mbd; <a href="#fig-pc-farm-db" class="quarto-xref">Figure 2</a>). Within each farm, point counts were generally separated by 100 - 150 meters to ensure independence (but there were exceptions). Note that excluding CIPAV, all data collectors recorded whether observations were flyovers (i.e., they did not use the habitat). Please see the ‘Birds_SSP_Colombia_Detailed_methodologies’ document for a more detailed accounting of the methods utilized by each data collector. The Piedemonte ecoregion had the most comprehensive sampling, with about half of the total point count locations (n = 246) sampled there (see the sampling map in the data paper). All other ecoregions were surveyed at 46 – 101 unique locations.
+**data collection protocol:** Generally, point counts were conducted for 10 minutes in the morning, between sunrise and 11 AM (89%), recording all birds seen or heard within a 50-m fixed radius. CIPAV mbd employed a different methodology, using a 25-m radius and surveying for a variable amount of time (see `Pc_duration` in `Survey-covariates.csv`). GAICA Distancia did not employ a fixed point count radius, but instead estimated the distance to any bird seen or heard, and surveyed both mornings and afternoons (Table 1 in the data paper). Data sets also differ in the intensity with which farms were surveyed – some data sets contain fewer farms that were more heavily sampled (e.g., Unillanos mbd), whereas others cover many farms surveyed less intensively (e.g., Cipav mbd; <a href="#fig-pc-farm-db" class="quarto-xref">Figure 2</a>). Within each farm, point counts were generally separated by 100 - 150 meters to ensure independence (but there were exceptions). Note that excluding CIPAV, all data collectors recorded whether observations were flyovers (i.e., they did not use the habitat). Please see the ‘Birds_SSP_Colombia_Detailed_methodologies’ document for a more detailed accounting of the methods utilized by each data collector. The Piedemonte ecoregion had the most comprehensive sampling, with about half of the total point count locations (n = 246) sampled there (see the sampling map in the data paper). All other ecoregions were surveyed at 46 – 101 unique locations.
 
 <div id="fig-pc-farm-db">
 
@@ -288,19 +288,19 @@ Figure 4: The most abundant and widespread bird species in the project (before 
 
 **permit history:** No permits were required for bird observations.
 
-**data forms or acquisition methods:** Each data collector entered its observations into a standardized Excel workbook (one per data collector and survey). `Scripts/00_Merge_raw.R` keeps the point-count records and the columns the pipeline uses and stacks them into `Raw/Raw_pc_birds.csv` and `Raw/Raw_pc_metadata.csv`, from which `Scripts/01_Gen_wrangling.R` onward builds the deposit tables.
+**data forms or acquisition methods:** Each data collector entered its observations into a standardized Excel workbook (one per data collector and survey). `Scripts/00_Merge_raw.R` keeps the point-count records and the columns the pipeline uses and stacks them into `Raw/Raw_bird-records.csv` and `Raw/Raw_point-count-metadata.csv`, from which `Scripts/01_Gen_wrangling.R` onward builds the deposit tables.
 
 **storage / location of completed data forms:** \[Aaron: where the original field forms and provider workbooks are kept.\]
 
 **data entry verification procedures:** See data verification under Status.
 
-**quality assurance/quality control procedures:** `Bird_pcs_all.csv` contains every point-count detection retained after three upstream steps. `00_Merge_raw.R` gathers each data collector’s point-count records, with their original values and column names, into the ‘Raw’ folder; `01_Gen_wrangling.R` removes trial or practice-day surveys and recordings identified only to family; `02_Taxonomy.R` then removes the 55 detections that could not be resolved to species (genus-level, ambiguous, or unidentified records). Otherwise, `Bird_pcs_all.csv` keeps the identifications as reported. During distributional and elevational range review, we flagged probable misidentifications and recorded a decision for each species, sometimes restricted to particular departments or elevations, in `Spp_remove_change.csv`: 41 detections of 19 species were removed, and 77 detections of 14 species were reassigned to a similar species considered more likely (e.g., *Setophaga pinus* to *S. fusca*). `04b_Range_apply.R` applies these decisions to `Bird_pcs_analysis.csv` only; users of `Bird_pcs_all.csv` can apply the same decisions with `flag_range_decisions()` in `Scripts/Pipeline_fns.R`, or make their own.
+**quality assurance/quality control procedures:** `Bird-point-counts_all.csv` contains every point-count detection retained after three upstream steps. `00_Merge_raw.R` gathers each data collector’s point-count records, with their original values and column names, into the ‘Raw’ folder; `01_Gen_wrangling.R` removes trial or practice-day surveys and recordings identified only to family; `02_Taxonomy.R` then removes the 55 detections that could not be resolved to species (genus-level, ambiguous, or unidentified records). Otherwise, `Bird-point-counts_all.csv` keeps the identifications as reported. During distributional and elevational range review, we flagged probable misidentifications and recorded a decision for each species, sometimes restricted to particular departments or elevations, in `Range-review-decisions.csv`: 41 detections of 19 species were removed, and 77 detections of 14 species were reassigned to a similar species considered more likely (e.g., *Setophaga pinus* to *S. fusca*). `04b_Range_apply.R` applies these decisions to `Bird-point-counts_analysis.csv` only; users of `Bird-point-counts_all.csv` can apply the same decisions with `flag_range_decisions()` in `Scripts/Pipeline_fns.R`, or make their own.
 
 Species observations were compared against distributional ranges (Vélez et al. 2021) and elevational ranges (Ayerbe-Quiñones 2018, Quintero and Jetz 2018, Hilty and Brown 2021, Freeman et al. 2022). All species observed outside of the species distributional range, or at an elevation \>150 meters above or below the elevational range found in the literature, were sent to the original data collector for review. Data collectors made recommendations for each species in question, falling into three categories: 1) the species identification and spatial information was correct (suggesting a range expansion), 2) the species was misidentified or wrongly transcribed and should be changed to a different species, or 3) if uncertain, the species should be removed from the database (applied by `04b_Range_apply.R`).
 
 `06_Analysis_wrangling.R` restricts the data to detections within the 50-m radius that used the habitat — excluding flyovers and every bird identified from audio recordings, including those also noted in the field — and caps the few counts above 50 individuals at 50.
 
-**data anomalies:** We have taken every step in our power to resolve and document inconsistencies throughout the dataset; we acknowledge that some may still exist, and ask that you notify the corresponding author if any are found. Blank cells can mean that the data were not applicable (e.g., when `Habitat` = ‘intensive pasture’, there was no `Habitat_sub` recorded), were recorded only by a subset of data collectors, or are truly missing; the ‘Column_content_definition’ column of `Column_definitions.csv` explains which for each column.
+**data anomalies:** We have taken every step in our power to resolve and document inconsistencies throughout the dataset; we acknowledge that some may still exist, and ask that you notify the corresponding author if any are found. Blank cells can mean that the data were not applicable (e.g., when `Habitat` = ‘intensive pasture’, there was no `Habitat_sub` recorded), were recorded only by a subset of data collectors, or are truly missing; the ‘Column_content_definition’ column of `Column-definitions.csv` explains which for each column.
 
 ### Other
 
@@ -312,7 +312,7 @@ Species observations were compared against distributional ranges (Vélez et al. 
 
 ## Data File Descriptors
 
-**naming scheme:** One file per table, named for its content (e.g., `Site_covs.csv`); the raw records are in the `Raw/` folder. \[Pending: renaming to the Ecology convention of hyphens between words.\]
+**naming scheme:** One file per table, named for its content (e.g., `Site-covariates.csv`); the raw records are in the `Raw/` folder. \[Pending: renaming to the Ecology convention of hyphens between words.\]
 
 **file size(s):** see the table below.
 
@@ -324,16 +324,16 @@ Table 3: Data files in the deposit: number of rows and size in megabytes.
 
 | File | Description | Rows | Size (MB) |
 |:---|:---|:---|---:|
-| Bird_pcs_all.csv | Every point-count detection: one row per species, survey, distance, and detection type | 20,985 | 1.70 |
-| Bird_pcs_analysis.csv | Subset of Bird_pcs_all.csv within the fixed point count radius and using the habitat, with the range decisions applied (see Scripts/06_Analysis_wrangling.R) | 17,133 | 1.17 |
-| Event_covs.csv | Information about each survey, including date, start time, and detection covariates | 2,997 | 0.57 |
-| Functional_traits.csv | Functional traits of all species observed in the project | 587 | 0.16 |
-| Site_covs.csv | Unchanging covariates of each point count location | 504 | 0.06 |
+| Bird-point-counts_all.csv | Every point-count detection: one row per species, survey, distance, and detection type | 20,985 | 1.75 |
+| Bird-point-counts_analysis.csv | Subset of Bird-point-counts_all.csv within the fixed point count radius and using the habitat, with the range decisions applied (see Scripts/06_Analysis_wrangling.R) | 17,133 | 1.17 |
+| Survey-covariates.csv | Information about each survey, including date, start time, and detection covariates | 2,997 | 0.58 |
+| Functional-traits.csv | Functional traits of all species observed in the project | 587 | 0.16 |
+| Site-covariates.csv | Unchanging covariates of each point count location | 504 | 0.06 |
 | Taxonomy.csv | Taxonomic equivalents including BirdLife, BirdTree, and eBird/Clements | 591 | 0.13 |
-| Spp_remove_change.csv | Range-review decisions: species removed or reassigned, optionally by department and elevation; applied only to Bird_pcs_analysis.csv | 33 | 0.00 |
-| Column_definitions.csv | Definitions of every column of the tables above (one row per column; ‘Table’ names the file) | 106 | 0.01 |
-| Raw/Raw_pc_birds.csv | The data collectors’ raw point-count bird records, with their original (Spanish) column names, from which Scripts/01_Gen_wrangling.R builds the tables above | 25,281 | 10.29 |
-| Raw/Raw_pc_metadata.csv | The data collectors’ raw point-count metadata: one row per point count, including counts with no birds | 3,617 | 0.82 |
+| Range-review-decisions.csv | Range-review decisions: species removed or reassigned, optionally by department and elevation; applied only to Bird-point-counts_analysis.csv | 33 | 0.00 |
+| Column-definitions.csv | Definitions of every column of the tables above (one row per column; ‘Table’ names the file) | 106 | 0.01 |
+| Raw/Raw_bird-records.csv | The data collectors’ raw point-count bird records, with their original (Spanish) column names, from which Scripts/01_Gen_wrangling.R builds the tables above | 25,281 | 10.29 |
+| Raw/Raw_point-count-metadata.csv | The data collectors’ raw point-count metadata: one row per point count, including counts with no birds | 3,617 | 0.82 |
 
 </div>
 
@@ -343,23 +343,23 @@ Table 3: Data files in the deposit: number of rows and size in megabytes.
 
 **format and storage mode:** Tabular data and code is stored as .csv files (<a href="#tbl-deposit-files" class="quarto-xref">Table 3</a>) and .R files, respectively. Files are UTF-8 encoded.
 
-**header information:** Each .csv file has a single header row of column names; columns are defined in `Column_definitions.csv` and below.
+**header information:** Each .csv file has a single header row of column names; columns are defined in `Column-definitions.csv` and below.
 
 ## Observation Information
 
-**unique identifier/primary key:** Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see ‘Data_joining_example.R’). The `Bird_pcs_all` and `Event_covs` data sets have the join keys `Id_survey` and `Id_survey_no_dc`. The `Site_covs` data set has the join key `Id_survey_no_dc`. The `Bird_pcs_all`, `Taxonomy`, and `Functional_traits` data sets all share the join key `Species_ayerbe`.
+**unique identifier/primary key:** Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see ‘Data_joining_example.R’). The `Bird-point-counts_all` and `Survey-covariates` data sets have the join keys `Id_survey` and `Id_survey_no_dc`. The `Site-covariates` data set has the join key `Id_survey_no_dc`. The `Bird-point-counts_all`, `Taxonomy`, and `Functional-traits` data sets all share the join key `Species_ayerbe`.
 
-**sampling unit:** `Bird_pcs_all.csv` and `Bird_pcs_analysis.csv`: one row per species, survey, distance, and detection type (counts of otherwise identical records are summed). `Event_covs.csv`: one row per survey (a point count on a given date and start time). `Site_covs.csv`: one row per point count location. `Taxonomy.csv` and `Functional_traits.csv`: one row per species. `Spp_remove_change.csv`: one row per species decision (by department where the decision is department-specific). `Column_definitions.csv`: one row per column.
+**sampling unit:** `Bird-point-counts_all.csv` and `Bird-point-counts_analysis.csv`: one row per species, survey, distance, and detection type (counts of otherwise identical records are summed). `Survey-covariates.csv`: one row per survey (a point count on a given date and start time). `Site-covariates.csv`: one row per point count location. `Taxonomy.csv` and `Functional-traits.csv`: one row per species. `Range-review-decisions.csv`: one row per species decision (by department where the decision is department-specific). `Column-definitions.csv`: one row per column.
 
 ## Variable Information
 
-For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird_pcs_analysis` data set because it shares the columns of `Bird_pcs_all`. Specifically, `Bird_pcs_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see ‘Scripts/06_Analysis_wrangling.R’), with the range decisions in `Spp_remove_change` applied (see Quality assurance/quality control procedures). Similarly, definitions of the join keys are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see ‘Column_definitions.csv’, particularly the ‘Column_content_definition’ column, for additional information about variables. The `Raw/` folder holds the data collectors’ point-count records with their original (Spanish) column names, from which the pipeline is run. `Bird_pcs_all.csv` should be treated as the complete set of bird data in nearly all cases. Note that blank cells (`" "`) can mean either that the data were not applicable (e.g., when `Habitat` = ‘intensive pasture’, there was no `Habitat_sub` recorded), recorded only by a subset of data collectors, or are truly missing data. These are defined in the ‘Column_content_definition’ column.
+For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird-point-counts_analysis` data set because it shares the columns of `Bird-point-counts_all`. Specifically, `Bird-point-counts_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see ‘Scripts/06_Analysis_wrangling.R’), with the range decisions in `Range-review-decisions` applied (see Quality assurance/quality control procedures). Similarly, definitions of the join keys are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see ‘Column-definitions.csv’, particularly the ‘Column_content_definition’ column, for additional information about variables. The `Raw/` folder holds the data collectors’ point-count records with their original (Spanish) column names, from which the pipeline is run. `Bird-point-counts_all.csv` should be treated as the complete set of bird data in nearly all cases. Note that blank cells (`" "`) can mean either that the data were not applicable (e.g., when `Habitat` = ‘intensive pasture’, there was no `Habitat_sub` recorded), recorded only by a subset of data collectors, or are truly missing data. These are defined in the ‘Column_content_definition’ column.
 
-**variable codes and description:** Questionable identifications are noted in `Spp_remove_change.csv`, and the commented R pipeline on [GitHub](https://github.com/LezzGitIt/Ssp-bird-data-wrangling.git) documents other modifications (see Quality assurance/quality control procedures). Users can filter the data according to their needs.
+**variable codes and description:** Questionable identifications are noted in `Range-review-decisions.csv`, and the commented R pipeline on [GitHub](https://github.com/LezzGitIt/Ssp-bird-data-wrangling.git) documents other modifications (see Quality assurance/quality control procedures). Users can filter the data according to their needs.
 
 <div id="tbl-bird-abundances-meta">
 
-Table 4: Metadata associated with the principal Bird point counts (‘Bird_pcs_all.csv’) dataset, including the identifying information of the point count. Species names (the ‘Species_ayerbe’ field) follow the illustrated field guide of Ayerbe-Quiñones (2018), which uses the AOS–SACC taxonomy.
+Table 4: Metadata associated with the principal Bird point counts (‘Bird-point-counts_all.csv’) dataset, including the identifying information of the point count. Species names (the ‘Species_ayerbe’ field) follow the illustrated field guide of Ayerbe-Quiñones (2018), which uses the AOS–SACC taxonomy.
 
 <div class="cell-output-display">
 
@@ -381,7 +381,7 @@ Table 4: Metadata associated with the principal Bird point counts (‘Bird_pcs_
 
 <div id="tbl-site-covs-meta">
 
-Table 5: Metadata associated with the ‘Site_covs.csv’ dataset, i.e. site-specific covariates that do not change across surveys. The definition for ‘Id_survey_no_dc’ is not provided.
+Table 5: Metadata associated with the ‘Site-covariates.csv’ dataset, i.e. site-specific covariates that do not change across surveys. The definition for ‘Id_survey_no_dc’ is not provided.
 
 <div class="cell-output-display">
 
@@ -408,7 +408,7 @@ Table 5: Metadata associated with the ‘Site_covs.csv’ dataset, i.e. site-s
 
 <div id="tbl-event-covs-meta">
 
-Table 6: Metadata associated with the ‘Event_covs.csv’ dataset, i.e. covariates related to the timing of the survey or survey-specific covariates that can change across surveys (e.g., weather). The definitions for ‘Id_survey’, ‘Id_survey_no_dc’, ‘Date’, and ‘Pc_start’ are not provided.
+Table 6: Metadata associated with the ‘Survey-covariates.csv’ dataset, i.e. covariates related to the timing of the survey or survey-specific covariates that can change across surveys (e.g., weather). The definitions for ‘Id_survey’, ‘Id_survey_no_dc’, ‘Date’, and ‘Pc_start’ are not provided.
 
 <div class="cell-output-display">
 
@@ -421,7 +421,7 @@ Table 6: Metadata associated with the ‘Event_covs.csv’ dataset, i.e. covar
 | Year | Year | integer | 2013 – 2026 |
 | Month | Month | integer | 1 – 12 |
 | Day | Day | integer | 1 – 31 |
-| Julian_day | Julian date | integer | 5 – 343 |
+| Julian_day | Julian date | integer | 6 – 343 |
 | Pc_duration | Length of point count | hms | 00:04:00 – 01:30:00, missing (1) |
 | N_samp_periods | Number of distinct ’Year_grp’s sampled | integer | 1 – 4 |
 | N_reps | Total number of times the point count was surveyed | integer | 1 – 12 |
@@ -467,7 +467,7 @@ Table 7: Metadata associated with the ‘Taxonomy.csv’ dataset. The definitio
 
 <div id="tbl-functional-traits-meta">
 
-Table 8: Metadata associated with the ‘Functional_traits.csv’ dataset. The ‘Source’ column provides the origin of each trait: AVONET (Tobias et al. 2022), BIRDBASE (Şekercioğlu et al. 2025), Bird et al. (2020), Ayerbe-Quiñones (2018), and HBW/BirdLife checklist. See the ‘Metadata’ tab of the ‘AVONET1_BirdLife.xlsx’ for detailed definitions of the AVONET fields. The definition for ‘Species_ayerbe’ is not provided.
+Table 8: Metadata associated with the ‘Functional-traits.csv’ dataset. The ‘Source’ column provides the origin of each trait: AVONET (Tobias et al. 2022), BIRDBASE (Şekercioğlu et al. 2025), Bird et al. (2020), Ayerbe-Quiñones (2018), and HBW/BirdLife checklist. See the ‘Metadata’ tab of the ‘AVONET1_BirdLife.xlsx’ for detailed definitions of the AVONET fields. The definition for ‘Species_ayerbe’ is not provided.
 
 <div class="cell-output-display">
 
@@ -516,15 +516,15 @@ Table 8: Metadata associated with the ‘Functional_traits.csv’ dataset. The 
 
 <div id="tbl-spp-remove-change-meta">
 
-Table 9: Columns of the ‘Spp_remove_change.csv’ dataset.
+Table 9: Columns of the ‘Range-review-decisions.csv’ dataset.
 
 <div class="cell-output-display">
 
 | Field name | Definition | Content |
 |:---|:---|:---|
-| Species_ayerbe | Species as reported in ‘Bird_pcs_all’ (Ayerbe-Quiñones 2018) to which the decision applies | NA |
+| Species_ayerbe | Species as reported in ‘Bird-point-counts_all’ (Ayerbe-Quiñones 2018) to which the decision applies | NA |
 | Species_changed | Species the observations are reassigned to | Filled only when Decision = ‘Change’ |
-| Decision | Range-review decision applied to the observations of this species when building ‘Bird_pcs_analysis’ | Remove = observations excluded from ‘Bird_pcs_analysis’; Change = observations reassigned to ‘Species_changed’ |
+| Decision | Range-review decision applied to the observations of this species when building ‘Bird-point-counts_analysis’ | Remove = observations excluded from ‘Bird-point-counts_analysis’; Change = observations reassigned to ‘Species_changed’ |
 | Departments_affected | Department(s) where the decision applies | Comma-separated; blank = the decision applies in all departments |
 | Elev_max | Maximum elevation (m) at which the decision applies | The decision applies to point counts at or below this elevation; blank = all elevations |
 | Reviewer | Who made the decision | Nick = Nick Bayly; Aaron = Aaron Skinner; Gaica = Asociación GAICA |

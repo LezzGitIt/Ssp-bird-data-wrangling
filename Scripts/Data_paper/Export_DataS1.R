@@ -7,7 +7,7 @@
 
 ## The raw point-count records are not re-written here: they keep the providers' original headers (not in the crosswalk) and their blank vs NA distinction (blank = empty cell, NA = no such column), which re-writing with na = "" would erase.
 ## Run this AFTER a full pipeline run (Scripts/00_ .. 06_). Column selection / ordering happen in each script's export section.
-## Column_definitions.csv is hand-maintained and is NOT overwritten here.
+## Column-definitions.csv is hand-maintained and is NOT overwritten here.
 ## The deposit's Metadata.md and README.md are rendered from Scripts/Data_paper/qmd/Metadata.qmd and Deposit_README.qmd (render both first); this script copies them, and the figures the Metadata shows, into DataS1/.
 
 # Setup -----------------------------------------------------------------------
@@ -15,19 +15,19 @@ library(readr)
 library(purrr)
 library(dplyr)
 
-# Map DataS1 table -> its producing script's Derived/Excels/ path -------------
+# Map DataS1 file name (Ecology convention: hyphens between words, underscores for groupings) -> its producing script's Derived/Excels/ path
 source_paths <- c(
-  Bird_pcs_all      = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv",       # 02
-  Bird_pcs_analysis = "Derived/Excels/Bird_pcs/Bird_pcs_analysis.csv",  # 06_Analysis_wrangling
-  Event_covs        = "Derived/Excels/Event_covs.csv",                  # 05_wvsc
-  Functional_traits = "Derived/Excels/Traits/Functional_traits.csv",    # 03
-  Site_covs         = "Derived/Excels/Site_covs.csv",                   # 01
-  Taxonomy          = "Derived/Excels/Taxonomy/Taxonomy.csv",           # 02
-  Spp_remove_change = "Derived/Excels/Spp_remove_change.csv"            # hand-curated from the 04a review; applied by 04b
+  `Bird-point-counts_all`      = "Derived/Excels/Bird_pcs/Bird_pcs_all.csv",       # 02
+  `Bird-point-counts_analysis` = "Derived/Excels/Bird_pcs/Bird_pcs_analysis.csv",  # 06_Analysis_wrangling
+  `Survey-covariates`          = "Derived/Excels/Event_covs.csv",                  # 05_wvsc
+  `Functional-traits`          = "Derived/Excels/Traits/Functional_traits.csv",    # 03
+  `Site-covariates`            = "Derived/Excels/Site_covs.csv",                   # 01
+  Taxonomy                     = "Derived/Excels/Taxonomy/Taxonomy.csv",           # 02
+  `Range-review-decisions`     = "Derived/Excels/Spp_remove_change.csv"            # hand-curated from the 04a review; applied by 04b
 )
 raw_paths <- c(
-  Raw_pc_birds    = "DataS1/Raw/Raw_pc_birds.csv",                      # 00, written in place
-  Raw_pc_metadata = "DataS1/Raw/Raw_pc_metadata.csv"                    # 00, written in place
+  `Raw_bird-records`         = "DataS1/Raw/Raw_bird-records.csv",          # 00, written in place
+  `Raw_point-count-metadata` = "DataS1/Raw/Raw_point-count-metadata.csv"   # 00, written in place
 )
 crosswalk_path <- "Suppfiles/column_names.csv"
 
@@ -87,7 +87,7 @@ manifest <- c(
   "DataS1 export manifest",
   paste("exported_at:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
   paste("pipeline_commit:", git_sha),
-  "headers: English (Raw_pc_*: the providers' original Spanish headers)",
+  "headers: English (Raw/: the providers' original Spanish headers)",
   "documents: Metadata.md, README.md, Figures/ (rendered from Scripts/Data_paper/qmd/)",
   "",
   "file,source,rows",

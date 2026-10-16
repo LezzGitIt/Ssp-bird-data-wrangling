@@ -53,7 +53,7 @@ theme_min <- function() {
 }
 
 # Range decisions ----------------------------------------------------------
-## Flag the observations that the curated remove/change list (Spp_remove_change.csv, deposited in DataS1/) applies to, and apply its species reassignments.
+## Flag the observations that the curated remove/change list (Spp_remove_change.csv, deposited as DataS1/Range-review-decisions.csv) applies to, and apply its species reassignments.
 # A decision applies to an observation when the species matches and, if Departments_affected is filled (comma-separated), the observation's department is listed; if Elev_max is filled, only at or below that elevation (m).
 # Returns every row of `observations` with Species_ayerbe updated for "Change" decisions, plus Species_reported (the name before any change) and Range_decision ("Remove", "Change", or NA). Drop the "Remove" rows to reproduce Bird_pcs_dist.csv / the analysis subset.
 flag_range_decisions <- function(observations, decisions, site_covs) {

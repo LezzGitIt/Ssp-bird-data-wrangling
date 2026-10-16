@@ -65,7 +65,7 @@ Our study area covered nearly 8$^{\circ}$ of latitude, 3.5$^{\circ}$ of longitud
 
 Locations were surveyed 1–`r Max_visits_loc` times in total, and `r Per_three_plus_loc`% of all locations were sampled at least 3 times within a closed sampling period (i.e., assumption of no births, deaths, immigration, or emigration; see Metadata); excluding the point counts conducted by CIPAV, which were surveyed only once, this rises to `r Per_three_plus`%. This 'robust' sampling design allows for modeling detectability and ultimately more robust estimates of occupancy and abundance [@mackenzieEstimatingSiteOccupancy2003], although only Ubc mbd and Ubc gaica mbd recorded detection covariates (e.g., weather, noise) systematically.
 
-Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see 'Data_joining_example.R'). The `Bird_pcs_all` and `Event_covs` data sets have the join keys `Id_survey` and `Id_survey_no_dc`. The `Site_covs` data set has the join key `Id_survey_no_dc`. The `Bird_pcs_all`, `Taxonomy`, and `Functional_traits` data sets all share the join key `Species_ayerbe`.
+Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see 'Data_joining_example.R'). The `Bird-point-counts_all` and `Survey-covariates` data sets have the join keys `Id_survey` and `Id_survey_no_dc`. The `Site-covariates` data set has the join key `Id_survey_no_dc`. The `Bird-point-counts_all`, `Taxonomy`, and `Functional-traits` data sets all share the join key `Species_ayerbe`.
 
 ```{r}
 #| label: tbl-datasets
@@ -147,7 +147,7 @@ dual_table(
 
 Species observations were compared against distributional ranges [@velezDistributionBirdsColombia2021] and elevational ranges [@quinteroGlobalElevationalDiversity2018; @freemanInterspecificCompetitionLimits2022; @hilty2021birds; @ayerbe2018guia]. All species observed outside of the species distributional range, or at an elevation \>150 meters above or below the elevational range found in the literature, were sent to the original data collector for review. Data collectors made recommendations for each species in question, falling into three categories: 1) the species identification and spatial information was correct (suggesting a range expansion), 2) the species was misidentified or wrongly transcribed and should be changed to a different species, or 3) if uncertain, the species should be removed from the database (applied by `04b_Range_apply.R`).
 
-Questionable identifications are noted in `Spp_remove_change.csv`, and the commented R pipeline on [GitHub](https://github.com/LezzGitIt/Ssp-bird-data-wrangling.git) documents other modifications (see the Metadata, Quality assurance/quality control procedures). Users can filter the data according to their needs.
+Questionable identifications are noted in `Range-review-decisions.csv`, and the commented R pipeline on [GitHub](https://github.com/LezzGitIt/Ssp-bird-data-wrangling.git) documents other modifications (see the Metadata, Quality assurance/quality control procedures). Users can filter the data according to their needs.
 
 `06_Analysis_wrangling.R` restricts the data to detections within the 50-m radius that used the habitat — excluding flyovers and every bird identified from audio recordings, including those also noted in the field — and caps the few counts above 50 individuals at 50.
 

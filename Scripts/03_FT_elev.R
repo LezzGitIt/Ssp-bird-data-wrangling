@@ -518,7 +518,7 @@ stop()
 Ft_final %>% Na_rows_cols()
 
 # Export functional traits file as csv
-# Column order + capitalisation are the deposit contract -- they match the Functional_traits rows of DataS1/Column_definitions.csv exactly. Edit both together.
+# Column order + capitalisation are the deposit contract -- they match the Functional_traits rows of DataS1/Column-definitions.csv exactly. Edit both together.
 # Elev_range is single-source (Ayerbe-Quinones 2018) -- more defensible than coalescing several sources, so no Source_elev column is deposited.
 # Chapter 1 traits that are not deposited (BirdLife clutch, relative eye size, nest traits from Sheard et al. 2024 + BIRDBASE) are built in the Fd-pd repository from the deposited tables.
 Ft_final %>%

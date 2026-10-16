@@ -12,13 +12,13 @@ library(naniar)
 
 # Bring in data -----------------------------------------------------------
 # Read in the six deposit tables and store in a named list
-path <- "DataS1"
-File_names <- list.files(path, pattern = "\\.csv$")
-
-Data <- map(File_names, \(file){
-  read_csv(file = paste0(path, "/", file))
-})
-names(Data) <- str_remove(File_names, "\\.csv$")
+# Short object names (used below) -> file names in DataS1/
+Deposit_tables <- c(
+  Bird_pcs_all = "Bird-point-counts_all.csv", Bird_pcs_analysis = "Bird-point-counts_analysis.csv",
+  Event_covs = "Survey-covariates.csv", Site_covs = "Site-covariates.csv", Taxonomy = "Taxonomy.csv",
+  Functional_traits = "Functional-traits.csv", Spp_remove_change = "Range-review-decisions.csv"
+)
+Data <- map(Deposit_tables, \(file) read_csv(file.path("DataS1", file)))
 
 # Explore -----------------------------------------------------------------
 # The datasets were split such that information is minimally repeated between datasets. This helps understand the structure of the datasets, such that the number of rows represent something meaningful. E.g.
