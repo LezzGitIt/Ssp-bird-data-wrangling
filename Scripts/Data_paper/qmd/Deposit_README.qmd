@@ -1,0 +1,40 @@
+---
+# Follows the Ecology Data Paper 2.0 README template. Rendered to README.md (Quarto does not treat a file named README.qmd as part of the project, hence this name) and copied into DataS1/ by Export_DataS1.R. Identifiers, Authors and Study Design match Metadata.qmd.
+title: "README"
+subtitle: "Bird diversity in cattle ranching landscapes of Colombia"
+execute:
+  echo: false
+  message: false
+  warning: false
+format:
+  gfm:
+    output-file: README.md
+    wrap: none
+---
+
+{{< include _setup.qmd >}}
+
+{{< include _identifiers.qmd >}}
+
+{{< include _study_design.qmd >}}
+
+## Data Files
+
+**naming scheme:** One file per table, named for its content (e.g., `Site_covs.csv`); the raw records are in the `Raw/` folder. See the Metadata for the columns of each file.
+
+**file size(s):** see the table below.
+
+```{r}
+#| label: Deposit-files-readme
+
+knitr::kable(select(Deposit_files, File, Rows, `Size (MB)` = Size_MB))
+```
+
+**file contents:** 
+
+```{r}
+#| label: Deposit-contents-readme
+#| results: asis
+
+cat(paste0("- `", Deposit_files$File, "`: ", Deposit_files$Description), sep = "\n")
+```

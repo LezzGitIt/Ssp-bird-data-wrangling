@@ -1,0 +1,35 @@
+```{r}
+#| label: Identifiers
+
+# Identifiers and Authors: shared by Metadata.qmd and Deposit_README.qmd (Ecology asks that they match exactly).
+
+Keywords <- yaml::read_yaml("Suppfiles/abstract_keywords.yml")$keywords %>%
+  str_split(",\\s*") %>% unlist() %>% str_trim() %>% discard(~ .x == "")
+Authors_yml <- yaml::read_yaml("Suppfiles/authors.yml")
+Affil <- map_chr(Authors_yml$affiliations, \(a) paste(na.omit(c(a$department, a$name, a$city, a$country)), collapse = ", ")) %>%
+  set_names(map_chr(Authors_yml$affiliations, "id"))
+Authors_md <- map_chr(Authors_yml$author, \(a) {
+  aff <- paste(Affil[map_chr(a$affiliations, "ref")], collapse = "; ")
+  paste0("- **author name:** ", str_trim(a$name), "  \n  **author ORCID:** [to be added]  \n",
+         if (!is.null(a$email)) paste0("  **author email:** ", a$email, "  \n") else "",
+         "  **author affiliation:** ", aff)
+})
+```
+
+# Identifiers
+
+**(data set) title:** Bird diversity in cattle ranching landscapes of Colombia
+
+**data identifier DOI:** [to be added when issued]
+
+**data paper DOI:** [to be added when issued]
+
+**license:** CC0 1.0 Universal (Dryad's license for all deposits)
+
+**keywords:** `r paste(Keywords, collapse = ", ")`
+
+**data paper citation:** [to be added when published]
+
+## Authors
+
+`r paste(Authors_md, collapse = "\n\n")`
