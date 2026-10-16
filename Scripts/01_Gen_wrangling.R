@@ -1,14 +1,13 @@
 ## PhD birds in silvopastoral landscapes##
 # General data wrangling 01 -- Create base data frame (Bird_pcs_all)
-## This script loads raw data from data providers, combines data into single df, & tidies and filters data to produce the environment necessary for future scripts & downstream analyses
+## This script starts from the raw point-count records of each data provider (stacked into two CSVs in DataS1/Raw/ by 00_Merge_raw.R, which keeps only point counts and the columns used here), combines data into single df, & tidies and filters data to produce the environment necessary for future scripts & downstream analyses
 
 ## Rows removed: 
-# Non-point-count protocols: Drops mist-net captures, ad-hoc sightings, and free-roaming transects (recorridos libres).
-# Practice: UBC-GAICA "ensayo" dates, the Otún Quimbaya "Practica" point, Santiago Meta 2026-01-05
-# Family-level / unknown recordings: c("Trochilidae", "Tyrannidae", "Desconocido") stripped from Natalia's recordings
+# Practice: UBC-GAICA "ensayo" dates, the Otún Quimbaya "Practica" point, Santiago Meta 2026-01-05 (bird records and metadata; kept in the 00 CSVs so users can include them)
+# Family-level / unknown recordings: c("Trochilidae", "Tyrannidae", "Desconocido") stripped from Natalia's recordings, plus one recording-only species not in the field notes
 
 ## Contents
-# 1) Load & format data that will allow for join into a single df
+# 1) Load the raw point counts & format data that will allow for join into a single df
 # 2) Merge into single df & continue to format
 # 3) Create various point count (PC) files different files based on inclusion of location, date, and habitat
 # 4) Download environmental data -- Temp, precipitation, & elevation
@@ -55,30 +54,21 @@ conflicts_prefer(hms::hms)
 source("Scripts/Pipeline_fns.R") # shared helpers (Cap_snake, standardize_column_contents, Na_rows_cols, ...)
 
 # Load bird obs & meta data ---------------------------------------------------
-files <- list.files(path = "Data/Aves", pattern = "^A.*xlsx$") # Add |D after A if you want Monroy/Skinner data too
+## Split a stacked 00 CSV back into one table per provider (in workbook order): keep only the columns the provider has (blank = empty cell, NA = no such column), then guess column types as reading the workbook would
+read_providers <- function(path){
+  stacked <- read_csv(path, col_types = cols(.default = col_character()), na = "NA")
+  split(select(stacked, -Dataset), factor(stacked$Dataset, levels = unique(stacked$Dataset))) %>%
+    map(\(df){
+      df %>%
+        select(where(\(x) !all(is.na(x)))) %>%
+        mutate(across(everything(), \(x) na_if(x, ""))) %>%
+        type_convert(col_types = cols())
+    })
+}
 
-# At present these are just the files with point counts
-df_birds <- map(files, \(file){
-  read_xlsx(
-    path = file.path("Data/Aves", file),
-    sheet = "Base_de_datos",
-    na = c("Sin informacion", "N/A"), trim_ws = TRUE
-  )
-})
-
-df_metadata <- map(files, \(file){
-  read_xlsx(
-    path = file.path("Data/Aves", file),
-    sheet = "Metadatos_puntos_conteo",
-    na = c("Sin informacion", "N/A"), trim_ws = TRUE
-  )
-})
-
-## Name lists
-files
-short_names <- c("Cipav", "Gaica_dist", "Gaica_mbd", "Ubc_gaica_Caf", "Ubc_gaica_Meta", "Ubc_gaica_OQ", "Ubc_hatico", "Ubc_meta26", "Ubc_meta22", "UniLlanos") # "Ubc_Monroy"
-names(df_birds) <- short_names 
-names(df_metadata) <- short_names
+df_birds <- read_providers("DataS1/Raw/Raw_pc_birds.csv")
+df_metadata <- read_providers("DataS1/Raw/Raw_pc_metadata.csv")
+names(df_birds)
 
 # Format bird observation data -------------------------------------------
 df_birds <- map(df_birds, \(df) {
@@ -109,17 +99,10 @@ df_birds <- map(df_birds, function(x) {
         Ano %in% c(2025, 2026) ~ "25-26"
       )
     )
-}) ### GAICA did not record date for 74 Recorridos libres
-
-# Remove irrelevant columns from dataframes
-df_birds_red <- map(df_birds, function(x) {
-  dplyr::select(
-    x, 1:21,
-    # NB: the contains() fragments match RAW provider headers (Spanish) at ingestion -- do not Anglicise them; the columns are renamed to English in the str_replace_all map just below. "Date" is the already-constructed column from L91; "Dia" is still the raw column (Anglicised at the L976 reconstruction).
-    contains(c("Id_survey", "Id_punto_muestreo_original", "Protocolo_muestreo", "Ano", "Mes", "Year_grp", "Hora", "repeticion", "Orden", "Familia", "Especie", "cientifico", "Count", "Tipo_registro", "Habitat", "Sistema", "Registrado", "Distancia_observacion", "climatica", "Elevacion", "finca", "grabacion", "Cigarras", "Vacas", "Ruido", "Observaciones", "Estrato_")), "Date", "Dia",
-  ) %>%
-    select(-contains(c("Numero_registro", "Id_registro_biologico", "Observacion_climatica_evento", "Concatenar", "repeticion")))
 })
+
+# The columns that are not needed were removed in 00_Merge_raw.R
+df_birds_red <- df_birds
 
 # Display data collector's name
 map(df_birds_red, function(x) {
@@ -190,12 +173,6 @@ df_birds_red <- map(df_birds_red, \(df){
       Pregunta_gsc == "Analisis_distanciamiento" ~ "distancia",
       .default = as.character(Pregunta_gsc)
     ),
-    Protocolo_muestreo = case_when(
-      Protocolo_muestreo == "Observacion en puntos fijos de conteo" ~ "Punto conteo",
-      Protocolo_muestreo == "Captura con redes de niebla" ~ "Red de niebla",
-      Protocolo_muestreo == "Observacion ad hoc en recorridos libres" ~ "Ad hoc",
-      .default = Protocolo_muestreo
-    ), 
     # Create Ecoregions based on related Departments (sentence-cased with the other text columns below, e.g. "Eje cafetero"; the manuscript and figures display them as proper names)
     Department = ifelse(Department == "La Guajira", "Guajira", Department),
     Ecoregion = case_when(
@@ -284,9 +261,6 @@ df_birds_red$Gaica_mbd <- df_birds_red$Gaica_mbd %>%
     #Id_survey_no_dc == "MB-M-EPO1_03" & Ano == 2017, "MB-M-EPO1_03_(1)", Id_survey_no_dc
   )
 
-# Remove UBC microhabitat columns
-df_birds_red$Ubc_meta22 <- df_birds_red$Ubc_meta22 %>% select(-c(Habitat1 | Habitat2))
-
 ## 2024 - 2026 
 ## Hatico
 df_birds_red$Ubc_hatico <- df_birds_red$Ubc_hatico %>% 
@@ -370,23 +344,20 @@ df_birds_red[4:6] <- map(df_birds_red[4:6], \(df){
   df %>% mutate(Registered_by = "Yuri Rosero-Mora, Robert Rodriguez")
 })
 
-# NOTE in Unillanos:: Distancia_obs is >50 whenever Comentario == "Fuera"
-df_birds$UniLlanos %>%   # df_birds is pre-rename -- still the raw Spanish headers
-  filter(Comentario_registro == "Fuera") %>%
-  distinct(Tipo_registro, Distancia_observacion)
-
 ## Remove practice day data
-# UBC-GAICA Cafetera -- only the "ensayo" (trial) days. LCA_07-09 (Quindio / Cafetera) were visited once by UBC-GAICA in 2024 but the locations carry a full GAICA 2017 closed-period series, so the 2024 revisit stays -- it adds a second sampling period. Dropping under-replicated surveys is an analysis choice for 06_Analysis_wrangling.R / the chapter repos, not the pipeline.
-df_birds_red$Ubc_gaica_Caf <- df_birds_red$Ubc_gaica_Caf %>%
-  filter(!Date %in% as.Date(c("2024-05-27", "2024-05-28"))) # Ensayo dates
-
-# UBC-GAICA Otun Quimbaya
-df_birds_red$Ubc_gaica_OQ <- df_birds_red$Ubc_gaica_OQ %>% 
-  filter(Id_survey != "UBCG-MB-R-OQ_Practica")
-
-# Santiago 2026
-df_birds_red$Ubc_meta26 <- df_birds_red$Ubc_meta26 %>% 
-  filter(!Date %in% as.Date(c("2026-01-05")))
+# Applied to the bird records here and to the metadata below. UBC-GAICA Cafetera -- only the "ensayo" (trial) days. LCA_07-09 (Quindio / Cafetera) were visited once by UBC-GAICA in 2024 but the locations carry a full GAICA 2017 closed-period series, so the 2024 revisit stays -- it adds a second sampling period. Dropping under-replicated surveys is an analysis choice for 06_Analysis_wrangling.R / the chapter repos, not the pipeline.
+remove_practice <- function(df_list){
+  df_list$Ubc_gaica_Caf <- df_list$Ubc_gaica_Caf %>%
+    filter(!Date %in% as.Date(c("2024-05-27", "2024-05-28"))) # Ensayo dates
+  # UBC-GAICA Otun Quimbaya
+  df_list$Ubc_gaica_OQ <- df_list$Ubc_gaica_OQ %>% 
+    filter(Id_survey != "UBCG-MB-R-OQ_Practica")
+  # Santiago 2026
+  df_list$Ubc_meta26 <- df_list$Ubc_meta26 %>% 
+    filter(!Date %in% as.Date(c("2026-01-05")))
+  df_list
+}
+df_birds_red <- remove_practice(df_birds_red)
 
 ## Natalia put in lots of work to check and improve upon GAICA's recordings database, particularly she added all of the 'Cf' (confirmed) species
 # Her two review workbooks (sheet "Grabaciones") were exported to one CSV with a Site column (Valle_cocora = the Eje cafetero survey, Otun_quimbaya); it is the only source of the 2024 recording data -- the partially filled recording sheet and columns (Grabacion, Observacion_de_grabacion, Confiabilidad_de_grabacion) were removed from the UBC-GAICA field workbooks (2026-10-15; originals in Data/Aves/Old/)
@@ -467,7 +438,7 @@ df_birds_red$Ubc_gaica_Caf <- df_birds_red$Ubc_gaica_Caf %>%
   ))
 
 # Natalia's recording-only detections with no field row (3 at PORT, confirmed against the field notes) arrive from the full_join with only the join keys and her columns; give them their point count's survey-level fields (protocol, location, farm, observers, start time, ...) from the field rows of the same count, and record them as heard
-Species_level_cols <- c("Orden", "Familia", "Nombre_cientifico_final", "Autoria_nombre_cientifico", "Count", "Obs_type", "Distance_bird", "Recording", "Hora")
+Species_level_cols <- c("Orden", "Familia", "Nombre_cientifico_final", "Count", "Obs_type", "Distance_bird", "Recording", "Hora")
 df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")] <- map(df_birds_red[c("Ubc_gaica_Caf", "Ubc_gaica_OQ")], \(df){
   survey_cols <- setdiff(names(df), c(Species_level_cols, "Id_survey", "Date"))
   df %>%
@@ -539,17 +510,13 @@ df_birds_red <- map(df_birds_red, \(df) {
   )
 })
 
-## Combine all dfs & remove irrelevant columns 
+## Combine all dfs (unused columns were dropped in 00_Merge_raw.R)
 # smartbind seems to work well on data frames, not tibbles
 df_birds_red <- map(df_birds_red, \(df) {
   df %>% as.data.frame()
 })
 
-Birds_comb <- smartbind(list = df_birds_red) %>%
-  dplyr::select(-c(
-    Coordenadas_geograficas, Incertidumbre_coordenadas, Precision_coordenadas,
-    Autoria_nombre_cientifico, Numero_especie, Municipio
-  )) %>% as_tibble()
+Birds_comb <- smartbind(list = df_birds_red) %>% as_tibble()
 rownames(Birds_comb) <- NULL
 head(Birds_comb)
 names(Birds_comb)
@@ -655,9 +622,8 @@ Birds_comb5 <- Birds_comb5 %>%
   ))
 
 # Bird_pcs_all  ---------------------------------------------------------------
-# Create data base with just point counts and Id_survey_no_dc column
-Bird_pcs_all <- Birds_comb5 %>%
-  filter(Protocolo_muestreo == "Punto conteo")
+# The base data frame: every record is a point count (00_Merge_raw.R dropped the other protocols)
+Bird_pcs_all <- Birds_comb5
 
 # NOTE:: This worked, as the difference in unique Ids is the 54 UniLlanos points
 length(unique(Bird_pcs_all$Id_survey)) - length(unique(Bird_pcs_all$Id_survey_no_dc))
@@ -740,6 +706,9 @@ df %>% mutate(
   Hora = as_hms(Hora))
 )
 
+# Remove practice days (see remove_practice() above)
+df_metadata <- remove_practice(df_metadata)
+
 # Join together and remove rownames
 df_meta <- smartbind(list = df_metadata) %>% tibble()
 rownames(df_meta) <- NULL
@@ -773,7 +742,6 @@ No_obs_l$UniLlanos <- No_obs_l$UniLlanos %>% mutate(Date = NA)
 # Create a 'Rep' column that contains the repetition number for a given survey, add Spp_obs column
 Rep_dfs <- map2(df_birds_red, No_obs_l, \(df, No_obs){
   df %>%
-    filter(Protocolo_muestreo == "Punto conteo") %>%
     mutate(Spp_obs = 1) %>%
     group_by(Id_survey, Year_grp, Date, Same_pc) %>%
     slice_head(n = 1) %>%
@@ -1355,6 +1323,7 @@ stop()
 rm(list = ls()[!(ls() %in% c("Bird_pcs_all", "Site_covs", "Event_covs_pcs", "Birds_comb5", "Pc_date9", "Pc_hab", "Pc_locs", "df_birds", "df_metadata", "df_meta", "df_birds_red", "Mes_mod", "Pc_locs_mult", "Pc_locs_sf", "Envi_df2", "Prec_df", "Prec_daily", "Rep_dfs"))])
 
 ## Export Bird_pcs_all as csv
+# One row per species x point count x distance x detection type: rows that differ only in Count are summed. CIPAV logged each bird as its own row with its own time (5,749 raw rows -> 1,750), and other collectors occasionally entered the same species twice in one count.
 names(Bird_pcs_all)
 Bird_pcs_all_export <- Bird_pcs_all %>% 
   arrange(Id_group, Id_survey, Date, Pc_start) %>%
@@ -1376,49 +1345,3 @@ Prec_df %>% write_csv(file = "Derived/Excels/Prec_df.csv")
 
 # Event covariates
 Event_covs_pcs %>% write_csv(file = "Derived/Excels/Event_covs_pcs.csv")
-
-## Export Pc_hab to update points manually using Google Earth
-# NOTE: This is likely not necessary because can use Mathilde / Natalia digitized landcover & calculate distance to forest edge from point count location. 
-if(FALSE){
-  Join_year <- Bird_pcs_all %>% distinct(Id_survey, Ano, Habitat_og)   # Bird_pcs_all carries the raw survey year as Ano (Event_covs standardises it to Year)
-  Pc_hab_ano %>%
-    filter(str_detect(Habitat, "Bosque")) %>%
-    distinct(Id_survey, Uniq_db, Ecoregion, Ano, pick(starts_with("Habitat"))) %>%
-    arrange(Id_survey) %>% 
-    data.frame() %>%
-    xlsx::write.xlsx("Derived/Excels/Hab_define_forest.xlsx", 
-                     showNA = FALSE, row.names = FALSE)
-}
-
-st_write(Pc_locs_sf, dsn = "Derived/Geospatial/shp", layer = "Pc_locs.shp")
-
-# Working Audrey----------------------------------------------------------
-# Export files for Audrey to check GAICA Dist
-Pc_locs_dc <- vect("Derived/Geospatial/shp/Pc_locs_dc.gpkg") 
-Site_covs <- read_csv(file = "Derived/Excels/Site_covs.csv")
-Gaica_dist_hab <- Pc_locs_dc %>% 
-  filter(Uniq_db == "Gaica distancia") %>% 
-  left_join(Site_covs[,c("Id_survey_no_dc", "Habitat", "Habitat_sub")]) %>% 
-  select(Id_survey_no_dc, Habitat, Habitat_sub) %>%  
-  rename(name = Id_survey_no_dc) %>% 
-  st_as_sf()
-# Export kml of points 
-Gaica_dist_hab %>%
-  st_write(
-    driver='kml', dsn = "Derived/Geospatial/kml/Gaica_distancia.kml", 
-    layer = "Gaica_distancia"
-  )
-# Export kml of buffers
-Gaica_dist_hab %>%
-  st_buffer(50) %>%
-  st_write(
-    driver='kml', dsn = "Derived/Geospatial/kml/Gaica_distancia_buff.kml", 
-    layer = "Gaica_distancia_buff"
-  )
-
-# Export Excel
-Gaica_dist_hab %>% 
-  st_drop_geometry() %>%
-  mutate(Audrey_classification = NA_character_, 
-         Aaron_review = NA_character_) %>%
-  xlsx::write.xlsx(row.names = FALSE, showNA = FALSE, file = "Derived/Excels/Gaica_dist_audrey.xlsx")

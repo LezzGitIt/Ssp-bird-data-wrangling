@@ -1,13 +1,15 @@
 DataS1 export manifest
-exported_at: 2026-10-15T11:13:23-0700
-pipeline_commit: f3d9a0e
-headers: English
+exported_at: 2026-10-15T19:30:46-0700
+pipeline_commit: 55f7697
+headers: English (Raw_pc_*: the providers' original Spanish headers)
 
 file,source,rows
 Bird_pcs_all.csv,Derived/Excels/Bird_pcs/Bird_pcs_all.csv,20985
 Bird_pcs_analysis.csv,Derived/Excels/Bird_pcs/Bird_pcs_analysis.csv,17133
-Event_covs.csv,Derived/Excels/Event_covs.csv,2999
+Event_covs.csv,Derived/Excels/Event_covs.csv,2997
 Functional_traits.csv,Derived/Excels/Traits/Functional_traits.csv,587
 Site_covs.csv,Derived/Excels/Site_covs.csv,504
 Taxonomy.csv,Derived/Excels/Taxonomy/Taxonomy.csv,591
 Spp_remove_change.csv,Derived/Excels/Spp_remove_change.csv,33
+Raw/Raw_pc_birds.csv,DataS1/Raw/Raw_pc_birds.csv,25281
+Raw/Raw_pc_metadata.csv,DataS1/Raw/Raw_pc_metadata.csv,3617

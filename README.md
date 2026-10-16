@@ -17,6 +17,7 @@ The project uses data from 500+ unique point count locations surveyed 2013–202
 | `Taxonomy.csv` | SACC ↔ BirdLife ↔ eBird ↔ BirdTree crosswalk (Colombia) | `Species_ayerbe` |
 | `Functional_traits.csv` | per-species trait table | `Species_ayerbe` |
 | `Spp_remove_change.csv` | curated range-review decisions: species removed or reassigned, optionally by department / elevation (applied to `Bird_pcs_analysis.csv` only; `Bird_pcs_all.csv` keeps the original identifications) | `Species_ayerbe` |
+| `Raw/` | the data collectors' raw point-count records (`Raw_pc_birds.csv`, `Raw_pc_metadata.csv`; original Spanish headers + `Dataset`, practice days included) — only so the pipeline can be rerun from `01`; use `Bird_pcs_all.csv` as the bird data |  |
 | `Column_definitions.csv` | column definitions for every table (one row per column; `Table` names the file) |  |
 | `EXPORT_manifest.txt` | when the deposit was exported, from which pipeline commit, and the row count of each file |  |
 
@@ -30,6 +31,7 @@ On publication, the versioned deposit of record (with a DOI) will be archived on
 
 | Script | Builds |
 |----|----|
+| `00_Merge_raw.R` | stacks the providers' raw point-count records (point counts only, unused columns dropped, raw headers + a `Dataset` column) → `DataS1/Raw/Raw_pc_birds.csv` + `Raw_pc_metadata.csv`; run only when a provider workbook changes |
 | `01_Gen_wrangling.R` | base point-count df, site/event covariates, point locations, climate |
 | `02_Taxonomy.R` | `Taxonomy.csv`, taxonomy-standardized observations |
 | `03_FT_elev.R` | `Functional_traits.csv`, elevational ranges |

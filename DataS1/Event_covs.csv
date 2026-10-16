@@ -2786,20 +2786,18 @@ UBC-MB-M-LRO1_09,MB-M-LRO1_09,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-14,22,2022,6,14,
 UBC-MB-M-LRO1_09,MB-M-LRO1_09,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-07,25-26,2026,1,7,7,07:57:00,00:10:00,3,6,1,Early,1,Yes,Moderate,Despejado,No,Santiago Lugo-Enciso,37,41.18612064737573,0
 UBC-MB-M-LRO1_09,MB-M-LRO1_09,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-08,25-26,2026,1,8,8,06:27:00,00:10:00,3,6,2,Early,2,Yes,Moderate,Nublado,No,Santiago Lugo-Enciso,38,41.18612064737573,0
 UBC-MB-M-LRO1_09,MB-M-LRO1_09,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-09,25-26,2026,1,9,9,09:43:00,00:10:00,3,6,3,Early,3,Yes,Moderate,Brisa,No,Santiago Lugo-Enciso,39,41.18612064737573,0
-UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-12,22,2022,6,12,163,10:24:00,00:10:00,3,7,1,Early,1,Yes,Moderate,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",16,41.14082433758598,11.7
-UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-13,22,2022,6,13,164,07:23:00,00:10:00,3,7,2,Early,2,Yes,Light,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",17,41.14082433758598,11.7
-UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-14,22,2022,6,14,165,08:10:00,00:10:00,3,7,3,Early,3,Yes,Light,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",18,41.14082433758598,11.7
-UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-05,25-26,2026,1,5,5,13:21:00,00:10:00,3,7,1,Early,1,No,Moderate,Llovizna,No,Santiago Lugo-Enciso,35,42.33022571148235,11.7
-UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-07,25-26,2026,1,7,7,08:15:00,00:10:00,3,7,2,Early,2,Yes,Moderate,Brisa,No,Santiago Lugo-Enciso,37,42.33022571148235,11.7
-UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-08,25-26,2026,1,8,8,07:17:00,00:10:00,3,7,3,Early,3,Yes,Moderate,Brisa,No,Santiago Lugo-Enciso,38,42.33022571148235,11.7
-UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-09,25-26,2026,1,9,9,10:00:00,00:10:00,3,7,4,Early,4,Yes,Light,Brisa,No,Santiago Lugo-Enciso,39,42.33022571148235,11.7
-UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-12,22,2022,6,12,163,10:55:00,00:10:00,3,7,1,Early,1,Yes,Moderate,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",16,46.985041687101095,0
-UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-13,22,2022,6,13,164,07:46:00,00:10:00,3,7,2,Early,2,Yes,Moderate,Brisa,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",17,46.985041687101095,0
-UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-14,22,2022,6,14,165,08:38:00,00:10:00,3,7,3,Early,3,Yes,Moderate,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",18,46.985041687101095,0
-UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-05,25-26,2026,1,5,5,13:41:00,00:10:00,3,7,1,Early,1,No,Moderate,Nublado,No,Santiago Lugo-Enciso,35,48.177292790583245,0
-UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-07,25-26,2026,1,7,7,08:33:00,00:10:00,3,7,2,Early,2,No,Light,Despejado,No,Santiago Lugo-Enciso,37,48.177292790583245,0
-UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-08,25-26,2026,1,8,8,07:31:00,00:10:00,3,7,3,Early,3,Yes,Light,Nublado,No,Santiago Lugo-Enciso,38,48.177292790583245,0
-UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-09,25-26,2026,1,9,9,10:19:00,00:10:00,3,7,4,Early,4,Yes,Light,Brisa,No,Santiago Lugo-Enciso,39,48.177292790583245,0
+UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-12,22,2022,6,12,163,10:24:00,00:10:00,3,6,1,Early,1,Yes,Moderate,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",16,41.14082433758598,11.7
+UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-13,22,2022,6,13,164,07:23:00,00:10:00,3,6,2,Early,2,Yes,Light,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",17,41.14082433758598,11.7
+UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-14,22,2022,6,14,165,08:10:00,00:10:00,3,6,3,Early,3,Yes,Light,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",18,41.14082433758598,11.7
+UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-07,25-26,2026,1,7,7,08:15:00,00:10:00,3,6,1,Early,1,Yes,Moderate,Brisa,No,Santiago Lugo-Enciso,37,42.33022571148235,11.7
+UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-08,25-26,2026,1,8,8,07:17:00,00:10:00,3,6,2,Early,2,Yes,Moderate,Brisa,No,Santiago Lugo-Enciso,38,42.33022571148235,11.7
+UBC-MB-M-LRO1_10,MB-M-LRO1_10,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-09,25-26,2026,1,9,9,10:00:00,00:10:00,3,6,3,Early,3,Yes,Light,Brisa,No,Santiago Lugo-Enciso,39,42.33022571148235,11.7
+UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-12,22,2022,6,12,163,10:55:00,00:10:00,3,6,1,Early,1,Yes,Moderate,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",16,46.985041687101095,0
+UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-13,22,2022,6,13,164,07:46:00,00:10:00,3,6,2,Early,2,Yes,Moderate,Brisa,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",17,46.985041687101095,0
+UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-14,22,2022,6,14,165,08:38:00,00:10:00,3,6,3,Early,3,Yes,Moderate,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",18,46.985041687101095,0
+UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-07,25-26,2026,1,7,7,08:33:00,00:10:00,3,6,1,Early,1,No,Light,Despejado,No,Santiago Lugo-Enciso,37,48.177292790583245,0
+UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-08,25-26,2026,1,8,8,07:31:00,00:10:00,3,6,2,Early,2,Yes,Light,Nublado,No,Santiago Lugo-Enciso,38,48.177292790583245,0
+UBC-MB-M-LRO1_11,MB-M-LRO1_11,Ubc,Ubc mbd,UBC-MB-M-LRO1,2026-01-09,25-26,2026,1,9,9,10:19:00,00:10:00,3,6,3,Early,3,Yes,Light,Brisa,No,Santiago Lugo-Enciso,39,48.177292790583245,0
 UBC-MB-M-LRO1_12,MB-M-LRO1_12,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-12,22,2022,6,12,163,09:44:00,00:10:00,3,6,1,Early,1,Yes,None,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",16,39.70789279567262,0
 UBC-MB-M-LRO1_12,MB-M-LRO1_12,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-13,22,2022,6,13,164,06:11:00,00:10:00,3,6,2,Early,2,Yes,None,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",17,39.70789279567262,0
 UBC-MB-M-LRO1_12,MB-M-LRO1_12,Ubc,Ubc mbd,UBC-MB-M-LRO1,2022-06-14,22,2022,6,14,165,07:20:00,00:10:00,3,6,3,Early,3,Yes,Moderate,Nublado,No,"Aaron Alexander Skinner, Santiago Lugo-Enciso",18,39.70789279567262,0
@@ -2812,20 +2810,20 @@ UBC-MB-VC-EH_01,MB-VC-EH_01,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-05,25-26,2025,12,5,
 UBC-MB-VC-EH_02,MB-VC-EH_02,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,10:44:00,00:10:00,2,3,1,Early,1,Yes,Moderate,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",1,40.94365507104245,19.5
 UBC-MB-VC-EH_02,MB-VC-EH_02,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,337,09:12:00,00:10:00,2,3,2,Early,2,Yes,Moderate,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",2,40.94365507104245,19.5
 UBC-MB-VC-EH_02,MB-VC-EH_02,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-04,25-26,2025,12,4,338,10:29:00,00:10:00,2,3,3,Early,3,Yes,Light,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",3,40.94365507104245,19.5
-UBC-MB-VC-EH_03,MB-VC-EH_03,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,09:21:00,00:10:00,2,3,1,Early,1,Yes,None,Despejado,No,"Aaron Skinner, Michael Castaño Diaz",1,36.56512141280336,12
-UBC-MB-VC-EH_03,MB-VC-EH_03,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,337,06:19:00,00:10:00,2,3,2,Early,2,Yes,None,Nublado,Yes,"Aaron Skinner, Michael Castaño Diaz",2,36.56512141280336,12
+UBC-MB-VC-EH_03,MB-VC-EH_03,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,09:21:00,00:10:00,2,3,1,Early,1,Yes,None,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",1,36.56512141280336,12
+UBC-MB-VC-EH_03,MB-VC-EH_03,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,337,06:19:00,00:10:00,2,3,2,Early,2,Yes,None,Despejado,Yes,"Aaron Skinner, Michael Castaño Diaz",2,36.56512141280336,12
 UBC-MB-VC-EH_03,MB-VC-EH_03,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-05,25-26,2025,12,5,339,09:41:00,00:10:00,2,3,3,Early,3,Yes,Light,Brisa,Yes,"Aaron Skinner, Michael Castaño Diaz",4,36.56512141280336,12
-UBC-MB-VC-EH_04,MB-VC-EH_04,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,08:54:00,00:10:00,2,3,1,Early,1,Yes,Light,Despejado,No,"Aaron Skinner, Michael Castaño Diaz",1,28.192298258523135,16.3
-UBC-MB-VC-EH_04,MB-VC-EH_04,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,337,07:19:00,00:10:00,2,3,2,Early,2,Yes,Moderate,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",2,28.192298258523135,16.3
+UBC-MB-VC-EH_04,MB-VC-EH_04,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,08:54:00,00:10:00,2,3,1,Early,1,Yes,Light,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",1,28.192298258523135,16.3
+UBC-MB-VC-EH_04,MB-VC-EH_04,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,337,07:19:00,00:10:00,2,3,2,Early,2,Yes,Moderate,Despejado,No,"Aaron Skinner, Michael Castaño Diaz",2,28.192298258523135,16.3
 UBC-MB-VC-EH_04,MB-VC-EH_04,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-05,25-26,2025,12,5,339,10:05:00,00:10:00,2,3,3,Early,3,Yes,Moderate,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",4,28.192298258523135,16.3
-UBC-MB-VC-EH_05,MB-VC-EH_05,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,07:56:00,00:10:00,1,4,1,Early,1,Yes,None,Despejado,No,"Aaron Skinner, Michael Castaño Diaz",1,33.19386503067497,21.9
+UBC-MB-VC-EH_05,MB-VC-EH_05,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,07:56:00,00:10:00,1,4,1,Early,1,Yes,None,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",1,33.19386503067497,21.9
 UBC-MB-VC-EH_05,MB-VC-EH_05,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,337,07:43:00,00:10:00,1,4,2,Early,2,Yes,Light,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",2,33.19386503067497,21.9
 UBC-MB-VC-EH_05,MB-VC-EH_05,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-04,25-26,2025,12,4,338,11:52:00,00:10:00,1,4,3,Early,3,Yes,Light,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",3,33.19386503067497,21.9
 UBC-MB-VC-EH_05,MB-VC-EH_05,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-05,25-26,2025,12,5,339,11:13:00,00:10:00,1,4,4,Early,4,Yes,None,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",4,33.19386503067497,21.9
-UBC-MB-VC-EH_06,MB-VC-EH_06,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,08:28:00,00:10:00,1,3,1,Early,1,Yes,None,Despejado,No,"Aaron Skinner, Michael Castaño Diaz",1,34.63919548687751,15.8
-UBC-MB-VC-EH_06,MB-VC-EH_06,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,337,06:41:00,00:10:00,1,3,2,Early,2,Yes,Light,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",2,34.63919548687751,15.8
-UBC-MB-VC-EH_06,MB-VC-EH_06,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-05,25-26,2025,12,5,339,10:42:00,00:10:00,1,3,3,Early,3,Yes,Light,Despejado,No,"Aaron Skinner, Michael Castaño Diaz",4,34.63919548687751,15.8
-UBC-MB-VC-EH_07,MB-VC-EH_07,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,09:58:00,00:10:00,1,3,1,Early,1,Yes,Light,Despejado,No,"Aaron Skinner, Michael Castaño Diaz",1,47.309073026800874,11.2
+UBC-MB-VC-EH_06,MB-VC-EH_06,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,08:28:00,00:10:00,1,3,1,Early,1,Yes,None,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",1,34.63919548687751,15.8
+UBC-MB-VC-EH_06,MB-VC-EH_06,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,337,06:41:00,00:10:00,1,3,2,Early,2,Yes,Light,Despejado,No,"Aaron Skinner, Michael Castaño Diaz",2,34.63919548687751,15.8
+UBC-MB-VC-EH_06,MB-VC-EH_06,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-05,25-26,2025,12,5,339,10:42:00,00:10:00,1,3,3,Early,3,Yes,Light,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",4,34.63919548687751,15.8
+UBC-MB-VC-EH_07,MB-VC-EH_07,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,09:58:00,00:10:00,1,3,1,Early,1,Yes,Light,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",1,47.309073026800874,11.2
 UBC-MB-VC-EH_07,MB-VC-EH_07,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,337,08:22:00,00:10:00,1,3,2,Early,2,Yes,Moderate,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",2,47.309073026800874,11.2
 UBC-MB-VC-EH_07,MB-VC-EH_07,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-04,25-26,2025,12,4,338,11:02:00,00:10:00,1,3,3,Early,3,Yes,Light,Brisa,No,"Aaron Skinner, Michael Castaño Diaz",3,47.309073026800874,11.2
 UBC-MB-VC-EH_08,MB-VC-EH_08,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-02,25-26,2025,12,2,336,11:29:00,00:10:00,1,3,1,Early,1,Yes,Moderate,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",1,40.01864115771337,13
@@ -2838,7 +2836,7 @@ UBC-MB-VC-EH_10,MB-VC-EH_10,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,
 UBC-MB-VC-EH_10,MB-VC-EH_10,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-04,25-26,2025,12,4,338,07:44:00,00:10:00,1,3,2,Early,2,Yes,None,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",3,44.621747668140294,25.8
 UBC-MB-VC-EH_10,MB-VC-EH_10,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-05,25-26,2025,12,5,339,07:21:00,00:10:00,1,3,3,Early,3,Yes,None,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",4,44.621747668140294,25.8
 UBC-MB-VC-EH_11,MB-VC-EH_11,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-03,25-26,2025,12,3,337,11:21:00,00:10:00,1,3,1,Early,1,Yes,Light,Despejado,No,"Aaron Skinner, Michael Castaño Diaz",2,39.851779141105055,27.7
-UBC-MB-VC-EH_11,MB-VC-EH_11,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-04,25-26,2025,12,4,338,07:10:00,00:10:00,1,3,2,Early,2,Yes,Moderate,Despejado,No,"Aaron Skinner, Michael Castaño Diaz",3,39.851779141105055,27.7
+UBC-MB-VC-EH_11,MB-VC-EH_11,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-04,25-26,2025,12,4,338,07:10:00,00:10:00,1,3,2,Early,2,Yes,Moderate,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",3,39.851779141105055,27.7
 UBC-MB-VC-EH_11,MB-VC-EH_11,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-05,25-26,2025,12,5,339,06:49:00,00:10:00,1,3,3,Early,3,Yes,Light,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",4,39.851779141105055,27.7
 UBC-MB-VC-EH_12,MB-VC-EH_12,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-04,25-26,2025,12,4,338,08:46:00,00:10:00,1,2,1,Early,1,Yes,None,Brisa,No,"Aaron Skinner, Michael Castaño Diaz",3,34.00245398773128,15.8
 UBC-MB-VC-EH_12,MB-VC-EH_12,Ubc,Ubc mbd,UBC-MB-VC-EH,2025-12-05,25-26,2025,12,5,339,06:13:00,00:10:00,1,2,2,Early,2,Yes,None,Nublado,No,"Aaron Skinner, Michael Castaño Diaz",4,34.00245398773128,15.8
