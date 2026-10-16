@@ -27,7 +27,7 @@ Ubc: The University of British Columbia"
 Survey-covariates,Uniq_db,Unique database: The combination of the data collector and research question,,"Research questions are defined as: 
 mbd: Monitoreo de biodiversidad
 distancia: Research question focused on the distance of the observer to silvopastoral systems and forest"
-Survey-covariates,Id_group,A cluster of point counts on a single farm and sampled by a single data collector,,
+Survey-covariates,Id_group,"A cluster of point counts on a single farm, sampled by a single data collector within one research question (mbd or distancia)",,
 Survey-covariates,Date,Date,,
 Survey-covariates,Year_grp,Years grouped together by major sampling effort,,"Six major periods of bird data collection (2013-2014, 2016-2017, 2019, 2022, 2024, 2025-2026)"
 Survey-covariates,Year,Year,,
@@ -58,14 +58,14 @@ Survey-covariates,Sampling_day,"Day number within a closed sampling period, per 
 Survey-covariates,Canopy_cover,"Percent canopy cover within a 1 km buffer, see Potapov et al. (2026)",,0-100%
 Survey-covariates,Canopy_height_m,"Max canopy height (in meters) within the point count buffer, see Potapov et al. (2026)",,Meters
 Site-covariates,Id_survey_no_dc,Point count ID irrespective of the data collector,,
-Site-covariates,Id_scr,Identification number of the farm according to the Sustainable Cattle Ranching project,,NA = no farm ID (Otún Quimbaya reserve)
+Site-covariates,Id_scr,"Identification number of the Sustainable Cattle Ranching (SCR) property polygon that contains the point count, or else the nearest polygon, from a geospatial analysis of the SCR property polygons",,"Assigned to each point count, so points near a property boundary can carry a neighbouring property's number (e.g., one Andorra point has El porvenir 2's number, 268). Ref_<farm name> = reference farm outside the SCR project; NA = no farm ID (Otún Quimbaya reserve)"
 Site-covariates,Ecoregion,Ecoregion where the survey was conducted,,See Table 3 in the main text
 Site-covariates,Department,Department where the survey was conducted,,
 Site-covariates,Long,Longitude in decimal degrees,,
 Site-covariates,Lat,Latitude in decimal degrees,,
-Site-covariates,Id_group_no_dc,"A cluster of point counts on a single farm, irrespective of the data collector",,
-Site-covariates,Farm_name,Name of the farm where the point count was located,,
-Site-covariates,Distance_farm,Distance (m) from the point count to the nearest farm boundary,,NA = no associated farm (Otún Quimbaya reserve)
+Site-covariates,Id_group_no_dc,"A cluster of point counts on a single farm within one research question (mbd or distancia), irrespective of the data collector",,"A farm sampled under both research questions has two groups (El porvenir 3 and Los cambulos 1 in Meta: AD-M-… and MB-M-…). Data collectors within a group did not always survey the same locations (e.g., at Andorra, GAICA's points end in -A/-B and the Unillanos points are numbered 01–26)."
+Site-covariates,Farm_name,Name of the farm as recorded in the field by the data collector,,"Not unique across departments (La pradera: Boyacá and La Guajira; La esperanza: Boyacá and Risaralda), so combine with Department for unique combinations."
+Site-covariates,Distance_farm,Distance (m) from the point count to the nearest SCR property polygon (identified by Id_scr),,"0 = inside the polygon, except at the reference farms (Id_scr = Ref_…), which have no SCR polygon and are recorded as 0; NA = no associated farm (Otún Quimbaya reserve)"
 Site-covariates,N_visits,Total number of surveys at a point count location,,
 Site-covariates,Elev,Elevation in meters (90 meter resolution),,
 Site-covariates,Avg_temp,Average temperature in °C,,

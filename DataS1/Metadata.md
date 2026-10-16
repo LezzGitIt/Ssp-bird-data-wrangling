@@ -98,7 +98,7 @@
 
 **version:** 1.0
 
-**latest update:** 2026-10-15
+**latest update:** 2026-10-16
 
 **latest archive date:** \[to be added when deposited on Dryad\]
 
@@ -387,14 +387,14 @@ Table 5: Metadata associated with the ‘Site-covariates.csv’ dataset, i.e. 
 
 | Field name | Definition | Data type | Values |
 |:---|:---|:---|:---|
-| Id_scr | Identification number of the farm according to the Sustainable Cattle Ranching project | character | 72 distinct, NA (9) |
+| Id_scr | Identification number of the Sustainable Cattle Ranching (SCR) property polygon that contains the point count, or else the nearest polygon, from a geospatial analysis of the SCR property polygons | character | 72 distinct, NA (9) |
 | Ecoregion | Ecoregion where the survey was conducted | character | 5 distinct |
 | Department | Department where the survey was conducted | character | 12 distinct |
 | Long | Longitude in decimal degrees | numeric | -76.33 – -72.9 |
 | Lat | Latitude in decimal degrees | numeric | 3.29 – 11.14 |
-| Id_group_no_dc | A cluster of point counts on a single farm, irrespective of the data collector | character | 74 distinct |
-| Farm_name | Name of the farm where the point count was located | character | 70 distinct |
-| Distance_farm | Distance (m) from the point count to the nearest farm boundary | numeric | 0 – 4304, NA (9) |
+| Id_group_no_dc | A cluster of point counts on a single farm within one research question (mbd or distancia), irrespective of the data collector | character | 74 distinct |
+| Farm_name | Name of the farm as recorded in the field by the data collector | character | 70 distinct |
+| Distance_farm | Distance (m) from the point count to the nearest SCR property polygon (identified by Id_scr) | numeric | 0 – 4304, NA (9) |
 | N_visits | Total number of surveys at a point count location | integer | 1 – 19 |
 | Elev | Elevation in meters (90 meter resolution) | numeric | 28 – 3327 |
 | Avg_temp | Average temperature in °C | numeric | 9.78 – 28.68 |
@@ -416,7 +416,7 @@ Table 6: Metadata associated with the ‘Survey-covariates.csv’ dataset, i.e.
 |:---|:---|:---|:---|
 | Institution_name | Name of the data collector | character | Cipav, Gaica, Ubc, Ubc gaica, Unillanos |
 | Uniq_db | Unique database: The combination of the data collector and research question | character | 6 distinct |
-| Id_group | A cluster of point counts on a single farm and sampled by a single data collector | character | 89 distinct |
+| Id_group | A cluster of point counts on a single farm, sampled by a single data collector within one research question (mbd or distancia) | character | 89 distinct |
 | Year_grp | Years grouped together by major sampling effort | character | 13-14, 16-17, 19, 22, 24, 25-26 |
 | Year | Year | integer | 2013 – 2026 |
 | Month | Month | integer | 1 – 12 |
