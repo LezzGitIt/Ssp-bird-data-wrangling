@@ -8,6 +8,7 @@
 ## The raw point-count records are not re-written here: they keep the providers' original headers (not in the crosswalk) and their blank vs NA distinction (blank = empty cell, NA = no such column), which re-writing with na = "" would erase.
 ## Run this AFTER a full pipeline run (Scripts/00_ .. 06_). Column selection / ordering happen in each script's export section.
 ## Column_definitions.csv is hand-maintained and is NOT overwritten here.
+## The deposit's Metadata.md and README.md are rendered from Scripts/Data_paper/qmd/Metadata.qmd and Deposit_README.qmd (render both first); this script copies them, and the figures the Metadata shows, into DataS1/.
 
 # Setup -----------------------------------------------------------------------
 library(readr)
@@ -65,6 +66,20 @@ exported_raw <- imap(raw_paths, function(src, name) {
 }) %>% list_rbind()
 exported <- bind_rows(exported, exported_raw)
 
+## Metadata, README, and the Metadata's figures: figure paths point at the repo's Figures/ folder from Scripts/Data_paper/qmd/, so rewrite them to the deposit's Figures/ folder and copy the images
+docs_dir <- "Scripts/Data_paper/qmd"
+docs <- c("Metadata.md", "README.md")
+missing_docs <- docs[!file.exists(file.path(docs_dir, docs))]
+if (length(missing_docs)) stop("Render first: ", paste(missing_docs, collapse = ", "), " (quarto render Metadata.qmd / Deposit_README.qmd in ", docs_dir, ")")
+dir.create("DataS1/Figures", showWarnings = FALSE)
+walk(docs, function(doc) {
+  txt <- readLines(file.path(docs_dir, doc), encoding = "UTF-8")
+  fig_paths <- unique(unlist(regmatches(txt, gregexpr("\\.\\./\\.\\./\\.\\./Figures/[^)\" ]+\\.png", txt))))
+  walk(fig_paths, \(f) file.copy(file.path(docs_dir, f), file.path("DataS1/Figures", basename(f)), overwrite = TRUE))
+  txt <- gsub("\\.\\./\\.\\./\\.\\./Figures/(Static/)?", "Figures/", txt)
+  writeLines(txt, file.path("DataS1", doc), useBytes = TRUE)
+})
+
 # Provenance manifest ------------------------------------------------------
 git_sha <- tryCatch(system("git rev-parse --short HEAD", intern = TRUE),
                     error = function(e) NA_character_, warning = function(w) NA_character_)
@@ -73,6 +88,7 @@ manifest <- c(
   paste("exported_at:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
   paste("pipeline_commit:", git_sha),
   "headers: English (Raw_pc_*: the providers' original Spanish headers)",
+  "documents: Metadata.md, README.md, Figures/ (rendered from Scripts/Data_paper/qmd/)",
   "",
   "file,source,rows",
   paste(exported$file, exported$source, exported$rows, sep = ",")

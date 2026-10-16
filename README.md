@@ -19,6 +19,8 @@ The project uses data from 500+ unique point count locations surveyed 2013–202
 | `Spp_remove_change.csv` | curated range-review decisions: species removed or reassigned, optionally by department / elevation (applied to `Bird_pcs_analysis.csv` only; `Bird_pcs_all.csv` keeps the original identifications) | `Species_ayerbe` |
 | `Raw/` | the data collectors' raw point-count records (`Raw_pc_birds.csv`, `Raw_pc_metadata.csv`; original Spanish headers + `Dataset`, practice days included) — only so the pipeline can be rerun from `01`; use `Bird_pcs_all.csv` as the bird data |  |
 | `Column_definitions.csv` | column definitions for every table (one row per column; `Table` names the file) |  |
+| `Metadata.md` | the Ecology Data Paper 2.0 metadata (study design, sites, methods, data files, column definitions), rendered from `Scripts/Data_paper/qmd/Metadata.qmd`; its figures are in `Figures/` |  |
+| `README.md` | the deposit README (Ecology Data Paper 2.0 template), rendered from `Scripts/Data_paper/qmd/Deposit_README.qmd` |  |
 | `EXPORT_manifest.txt` | when the deposit was exported, from which pipeline commit, and the row count of each file |  |
 
 `Scripts/Data_paper/Data_joining_example.R` shows how the `DataS1/` tables join — a starting point, to be adapted to your own analysis. `Scripts/06_Analysis_wrangling.R` documents how `Bird_pcs_analysis.csv` was derived from the full observation set.
@@ -54,11 +56,16 @@ The raw provider data are not in this repository, so the pipeline and manuscript
 source("Scripts/Data_paper/Figs_tables.R")
 source("Scripts/Data_paper/Phylogeny_fig.R")
 
-# 3. Render
-#    quarto render Scripts/Data_paper/qmd/Data_paper_ecology.qmd
+# 3. Render the manuscript and the deposit's Metadata and README
+#    quarto render Scripts/Data_paper/qmd/Data_paper_ecology.qmd --to docx
+#    quarto render Scripts/Data_paper/qmd/Metadata.qmd
+#    quarto render Scripts/Data_paper/qmd/Deposit_README.qmd
+
+# 4. Copy the data, Metadata, README, and figures into DataS1/
+source("Scripts/Data_paper/Export_DataS1.R")
 ```
 
-Output (`Data_paper_ecology.pdf` and `.docx`) lands next to the qmd in `Scripts/Data_paper/qmd/`.
+The manuscript follows Ecology's Data Paper 2.0 format: `Data_paper_ecology.qmd` is the short typeset paper, and `Metadata.qmd` / `Deposit_README.qmd` become the deposit's `Metadata.md` and `README.md`. All three include `_setup.qmd`, which loads the deposit and computes every inline number, so they always agree; the Metadata and README also share `_identifiers.qmd` and `_study_design.qmd`. Output lands next to the qmd in `Scripts/Data_paper/qmd/`.
 
 ## Repository layout
 

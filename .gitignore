@@ -61,6 +61,9 @@ Scripts/Data_paper/qmd/*.pdf
 Scripts/Data_paper/qmd/*.docx
 Scripts/Data_paper/qmd/*.cls
 Scripts/Data_paper/qmd/*.bst
+# Rendered deposit documents: the tracked copies are in DataS1/ (Export_DataS1.R copies them there)
+Scripts/Data_paper/qmd/Metadata.md
+Scripts/Data_paper/qmd/README.md
 
 # Working docs (session notes / migration plan, not the science)
 Project_notes.md

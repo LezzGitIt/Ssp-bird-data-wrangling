@@ -1,7 +1,8 @@
 DataS1 export manifest
-exported_at: 2026-10-15T19:30:46-0700
-pipeline_commit: 55f7697
+exported_at: 2026-10-15T21:03:10-0700
+pipeline_commit: fe61f79
 headers: English (Raw_pc_*: the providers' original Spanish headers)
+documents: Metadata.md, README.md, Figures/ (rendered from Scripts/Data_paper/qmd/)
 
 file,source,rows
 Bird_pcs_all.csv,Derived/Excels/Bird_pcs/Bird_pcs_all.csv,20985
