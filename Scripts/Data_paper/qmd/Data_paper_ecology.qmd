@@ -53,7 +53,7 @@ The SCR project (2012-2019) and the subsequent SNAPP project (2022 - 2026) monit
 
 # Data Availability Statement
 
-The data, metadata, README, and the code that builds the data, tables, and figures are archived on Dryad ([DOI to be added when issued]) under a CC0 license, with version history on [GitHub](https://github.com/LezzGitIt/Ssp-bird-data-wrangling.git). Please cite this paper when using these data.
+The data, metadata, README, and the code that builds the data, tables, and figures are archived on Dryad (\[DOI to be added when issued\]) under a CC0 license, with version history on [GitHub](https://github.com/LezzGitIt/Ssp-bird-data-wrangling.git). Please cite this paper when using these data.
 
 # Data Description
 
@@ -137,13 +137,13 @@ dual_table(
 
 # Summary of Methods
 
-[Placeholder for Aaron: a brief narrative of how the data were collected and the sampling design (2.0 guidelines: the ecological system, the experimental or sampling design, and the tools or instruments). The detailed protocol text is now in the Metadata (Research Methods). Name any field stations or reserves (FSMLs) here and in the Acknowledgments.]
+\[Placeholder for Aaron: a brief narrative of how the data were collected and the sampling design (2.0 guidelines: the ecological system, the experimental or sampling design, and the tools or instruments). The detailed protocol text is now in the Metadata (Research Methods). Name any field stations or reserves (FSMLs) here and in the Acknowledgments.\]
 
 ![(A) Example landscape on a cattle ranching farm surveyed in the Piedemonte Ecoregion. Red circles represent the location of 50-m radius point counts. Four of the most common habitat types surveyed in the project are labeled. (B) Illustrations of the two silvopastoral arrangements visible in A, live fences and dispersed trees, adapted from materials of the Sustainable Cattle Ranching project (Proyecto Ganadería Colombiana Sostenible).](../../../Figures/Example_landscape_ssp.png){#fig-example-landscape}
 
 # Limitations and Challenges
 
-[Placeholder for Aaron: topics to cover include mixed protocols, radii, and distance classes; the single CIPAV visit and its variable duration; recording-only detections (UBC-GAICA 2024); what NA means in each column; GAICA distancia distances heaping at round numbers; BirdTree–Ayerbe name mismatches; and mist-net and *ad hoc* records not included.]
+\[Placeholder for Aaron: topics to cover include mixed protocols, radii, and distance classes; the single CIPAV visit and its variable duration; recording-only detections (UBC-GAICA 2024); what NA means in each column; GAICA distancia distances heaping at round numbers; BirdTree–Ayerbe name mismatches; and mist-net and *ad hoc* records not included.\]
 
 Species observations were compared against distributional ranges [@velezDistributionBirdsColombia2021] and elevational ranges [@quinteroGlobalElevationalDiversity2018; @freemanInterspecificCompetitionLimits2022; @hilty2021birds; @ayerbe2018guia]. All species observed outside of the species distributional range, or at an elevation \>150 meters above or below the elevational range found in the literature, were sent to the original data collector for review. Data collectors made recommendations for each species in question, falling into three categories: 1) the species identification and spatial information was correct (suggesting a range expansion), 2) the species was misidentified or wrongly transcribed and should be changed to a different species, or 3) if uncertain, the species should be removed from the database (applied by `04b_Range_apply.R`).
 
@@ -165,7 +165,7 @@ This work was funded through the Mainstreaming Sustainable Cattle Ranching proje
 
 ## Field stations, marine laboratories, and related research institutions
 
-[Placeholder for Aaron: name and location of any field stations or reserves, e.g., the Otún Quimbaya reserve and Reserva El Hatico, or "None".]
+\[Placeholder for Aaron: name and location of any field stations or reserves, e.g., the Otún Quimbaya reserve and Reserva El Hatico, or "None".\]
 
 ## Additional acknowledgments
 
@@ -173,10 +173,10 @@ I am grateful to Camila Gómez, Nick Bayly, and several students at the Universi
 
 # Contributor roles
 
-[Placeholder for Aaron: each author's CRediT role(s).]
+\[Placeholder for Aaron: each author's CRediT role(s).\]
 
 # Conflict of interest
 
-[Placeholder for Aaron: a brief statement, e.g., that the authors declare no conflicts of interest.]
+\[Placeholder for Aaron: a brief statement, e.g., that the authors declare no conflicts of interest.\]
 
 # References {.unnumbered}

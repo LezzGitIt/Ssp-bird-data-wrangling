@@ -22,13 +22,13 @@
   **author email:** skinnerayayron93@gmail.com  
   **author affiliation:** Department of Zoology, University of British Columbia, Vancouver, Canada
 
-- **author name:** Adriana Hurtado  
+- **author name:** Adriana Hurtado-Guerra  
   **author ORCID:** \[to be added\]  
-  **author affiliation:** Ecotropico, Bogotá, Colombia
+  **author affiliation:** Fundación Ecotrópico Colombia, Bogotá, Colombia
 
-- **author name:** Juanita Herrera  
+- **author name:** Juanita Herrera-Torres  
   **author ORCID:** \[to be added\]  
-  **author affiliation:** Ecotropico, Bogotá, Colombia
+  **author affiliation:** Fundación Ecotrópico Colombia, Bogotá, Colombia
 
 - **author name:** Robert Rodriguez-Caicedo  
   **author ORCID:** \[to be added\]  

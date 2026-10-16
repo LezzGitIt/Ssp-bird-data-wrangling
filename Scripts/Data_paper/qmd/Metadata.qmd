@@ -23,7 +23,7 @@ format:
 
 **latest update:** `r format(as.Date(sub("exported_at: ", "", grep("^exported_at", readLines("DataS1/EXPORT_manifest.txt"), value = TRUE)) |> substr(1, 10)), "%Y-%m-%d")`
 
-**latest archive date:** [to be added when deposited on Dryad]
+**latest archive date:** \[to be added when deposited on Dryad\]
 
 **metadata status:** last updated `r Sys.Date()`; draft for the Data Paper 2.0 submission
 
@@ -108,7 +108,7 @@ Data$Site_covs %>%
 
 - Silvopasture (Total n = `r Hab_tbl$Ssp`): Silvopastoral systems consist of a variety of practices and range across a spectrum regarding the diversity and intensity of practices implemented. For example, silvopastural systems can be tree (and grass) combinations planted to be homogeneous in spacing and age, or, alternatively, they can be highly diverse polycultures composed of remnant vegetation and naturally recruited tree species. See @murgueitioNativeTreesShrubs2011, @calleStrategyScalingUpIntensive2013, and @cubbageComparingSilvopastoralSystems2012 to better understand the full extent of management practices that can be incorporated in silvopastoral systems. In our bird sampling efforts, the project differentiated between several types of silvopasture:
 
-  - Dispersed trees (n = `r Hab_ssp_tbl$Arboles_dispersos`): Trees integrated directly into the pasture where cows graze, providing shade as well as direct forage in some cases
+  - Dispersed trees (n = `r Hab_ssp_tbl$Arboles_dispersos`): Trees integrated directly into the pasture where cows graze, providing shade as well as direct forage in some cases.
 
   - Live fences (n = `r Hab_ssp_tbl$Cerca_viva`): Linear rows of trees that serve to reduce wind and the drying of grass forage, as well as to divide paddocks.
 
@@ -132,7 +132,7 @@ Data$Site_covs %>%
 
 ### Experimental / Sampling Design
 
-**design characteristics:** To understand silvopasture’s impact on avian biodiversity, The Nature Conservancy coordinated several data collectors — CIPAV, GAICA, and Unillanos — to conduct avian point counts in forest fragments and across an agricultural intensity gradient. The datasets addressed related but distinct questions (see 'Birds_SSP_Colombia_Detailed_methodologies.docx'). UBC followed up on these efforts in 2022, 2024 (with the help of GAICA), and in 2025-2026, bringing the total number of point counts to `r Tot_pc_prty` across `r Num_sites`. Point counts were conducted on (or near) `r Num_farms` different farms across 12 geopolitical departments of Colombia in 5 ecoregions (see the sampling map and Table 1 in the data paper). [Aaron: add the habitat-sampling aims of each data collector (GAICA within forest for connectivity; CIPAV, Unillanos, and UBC across on-farm land-use gradients), from the methodologies .docx.]
+**design characteristics:** To understand silvopasture’s impact on avian biodiversity, The Nature Conservancy coordinated several data collectors — CIPAV, GAICA, and Unillanos — to conduct avian point counts in forest fragments and across an agricultural intensity gradient. The datasets addressed related but distinct questions (see 'Birds_SSP_Colombia_Detailed_methodologies.docx'). UBC followed up on these efforts in 2022, 2024 (with the help of GAICA), and in 2025-2026, bringing the total number of point counts to `r Tot_pc_prty` across `r Num_sites`. Point counts were conducted on (or near) `r Num_farms` different farms across 12 geopolitical departments of Colombia in 5 ecoregions (see the sampling map and Table 1 in the data paper). \[Aaron: add the habitat-sampling aims of each data collector (GAICA within forest for connectivity; CIPAV, Unillanos, and UBC across on-farm land-use gradients), from the methodologies .docx.\]
 
 Point count locations were sampled in multiple closed sampling periods by the same data collector using (essentially) the same methodology in several ecoregions. For example, in the Eje Cafetero, GAICA surveyed the same point count locations in June 2013, November 2016, and June 2024 (with guidance from UBC in 2024; see the temporal-sampling figure in the data paper). No point count locations were sampled in more than four distinct sampling periods. Generally, point count locations were not sampled by multiple institutions, with the exception of UBC's efforts. In 2022, UBC resampled 54 point count locations that were sampled in 2019 by Universidad de los Llanos; in 2024 UBC and GAICA resampled 42 point counts that were surveyed in the 2010's by GAICA in the Eje Cafetero and Piedemonte ecoregions (14 Eje Cafetero, 28 Piedemonte); finally in 2026, UBC resampled the 54 point counts surveyed originally by Universidad de los Llanos, as well as 28 point counts originally sampled by GAICA in the 2010s (22 of which were also resampled in 2024). UBC also surveyed `r Hatico_n` point count locations at El Hatico (Valle del Cauca, Eje Cafetero ecoregion) in December of 2025; `r Hatico_prev_cipav` of these locations had been surveyed once by CIPAV in 2017.
 
@@ -152,7 +152,7 @@ Locations were surveyed 1–`r Max_visits_loc` times in total, and `r Per_three_
 
 ![Each data set has bird information from point counts clustered within farms. Each point represents a farm and the x-axis conveys the number of unique point count locations at each farm. The colors correspond to the average number of repeat surveys at each point count, rounded to the nearest whole number. The number of distinct farms within each data set is printed to the right of each boxplot. Note that this text is to the left of the most heavily sampled farm in the 'Unillanos mbd' and 'Ubc mbd' data sets (24 point counts) for display reasons.](../../../Figures/Pc_per_farm_db.png){#fig-pc-farm-db}
 
-**instrumentation:** [Aaron: binoculars; audio recorders used by UBC-GAICA in 2024 (model?); GPS units for coordinates.]
+**instrumentation:** \[Aaron: binoculars; audio recorders used by UBC-GAICA in 2024 (model?); GPS units for coordinates.\]
 
 **taxonomy and systematics:** We used the taxonomy in Ayerbe’s 2018 field guide to the birds of Colombia [@ayerbe2018guia], which predominantly uses the American Ornithologists’ Society–South American Classiﬁcation Committee (AOS–SACC) taxonomy [@remsenClassificationBirdSpeciesSouth].
 
@@ -187,7 +187,7 @@ Tax_summary %>%
 
 **data forms or acquisition methods:** Each data collector entered its observations into a standardized Excel workbook (one per data collector and survey). `Scripts/00_Merge_raw.R` keeps the point-count records and the columns the pipeline uses and stacks them into `Raw/Raw_bird-records.csv` and `Raw/Raw_point-count-metadata.csv`, from which `Scripts/01_Gen_wrangling.R` onward builds the deposit tables.
 
-**storage / location of completed data forms:** [Aaron: where the original field forms and provider workbooks are kept.]
+**storage / location of completed data forms:** \[Aaron: where the original field forms and provider workbooks are kept.\]
 
 **data entry verification procedures:** See data verification under Status.
 
@@ -201,7 +201,7 @@ Species observations were compared against distributional ranges [@velezDistribu
 
 ### Other
 
-**related materials:** [Aaron: the 'Birds_SSP_Colombia_Detailed_methodologies' document (deposit it, or say where it is available).]
+**related materials:** \[Aaron: the 'Birds_SSP_Colombia_Detailed_methodologies' document (deposit it, or say where it is available).\]
 
 **computer programs and data-processing algorithms:** Code to reproduce figures plus the manuscript (rendered in quarto) can be found on Dryad, with version history on [github](https://github.com/LezzGitIt/Ssp-bird-data-wrangling.git). The R pipeline runs `Scripts/00_Merge_raw.R` (raw records) → `01_Gen_wrangling.R` → `02_Taxonomy.R` → `03_FT_elev.R` → `04b_Range_apply.R` → `05_wvsc.R` → `06_Analysis_wrangling.R`, and `Scripts/Data_paper/Export_DataS1.R` writes the deposit; see the repository README.
 
@@ -366,11 +366,11 @@ read_csv("DataS1/Column-definitions.csv", show_col_types = FALSE) %>%
 
 ## Archiving
 
-**archival procedures:** Data, metadata, README, and code are archived on Dryad ([DOI to be added when issued]).
+**archival procedures:** Data, metadata, README, and code are archived on Dryad (\[DOI to be added when issued\]).
 
 **redundant archival sites:** Version history on [GitHub](https://github.com/LezzGitIt/Ssp-bird-data-wrangling.git).
 
-**related publications and results:** [Aaron: the data paper citation once published; theses or papers using these data.]
+**related publications and results:** \[Aaron: the data paper citation once published; theses or papers using these data.\]
 
 ## History of Usage
 
@@ -378,7 +378,7 @@ read_csv("DataS1/Column-definitions.csv", show_col_types = FALSE) %>%
 
 **data set update history:** Version 1.0.
 
-**review history:** [to be added]
+**review history:** \[to be added\]
 
 **questions and comments from secondary users:** Please contact the corresponding author.
 

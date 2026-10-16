@@ -22,13 +22,13 @@
   **author email:** skinnerayayron93@gmail.com  
   **author affiliation:** Department of Zoology, University of British Columbia, Vancouver, Canada
 
-- **author name:** Adriana Hurtado  
+- **author name:** Adriana Hurtado-Guerra  
   **author ORCID:** \[to be added\]  
-  **author affiliation:** Ecotropico, Bogotá, Colombia
+  **author affiliation:** Fundación Ecotrópico Colombia, Bogotá, Colombia
 
-- **author name:** Juanita Herrera  
+- **author name:** Juanita Herrera-Torres  
   **author ORCID:** \[to be added\]  
-  **author affiliation:** Ecotropico, Bogotá, Colombia
+  **author affiliation:** Fundación Ecotrópico Colombia, Bogotá, Colombia
 
 - **author name:** Robert Rodriguez-Caicedo  
   **author ORCID:** \[to be added\]  
@@ -177,7 +177,7 @@ Table 1: The departments that make up each ecoregion, and the minimum (Min) and
 
 - Silvopasture (Total n = 154): Silvopastoral systems consist of a variety of practices and range across a spectrum regarding the diversity and intensity of practices implemented. For example, silvopastural systems can be tree (and grass) combinations planted to be homogeneous in spacing and age, or, alternatively, they can be highly diverse polycultures composed of remnant vegetation and naturally recruited tree species. See Murgueitio et al. (2011), Calle et al. (2013), and Cubbage et al. (2012) to better understand the full extent of management practices that can be incorporated in silvopastoral systems. In our bird sampling efforts, the project differentiated between several types of silvopasture:
 
-  - Dispersed trees (n = 63): Trees integrated directly into the pasture where cows graze, providing shade as well as direct forage in some cases
+  - Dispersed trees (n = 63): Trees integrated directly into the pasture where cows graze, providing shade as well as direct forage in some cases.
 
   - Live fences (n = 53): Linear rows of trees that serve to reduce wind and the drying of grass forage, as well as to divide paddocks.
 
@@ -373,7 +373,7 @@ Table 4: Metadata associated with the principal Bird point counts (‘Bird-poin
 | Count | Number of individuals observed at point count | integer | 1 – 100, NA (125), missing (5) |
 | Distance_bird | The distance from the observer to the bird | character | 55 distinct, NA (156), missing (14) |
 | Obs_type | How bird was identified | character | Auditivo, Sobrevuelo, Tamborileo, Visual, Visual/auditivo, not recorded (1750), missing (11) |
-| Recording | Whether species was identified in a recording | character | Cf, In field, Y, not recorded (20140) |
+| Recording | Whether the observation was identified in the field, in a recording, or both | character | Cf, In field, Y, not recorded (20140) |
 
 </div>
 

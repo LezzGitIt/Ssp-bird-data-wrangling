@@ -44,7 +44,7 @@ affiliations:
     country: Colombia
     
   - id: ecotropico
-    name: Ecotropico
+    name: Fundación Ecotrópico Colombia
     city: Bogotá
     region: Cundinamarca
     country: Colombia
@@ -71,11 +71,11 @@ author:
     attributes:
       corresponding: true
       
-  - name:	Adriana Hurtado
+  - name:	Adriana Hurtado-Guerra
     affiliations: 
     - ref: ecotropico
     
-  - name:	Juanita Herrera
+  - name:	Juanita Herrera-Torres
     affiliations: 
     - ref: ecotropico
       

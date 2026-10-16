@@ -32,7 +32,7 @@ format:
 knitr::kable(select(Deposit_files, File, Rows, `Size (MB)` = Size_MB))
 ```
 
-**file contents:** 
+**file contents:**
 
 ```{r}
 #| label: Deposit-contents-readme

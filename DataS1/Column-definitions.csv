@@ -13,7 +13,7 @@ Tamborileo: Drumming
 Visual: By sight
 Visual/auditivo: By sight and by ear
 NA: CIPAV did not record, otherwise missing"
-Bird-point-counts_all,Recording,Whether species was identified in a recording,,"Cf: A bird that was identified in the field and was confirmed in the recording 
+Bird-point-counts_all,Recording,"Whether the observation was identified in the field, in a recording, or both",,"Cf: A bird that was identified in the field and was confirmed in the recording 
 Y: A bird that was only identified in the recording
 In field: Identified in the field only
 NA: Not recorded - recordings were made only by UBC-GAICA in the Eje cafetero, 2024."
