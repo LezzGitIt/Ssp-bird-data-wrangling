@@ -58,7 +58,7 @@ library(kableExtra)
 Pc_locs_sf <- st_read("Derived/Geospatial/shp/Pc_locs.gpkg", quiet = TRUE)
 
 path <- "DataS1"
-File_names <- list.files(path)
+File_names <- list.files(path, pattern = "\\.csv$")   # the deposit tables (not the Raw/ folder or the manifest)
 
 Data <- map(File_names, \(sheet){
   read_csv(file = paste0(path, "/", sheet))
@@ -220,13 +220,13 @@ The `r Num_sites` point count locations were each surveyed 1–`r Max_visits_loc
 directory_path <- "DataS1" # Replace with your actual directory path
 
 # Get information about all files and extract the size of each file
-file_info <- file.info(list.files(path = directory_path, full.names = TRUE))
+file_info <- file.info(list.files(path = directory_path, pattern = "\\.csv$", full.names = TRUE))   # same files, same order as Data
 file_sizes <- file_info$size
 
 # Short descriptions of each file 
 Short_descriptions <- tibble(
-  File_name = c("Bird_pcs_all.csv", "Bird_pcs_analysis.csv", "Event_covs.csv", "Functional_traits.csv", "Site_covs.csv", "Taxonomy.csv", "Spp_remove_change.csv"),
-  Description =  c("All point count observations", "Subset of ‘Bird_pcs_all.csv’ with the range decisions applied (see 'Scripts/06_Analysis_wrangling.R')", "Information about each survey, including date, start time, and detection covariates", "Functional traits of all species observed in the project", "Unchanging covariates of each point count location", "Taxonomic equivalents including BirdLife, BirdTree, and eBird/Clements", "Species removed or reassigned after range review, applied only to ‘Bird_pcs_analysis.csv’ (see 'Scripts/04b_Range_apply.R')")
+  File_name = c("Bird_pcs_all.csv", "Bird_pcs_analysis.csv", "Event_covs.csv", "Functional_traits.csv", "Site_covs.csv", "Taxonomy.csv"),
+  Description =  c("All point count observations", "Subset of ‘Bird_pcs_all.csv’ with the range decisions applied (see 'Scripts/06_Analysis_wrangling.R')", "Information about each survey, including date, start time, and detection covariates", "Functional traits of all species observed in the project", "Unchanging covariates of each point count location", "Taxonomic equivalents including BirdLife, BirdTree, and eBird/Clements")
 )
 
 # Number of observations in each data set
@@ -239,7 +239,7 @@ file_names_and_sizes <- tibble(
   File_name = basename(rownames(file_info)),
   Number_obs = Num_obs_vec,
   Size_MB = round(file_sizes / 1e6, 2)
-) %>% inner_join(Short_descriptions) %>%   # keep only the documented deposit tables (drops the .xlsx / manifest)
+) %>% inner_join(Short_descriptions) %>%   # keep only the documented deposit tables (drops the definitions and Spp_remove_change)
   arrange(desc(Size_MB)) %>%
   relocate(Description, .after = File_name)
 
@@ -281,7 +281,7 @@ Colombia, Bajo Magdalena, Eje Cafetero, Río Cesar, Piedemonte, Cordillera Orien
 
 ## A. Overall project description:
 
-1.  Identity: This data set was collected during two long-term international initiatives, the Sustainable Cattle Ranching (SCR) and the Science for Nature and People Partnership (SNAPP) projects.
+1.  Identity: This data set was collected during two long-term international initiatives, the Sustainable Cattle Ranching (SCR) and the Science for Nature and People Partnership (SNAPP) projects. GAICA's 2013–2017 monitoring also included mist-net captures and *ad hoc* observations along transects, and Unillanos recorded *ad hoc* observations in 2019; these records are not part of this data set, which contains point counts only.
 
 2.  Originators: Tomas Walschburger, Manuel Gómez Vivas, Julián Chará, Christina Kennedy, Juliana Delgado
 
@@ -289,7 +289,7 @@ Colombia, Bajo Magdalena, Eje Cafetero, Río Cesar, Piedemonte, Cordillera Orien
 
 4.  Objectives: The SCR project (2012-2019) and the subsequent SNAPP project (2022 - 2026) monitored biodiversity, carbon, farm productivity, and the socioeconomic status of farmers that adopted silvopasture in Colombia. The specific objectives were to: 1) Understand the impacts of SPS on biodiversity, climate, productivity, and farmer wellbeing; 2) Identify conditions for synergies (win-win situations) for people and nature; 3) Evaluate real-world drivers of on-farm adoption and better understand enablers and constraints; 4) Develop evidence-based guidance for environmental certification standards and advance a diagnostic tool for sustainable cattle ranching partners.
 
-5.  Abstract: By 2050, global demands for livestock products (milk and meat) are estimated to increase by more than 50%, and correspondingly, cattle production in Latin America could increase by 125%. How this growth occurs has significant social, economic, and environmental consequences. Extensive pasture monoculture is the dominant livestock grazing system in Latin America and is environmentally damaging and vulnerable to climate change. It has led to habitat conversion, biodiversity loss, degraded soils and water quality, and increased greenhouse gas emissions. Silvopastoral Systems – the intentional incorporation of trees and shrubs in grazing lands – are a promising alternative to reduce the environmental footprint of pasturelands while enhancing productivity and climate benefits to farmers and society. With the aim of understanding silvopasture’s impacts on multifunctional outcomes including biodiversity, carbon, farm productivity, and the socioeconomic status of farmers, the SCR and SNAPP projects worked on 4,100 farms across five ecoregions of Colombia from 2012-2026. Through technical assistance and provision of materials, the project transformed \~160,000 hectares of farms with degraded pasture to silvopasture, primarily by integrating live fences and dispersed trees. Preliminary analyses show the potential for win-win outcomes for people and nature. However, silvopasture has rarely been adopted outside of international development projects, and its potential for scaling is poorly understood.
+5.  Abstract: By 2050, global demands for livestock products (milk and meat) are estimated to increase by more than 50%, and correspondingly, cattle production in Latin America could increase by 125%. How this growth occurs has significant social, economic, and environmental consequences. Extensive pasture monoculture is the dominant livestock grazing system in Latin America and is environmentally damaging and vulnerable to climate change. It has led to habitat conversion, biodiversity loss, degraded soils and water quality, and increased greenhouse gas emissions. Silvopastoral Systems – the intentional incorporation of trees and shrubs in grazing lands – are a promising alternative to reduce the environmental footprint of pasturelands while enhancing productivity and climate benefits to farmers and society. With the aim of understanding silvopasture’s impacts on multifunctional outcomes including biodiversity, carbon, farm productivity, and the socioeconomic status of farmers, the SCR and SNAPP projects worked on 4,100 farms across five ecoregions of Colombia from 2012-2026. Through technical assistance and provision of materials, the project transformed \~160,000 hectares of farms with degraded pasture to silvopasture, primarily by integrating live fences and dispersed trees. Additional biodiversity monitoring efforts included bird (mist netting, line transects, and ad-hoc reports), bat, and beetle surveys. Preliminary analyses show the potential for win-win outcomes for people and nature. However, silvopasture has rarely been adopted outside of international development projects, and its potential for scaling is poorly understood.
 
 6.  Sources of funding: This work was funded through the Mainstreaming Sustainable Cattle Ranching project: Global Environment Facility (GEF) Trust Fund grant TF-96465, and World Bank grant P104687.
 
@@ -576,7 +576,7 @@ Questionable identifications are noted in `Spp_remove_change.csv`, and the comme
 
 Data files can be joined together by join keys (i.e., columns), according to the needs of the analyst (see 'Data_joining_example.R'). The `Bird_pcs_all` and `Event_covs` data sets have the join keys `Id_survey` and `Id_survey_no_dc`. The `Site_covs` data set has the join key `Id_survey_no_dc`. The `Bird_pcs_all`, `Taxonomy`, and `Functional_traits` data sets all share the join key `Species_ayerbe`.
 
-For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird_pcs_analysis` data set because it shares the columns of `Bird_pcs_all`. Specifically, `Bird_pcs_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see 'Scripts/06_Analysis_wrangling.R'), with the range decisions in `Spp_remove_change` applied (see Quality assurance/quality control procedures). Similarly, definitions of the join keys are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see 'Column_definitions.csv', particularly the 'Column_content_definition' column, for additional information about variables. Note that blank cells (`" "`) can mean either that the data were not applicable (e.g., when `Habitat` = 'intensive pasture', there was no `Habitat_sub` recorded), recorded only by a subset of data collectors, or are truly missing data. These are defined in the 'Column_content_definition' column.
+For each dataset, we provide column definitions and associated metadata. For brevity, we do not provide definitions for the `Bird_pcs_analysis` data set because it shares the columns of `Bird_pcs_all`. Specifically, `Bird_pcs_analysis` only contains the species observed within the fixed point count radius and that used the habitat (i.e., not a flyover; see 'Scripts/06_Analysis_wrangling.R'), with the range decisions in `Spp_remove_change` applied (see Quality assurance/quality control procedures). Similarly, definitions of the join keys are only shown in the first table they appear and are not repeated in subsequent tables. Any omitted columns are noted in the table caption. Please see 'Column_definitions.csv', particularly the 'Column_content_definition' column, for additional information about variables. The `Raw/` folder holds the data collectors' point-count records with their original (Spanish) column names, from which the pipeline is run. `Bird_pcs_all.csv` should be treated as the complete set of bird data in nearly all cases. Note that blank cells (`" "`) can mean either that the data were not applicable (e.g., when `Habitat` = 'intensive pasture', there was no `Habitat_sub` recorded), recorded only by a subset of data collectors, or are truly missing data. These are defined in the 'Column_content_definition' column.
 
 ```{r}
 #| label: Print-table-fn
@@ -713,7 +713,7 @@ N_changed_obs <- sum(Range_flags$Range_decision == "Change")
 N_changed_spp <- n_distinct(Range_flags$Species_reported[Range_flags$Range_decision == "Change"])
 ```
 
-`Bird_pcs_all.csv` contains every point-count detection retained after two upstream steps. `01_Gen_wrangling.R` keeps only formal point counts, excluding mist-net captures, incidental (*ad hoc*) sightings, free-roaming transects, and trial or practice-day surveys; `02_Taxonomy.R` then removes the `r N_unresolved` detections that could not be resolved to species (genus-level, ambiguous, or unidentified records). Otherwise, `Bird_pcs_all.csv` keeps the identifications as reported. During distributional and elevational range review, we flagged probable misidentifications and recorded a decision for each species, sometimes restricted to particular departments or elevations, in `Spp_remove_change.csv`: `r N_removed_obs` detections of `r N_removed_spp` species are removed, and `r N_changed_obs` detections of `r N_changed_spp` species are reassigned to a similar species considered more likely (e.g., *Setophaga pinus* to *S. fusca*). `04b_Range_apply.R` applies these decisions to `Bird_pcs_analysis.csv` only; users of `Bird_pcs_all.csv` can apply the same decisions with `flag_range_decisions()` in `Scripts/Pipeline_fns.R`, or make their own.
+`Bird_pcs_all.csv` contains every point-count detection retained after three upstream steps. `00_Merge_raw.R` gathers each data collector's point-count records, with their original values and column names, into the 'Raw' folder; `01_Gen_wrangling.R` removes trial or practice-day surveys and recordings identified only to family; `02_Taxonomy.R` then removes the `r N_unresolved` detections that could not be resolved to species (genus-level, ambiguous, or unidentified records). Otherwise, `Bird_pcs_all.csv` keeps the identifications as reported. During distributional and elevational range review, we flagged probable misidentifications and recorded a decision for each species, sometimes restricted to particular departments or elevations, in `Spp_remove_change.csv`: `r N_removed_obs` detections of `r N_removed_spp` species are removed, and `r N_changed_obs` detections of `r N_changed_spp` species are reassigned to a similar species considered more likely (e.g., *Setophaga pinus* to *S. fusca*). `04b_Range_apply.R` applies these decisions to `Bird_pcs_analysis.csv` only; users of `Bird_pcs_all.csv` can apply the same decisions with `flag_range_decisions()` in `Scripts/Pipeline_fns.R`, or make their own.
 
 `06_Analysis_wrangling.R` restricts the data to detections within the 50-m radius that used the habitat — excluding flyovers and every bird identified from audio recordings, including those also noted in the field — and caps the few counts above 50 individuals at 50.
 
