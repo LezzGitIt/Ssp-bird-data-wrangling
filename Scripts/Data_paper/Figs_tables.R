@@ -817,8 +817,8 @@ Blank_rules <- list(
     Obs_type = list(not_recorded = \(d) d$Uniq_db %in% "Cipav mbd")  # CIPAV did not record how birds were detected
   ),
   Site_covs = list(
-    Id_scr = list(na = \(d) d$Id_group_no_dc %in% "MB-R-OQ"),  # Otun Quimbaya reserve: not a farm
-    Distance_farm = list(na = \(d) d$Id_group_no_dc %in% "MB-R-OQ"),
+    Id_scr = list(na = \(d) str_starts(d$Id_survey_no_dc, "MB-R-OQ_")),  # Otun Quimbaya reserve: not a farm
+    Distance_farm = list(na = \(d) str_starts(d$Id_survey_no_dc, "MB-R-OQ_")),
     Habitat_sub = list(na = \(d) d$Habitat %in% c("Cultivos", "Mosaic", "Pastizales"))  # subtypes exist only for forest and silvopasture
   ),
   Event_covs = list(

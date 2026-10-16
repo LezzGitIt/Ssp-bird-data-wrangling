@@ -78,8 +78,8 @@ if(generate){
 # Buffer of 1000m to serve as an indicator of landscape forest cover
 Locs_1k <- Pc_locs %>% buffer(1000) # 5000m
 # Example buffers for plotting
-Ex_pts <- Pc_locs %>% filter(Id_group_no_dc == "MB-M-LRO1")
-Ex_buff_1k <- Locs_1k %>% filter(Id_group_no_dc == "MB-M-LRO1")
+Ex_pts <- Pc_locs %>% filter(str_starts(Id_survey_no_dc, "MB-M-LRO1_"))
+Ex_buff_1k <- Locs_1k %>% filter(str_starts(Id_survey_no_dc, "MB-M-LRO1_"))
 
 # Crop and mask (SLOW)
 if(generate){
@@ -129,7 +129,7 @@ Cover_tbl <- extract_buffers(Cover_mask_l, Locs_1k, \(x) mean(x, na.rm = TRUE)) 
 # >Height ------------------------------------------------------------------
 # Buffer of 50m to extract the max canopy height of the point count 
 Locs_50m <- Pc_locs %>% buffer(50) 
-Ex_buff_50m <- Locs_50m %>% filter(Id_group_no_dc == "MB-M-LRO1")
+Ex_buff_50m <- Locs_50m %>% filter(str_starts(Id_survey_no_dc, "MB-M-LRO1_"))
 
 # Crop and mask (SLOW)
 if(generate){

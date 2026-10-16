@@ -118,10 +118,10 @@ By 2050, global demands for livestock products (milk and meat) are estimated to 
 | Bird-point-counts_analysis.csv   | 17,133 |      1.17 |
 | Survey-covariates.csv            | 2,997  |      0.58 |
 | Functional-traits.csv            | 587    |      0.16 |
-| Site-covariates.csv              | 504    |      0.06 |
+| Site-covariates.csv              | 504    |      0.05 |
 | Taxonomy.csv                     | 591    |      0.13 |
 | Range-review-decisions.csv       | 33     |      0.00 |
-| Column-definitions.csv           | 106    |      0.01 |
+| Column-definitions.csv           | 105    |      0.01 |
 | Raw/Raw_bird-records.csv         | 25,281 |     10.29 |
 | Raw/Raw_point-count-metadata.csv | 3,617  |      0.82 |
 

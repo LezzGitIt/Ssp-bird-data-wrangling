@@ -505,8 +505,7 @@ df_birds_red <- map(df_birds_red, \(df) {
     Id_group = sapply(
       str_split(Id_survey, "_"),
       function(x) { x[1] }
-    ),
-    Id_group_no_dc = str_remove(Id_group, "C-|G-|UBC-|UBCG-|U-")
+    )
   )
 })
 
@@ -759,12 +758,12 @@ Rep_dfs <- map2(df_birds_red, No_obs_l, \(df, No_obs){
 ## Create different files based on inclusion of location, date, and habitat #
 # Create a file where each row is a unique point count x data collector #
 Pc_uniq <- Bird_pcs_all %>% 
-  distinct(Uniq_db, Institution_name, Id_group, Id_group_no_dc, Ecoregion, Department, Id_survey, Id_survey_no_dc, Id_scr)
+  distinct(Uniq_db, Institution_name, Id_group, Ecoregion, Department, Id_survey, Id_survey_no_dc, Id_scr)
 
 # >Pc_locs ----------------------------------------------------------------
 # NOTE: There are 604 unique point count x data collector combinations, but 17 points have multiple coordinates (very close). For now we will take the average lats & longs.
 Pc_locs_mult <- Bird_pcs_all %>% 
-  distinct(Uniq_db, Institution_name, Id_group, Id_group_no_dc, Ecoregion, Department, Id_scr, Id_survey, Id_survey_no_dc, Latitud, Longitud)
+  distinct(Uniq_db, Institution_name, Id_group, Ecoregion, Department, Id_scr, Id_survey, Id_survey_no_dc, Latitud, Longitud)
 nrow(Pc_locs_mult) 
 
 # Maintain data collector information
@@ -1217,7 +1216,7 @@ if(FALSE){
 envi_vars_cols <- sapply(envi_vars_l, terra::extract, Pc_locs_sf, ID = FALSE)
 Envi_df <- Pc_locs_sf %>% 
   st_drop_geometry() %>%
-  select(Id_group_no_dc, Id_survey_no_dc, Ecoregion, Department) %>%
+  select(Id_survey_no_dc, Ecoregion, Department) %>%
   bind_cols(coords, envi_vars_cols) %>%
   rename(Elev = elev.dem.srtm_21_10, 
          Avg_temp = avg.temp.mean, 
@@ -1253,7 +1252,7 @@ Site_covs <- Bird_pcs_all %>%
   left_join(Distance_farm_site) %>%
   left_join(Visits_site) %>%
   # Column order matches the Site_covs rows of DataS1/Column-definitions.csv
-  select(Id_survey_no_dc, Id_scr, Ecoregion, Department, Long, Lat, Id_group_no_dc, Farm_name, Distance_farm, N_visits, Elev, Avg_temp, Tot_prec, Habitat, Habitat_sub)
+  select(Id_survey_no_dc, Id_scr, Ecoregion, Department, Long, Lat, Farm_name, Distance_farm, N_visits, Elev, Avg_temp, Tot_prec, Habitat, Habitat_sub)
 
 # >Precipitation ----------------------------------------------------------
 # Extract data & create df where each row is a point count and there are 12 'prec' columns, one for each month
@@ -1313,7 +1312,7 @@ Event_covs_pcs %>% Na_rows_cols(cols_inc = -c(Noise, Weather, Cows_50m, Pc_obs_s
 nrow(Site_covs)
 # Should be no NAs -- Distance_farm is filled across years within Id_survey_no_dc, so only Otun Quimbaya (never processed by GCS) stays NA
 Site_covs %>%
-  filter(Id_group_no_dc != "MB-R-OQ") %>% # OQ doesn't have Id_scr
+  filter(!str_starts(Id_survey_no_dc, "MB-R-OQ_")) %>% # OQ doesn't have Id_scr
   # No sub_ut for these habitat types
   filter(!Habitat %in% c("Cultivos", "Mosaic", "Pastizales")) %>%
   Na_rows_cols(cols_inc = -Distance_farm, id_cols = c(Id_survey_no_dc))

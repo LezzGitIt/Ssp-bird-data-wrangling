@@ -328,10 +328,10 @@ Table 3: Data files in the deposit: number of rows and size in megabytes.
 | Bird-point-counts_analysis.csv | Subset of Bird-point-counts_all.csv within the fixed point count radius and using the habitat, with the range decisions applied (see Scripts/06_Analysis_wrangling.R) | 17,133 | 1.17 |
 | Survey-covariates.csv | Information about each survey, including date, start time, and detection covariates | 2,997 | 0.58 |
 | Functional-traits.csv | Functional traits of all species observed in the project | 587 | 0.16 |
-| Site-covariates.csv | Unchanging covariates of each point count location | 504 | 0.06 |
+| Site-covariates.csv | Unchanging covariates of each point count location | 504 | 0.05 |
 | Taxonomy.csv | Taxonomic equivalents including BirdLife, BirdTree, and eBird/Clements | 591 | 0.13 |
 | Range-review-decisions.csv | Range-review decisions: species removed or reassigned, optionally by department and elevation; applied only to Bird-point-counts_analysis.csv | 33 | 0.00 |
-| Column-definitions.csv | Definitions of every column of the tables above (one row per column; ‘Table’ names the file) | 106 | 0.01 |
+| Column-definitions.csv | Definitions of every column of the tables above (one row per column; ‘Table’ names the file) | 105 | 0.01 |
 | Raw/Raw_bird-records.csv | The data collectors’ raw point-count bird records, with their original (Spanish) column names, from which Scripts/01_Gen_wrangling.R builds the tables above | 25,281 | 10.29 |
 | Raw/Raw_point-count-metadata.csv | The data collectors’ raw point-count metadata: one row per point count, including counts with no birds | 3,617 | 0.82 |
 
@@ -392,7 +392,6 @@ Table 5: Metadata associated with the ‘Site-covariates.csv’ dataset, i.e. 
 | Department | Department where the survey was conducted | character | 12 distinct |
 | Long | Longitude in decimal degrees | numeric | -76.33 – -72.9 |
 | Lat | Latitude in decimal degrees | numeric | 3.29 – 11.14 |
-| Id_group_no_dc | A cluster of point counts on a single farm within one research question (mbd or distancia), irrespective of the data collector | character | 74 distinct |
 | Farm_name | Name of the farm as recorded in the field by the data collector | character | 70 distinct |
 | Distance_farm | Distance (m) from the point count to the nearest SCR property polygon (identified by Id_scr) | numeric | 0 – 4304, NA (9) |
 | N_visits | Total number of surveys at a point count location | integer | 1 – 19 |

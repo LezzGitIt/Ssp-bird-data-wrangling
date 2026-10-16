@@ -73,7 +73,6 @@ Ecoregion,Ecoregion,,Site_covs
 Elev,Elev,,Site_covs
 Farm_name,Farm_name,,Site_covs
 Habitat_sub,Habitat_sub,,Site_covs
-Id_group_no_dc,Id_group_no_dc,,Site_covs
 Id_scr,Id_scr,Id_gcs,Site_covs
 Lat,Lat,,Site_covs
 Long,Long,,Site_covs

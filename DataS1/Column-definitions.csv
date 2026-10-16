@@ -63,7 +63,6 @@ Site-covariates,Ecoregion,Ecoregion where the survey was conducted,,See Table 3 
 Site-covariates,Department,Department where the survey was conducted,,
 Site-covariates,Long,Longitude in decimal degrees,,
 Site-covariates,Lat,Latitude in decimal degrees,,
-Site-covariates,Id_group_no_dc,"A cluster of point counts on a single farm within one research question (mbd or distancia), irrespective of the data collector",,"A farm sampled under both research questions has two groups (El porvenir 3 and Los cambulos 1 in Meta: AD-M-… and MB-M-…). Data collectors within a group did not always survey the same locations (e.g., at Andorra, GAICA's points end in -A/-B and the Unillanos points are numbered 01–26)."
 Site-covariates,Farm_name,Name of the farm as recorded in the field by the data collector,,"Not unique across departments (La pradera: Boyacá and La Guajira; La esperanza: Boyacá and Risaralda), so combine with Department for unique combinations."
 Site-covariates,Distance_farm,Distance (m) from the point count to the nearest SCR property polygon (identified by Id_scr),,"0 = inside the polygon, except at the reference farms (Id_scr = Ref_…), which have no SCR polygon and are recorded as 0; NA = no associated farm (Otún Quimbaya reserve)"
 Site-covariates,N_visits,Total number of surveys at a point count location,,
