@@ -1,6 +1,6 @@
 DataS1 export manifest
-exported_at: 2026-10-15T21:27:48-0700
-pipeline_commit: 59eb6d8
+exported_at: 2026-10-16T09:45:10-0700
+pipeline_commit: 8bda256
 headers: English (Raw/: the providers' original Spanish headers)
 documents: Metadata.md, README.md, Figures/ (rendered from Scripts/Data_paper/qmd/)
 

@@ -123,7 +123,7 @@ Functional-traits,Elev_range,Elevational range width (meters),Ayerbe-Quiñones (
 Functional-traits,Iucn_red_list,IUCN Red List category,HBW/BirdLife checklist,
 Taxonomy,Order,Taxonomic order,,
 Taxonomy,Family,Taxonomic family,,
-Taxonomy,Species_ayerbe,Species according to Ayerbe-Quinones (2018),,
+Taxonomy,Species_ayerbe,Species according to Ayerbe-Quiñones (2018),,
 Taxonomy,Species_bl,Species according to BirdLife,,
 Taxonomy,Species_bt,Species according to BirdTree,,
 Taxonomy,Species_sacc_18,Species according to the SACC (South American Classification Committee) 2018 checklist,,NA: not in SACC 2018

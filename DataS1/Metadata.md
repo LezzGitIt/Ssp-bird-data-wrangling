@@ -102,7 +102,7 @@
 
 **latest archive date:** \[to be added when deposited on Dryad\]
 
-**metadata status:** last updated 2026-10-15; draft for the Data Paper 2.0 submission
+**metadata status:** last updated 2026-10-16; draft for the Data Paper 2.0 submission
 
 **data verification:** In collaboration with the data collectors, AAS, AH, and JH took extensive quality-control checks. Primarily, this consisted of cross-checking data collected in the field against the stated methodologies from each data set (see ‘Birds_SSP_Colombia_Detailed_methodologies’ file). For example, we confirmed the empirical sampling dates and times against the reported point count schedules. Additional quality assurance procedures included:
 
@@ -312,7 +312,7 @@ Species observations were compared against distributional ranges (Vélez et al. 
 
 ## Data File Descriptors
 
-**naming scheme:** One file per table, named for its content (e.g., `Site-covariates.csv`); the raw records are in the `Raw/` folder. \[Pending: renaming to the Ecology convention of hyphens between words.\]
+**naming scheme:** One file per table, named for its content (e.g., `Site-covariates.csv`); the raw records are in the `Raw/` folder. File names follow Ecology’s convention: hyphens between words and underscores for groupings (e.g., `Bird-point-counts_all.csv`).
 
 **file size(s):** see the table below.
 
@@ -341,7 +341,7 @@ Table 3: Data files in the deposit: number of rows and size in megabytes.
 
 **file contents:** See the table above. The deposit also contains this Metadata file, a README, `EXPORT_manifest.txt` (export date, pipeline commit, and row counts), and the figures referenced here (`Figures/`).
 
-**format and storage mode:** Tabular data and code is stored as .csv files (<a href="#tbl-deposit-files" class="quarto-xref">Table 3</a>) and .R files, respectively. Files are UTF-8 encoded.
+**format and storage mode:** Tabular data and code is stored as .csv files (<a href="#tbl-deposit-files" class="quarto-xref">Table 3</a>) and .R files, respectively. Files are UTF-8 encoded (no byte-order mark), so accented characters (e.g., Ayerbe-Quiñones) read correctly in R and Python; in Excel, open a file with Data → From Text/CSV and choose UTF-8, because double-clicking it garbles the accents.
 
 **header information:** Each .csv file has a single header row of column names; columns are defined in `Column-definitions.csv` and below.
 

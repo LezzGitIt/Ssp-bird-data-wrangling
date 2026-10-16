@@ -209,7 +209,7 @@ Species observations were compared against distributional ranges [@velezDistribu
 
 ## Data File Descriptors
 
-**naming scheme:** One file per table, named for its content (e.g., `Site-covariates.csv`); the raw records are in the `Raw/` folder. [Pending: renaming to the Ecology convention of hyphens between words.]
+**naming scheme:** One file per table, named for its content (e.g., `Site-covariates.csv`); the raw records are in the `Raw/` folder. File names follow Ecology's convention: hyphens between words and underscores for groupings (e.g., `Bird-point-counts_all.csv`).
 
 **file size(s):** see the table below.
 
@@ -222,7 +222,7 @@ knitr::kable(select(Deposit_files, File, Description, Rows, `Size (MB)` = Size_M
 
 **file contents:** See the table above. The deposit also contains this Metadata file, a README, `EXPORT_manifest.txt` (export date, pipeline commit, and row counts), and the figures referenced here (`Figures/`).
 
-**format and storage mode:** Tabular data and code is stored as .csv files (@tbl-deposit-files) and .R files, respectively. Files are UTF-8 encoded.
+**format and storage mode:** Tabular data and code is stored as .csv files (@tbl-deposit-files) and .R files, respectively. Files are UTF-8 encoded (no byte-order mark), so accented characters (e.g., Ayerbe-Quiñones) read correctly in R and Python; in Excel, open a file with Data → From Text/CSV and choose UTF-8, because double-clicking it garbles the accents.
 
 **header information:** Each .csv file has a single header row of column names; columns are defined in `Column-definitions.csv` and below.
 

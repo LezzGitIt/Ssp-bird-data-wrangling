@@ -108,6 +108,8 @@ By 2050, global demands for livestock products (milk and meat) are estimated to 
 
 **naming scheme:** One file per table, named for its content (e.g., `Site-covariates.csv`); the raw records are in the `Raw/` folder. See the Metadata for the columns of each file.
 
+**file format:** Files are UTF-8 encoded (no byte-order mark), so accented characters (e.g., Ayerbe-Quiñones) read correctly in R and Python; in Excel, open a file with Data → From Text/CSV and choose UTF-8, because double-clicking it garbles the accents. Every empty cell is written as NA; `Column-definitions.csv` says what NA means in each column.
+
 **file size(s):** see the table below.
 
 | File                             | Rows   | Size (MB) |
