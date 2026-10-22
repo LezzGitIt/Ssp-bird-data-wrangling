@@ -1,6 +1,6 @@
 ## PhD birds in silvopastoral landscapes ##
 # Data wrangling to add the canopy cover / height covariates to Event_covs (from Event_covs_pcs)
-# The digitized-polygon land-cover metrics live in Chapter 1 (_ch1_pending/Extract_lcs.R, LSM.R), not in this deposit pipeline.
+# The digitized-polygon land-cover metrics live in Chapter 1 (Ch1-ssp-birds: Scripts/00a_Extract_lcs.R, 00b_LSM.R), not in this deposit pipeline.
 
 ## Instructions
 # Set 'generate' to TRUE or FALSE, which decides whether to generate the masked and cropped files or whether to import the buffers (already masked and cropped) which are much faster to work with. 
