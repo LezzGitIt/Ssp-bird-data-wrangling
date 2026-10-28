@@ -98,11 +98,11 @@
 
 **version:** 1.0
 
-**latest update:** 2026-10-16
+**latest update:** 2026-10-27
 
 **latest archive date:** \[to be added when deposited on Dryad\]
 
-**metadata status:** last updated 2026-10-16; draft for the Data Paper 2.0 submission
+**metadata status:** last updated 2026-10-27; draft for the Data Paper 2.0 submission
 
 **data verification:** In collaboration with the data collectors, AAS, AH, and JH took extensive quality-control checks. Primarily, this consisted of cross-checking data collected in the field against the stated methodologies from each data set (see ‘Birds_SSP_Colombia_Detailed_methodologies’ file). For example, we confirmed the empirical sampling dates and times against the reported point count schedules. Additional quality assurance procedures included:
 
@@ -145,7 +145,7 @@ Figure 1: Climate of the point count locations in the five ecoregions. Elevatio
 <u>Bajo Magdalena:</u> This region is near the delta of the Magdalena River in the Caribbean. The region is dry, particularly the windswept coastal regions, although it gets wetter further inland. Vegetation is dominated by short stature trees that drop their leaves (tropical dry forest) and desert-like scrub.  
 <u>Río Cesar:</u> A dry river valley nestled between the Sierra Nevada de Santa Marta (the world’s tallest isolated coastal mountain range) and the Serranía del Perijá mountains that straddle the Colombia-Venezuela border. The vegetation is similar to the Bajo Magdalena region. High temperatures and low precipitation result in desert conditions, with scrubby acacia-like trees and large cacti dominating the vegetation. This unique region has relatively high endemism, sharing some species only with similar desert areas in neighboring Venezuela.
 
-**geography:** Sampling locations span 76.33–72.90° W and 3.29–11.14° N (WGS 84). Our study area covered nearly 8° of latitude, 3.5° of longitude, and 250,474 km². See <a href="#tbl-elev" class="quarto-xref">Table 1</a> for the area (the convex hull) of bird sampling locations in each ecoregion.
+**geography:** Sampling locations span 76.33–72.90° W and 3.29–11.14° N (WGS 84). Our study area covered nearly 8° of latitude, 3.5° of longitude, and 250,478 km². See <a href="#tbl-elev" class="quarto-xref">Table 1</a> for the area (the convex hull) of bird sampling locations in each ecoregion.
 
 <div id="tbl-elev">
 
@@ -156,8 +156,8 @@ Table 1: The departments that make up each ecoregion, and the minimum (Min) and
 | Ecoregion | Description | Departments | Min | Max | Range | Area |
 |:---|:---|:---|---:|---:|---:|---:|
 | Bajo Magdalena | Lower Magdalena Basin | Atlántico, Bolívar | 28 | 197 | 169 | 592 |
-| Piedemonte | East-Andean piedmont, transition to Orinoquian plains | Meta | 266 | 822 | 556 | 1265 |
-| Río Cesar | Cesar river valley | Cesar, La Guajira | 70 | 923 | 853 | 3337 |
+| Piedemonte | East-Andean piedmont, transition to Orinoquian plains | Meta | 266 | 822 | 556 | 1264 |
+| Río Cesar | Cesar river valley | Cesar, La Guajira | 70 | 923 | 853 | 3338 |
 | Cordillera Oriental | East-Andean Highlands | Boyacá, Santander | 1394 | 2806 | 1412 | 956 |
 | Eje Cafetero | Coffee-growing region; Central Andes and surrounding river valleys | Caldas, Quindío, Risaralda, Tolima, Valle del Cauca | 234 | 3327 | 3093 | 10777 |
 
@@ -433,7 +433,7 @@ Table 6: Metadata associated with the ‘Survey-covariates.csv’ dataset, i.e.
 | Cows_50m | Whether cows were present within the 50m point count radius | character | No, Yes, not recorded (2370), missing (16) |
 | Registered_by | Name(s) of the field observer(s) who conducted the point count | character | 11 distinct, missing (3) |
 | Sampling_day | Day number within a closed sampling period, per institution and Year_grp | integer | 1 – 142 |
-| Canopy_cover | Percent canopy cover within a 1 km buffer, see Potapov et al. (2026) | numeric | 1.99 – 95.79 |
+| Canopy_cover | Percent canopy cover within a 1 km buffer, see Potapov et al. (2026) | numeric | 2 – 95.79 |
 | Canopy_height_m | Max canopy height (in meters) within the point count buffer, see Potapov et al. (2026) | numeric | 0 – 28.3 |
 
 </div>

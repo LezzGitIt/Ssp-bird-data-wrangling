@@ -767,11 +767,12 @@ Pc_locs_mult <- Bird_pcs_all %>%
 nrow(Pc_locs_mult) 
 
 # Maintain data collector information
+# 5 decimals = ~1.1 m per unit at these latitudes, so rounding moves a point by < 0.6 m.
 Pc_locs_dc <- Pc_locs_mult %>%
   group_by(Id_survey_no_dc) %>%
   mutate(
-    Latitud = round(mean(Latitud), 4),
-    Longitud = round(mean(Longitud), 4)
+    Latitud = round(mean(Latitud), 5),
+    Longitud = round(mean(Longitud), 5)
   ) %>% distinct() %>% 
   ungroup()
 
