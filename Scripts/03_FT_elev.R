@@ -104,7 +104,7 @@ lapply(Ft_df2[17:21], table)
 
 # Birdbase ----------------------------------------------------------------
 # Extract specialization traits from Birdbase
-Birdbase <- read_excel("../../../Datasets_external/BIRDBASE v2025.1 Sekercioglu et al. Final.xlsx", skip = 1) %>% clean_names()
+Birdbase <- read_excel("../../../Datasets_external/BIRDBASE/BIRDBASE v2025.1 Sekercioglu et al. Final.xlsx", skip = 1) %>% clean_names()
 # ESI =  log10(100/[dietary breadth x habitat breadth]); a maximum of 2 for the most specialized species that only feed on one major food group and live in one major type of habitat. 
 
 Birdbase_specialization <- Birdbase %>% 
